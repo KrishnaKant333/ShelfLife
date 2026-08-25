@@ -50,7 +50,7 @@ export default function Navbar() {
           </a>
 
           <button
-            className="cursor-pointer"
+            className="text-sm text-[var(--shelf-muted)] transition hover:text-[var(--shelf-dark)] cursor-pointer"
             type="button"
             onClick={() => selectAudience("business")}
           >
@@ -58,7 +58,7 @@ export default function Navbar() {
           </button>
 
           <button
-            className="cursor-pointer"
+            className="text-sm text-[var(--shelf-muted)] transition hover:text-[var(--shelf-dark)] cursor-pointer"
             type="button"
             onClick={() => selectAudience("consumer")}
           >
