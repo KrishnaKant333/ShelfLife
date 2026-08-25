@@ -30,7 +30,7 @@ export default function BackToTop() {
       type="button"
       onClick={scrollToTop}
       aria-label="Back to top"
-      className={`fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] shadow-xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`fixed cursor-pointer bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] shadow-xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
         visible
           ? "translate-y-0 scale-100 opacity-100"
           : "pointer-events-none translate-y-16 scale-75 opacity-0"

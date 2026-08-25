@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const plans = [
   {
     name: "Business",
@@ -74,10 +76,11 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-
+              <Link href={"/dashboard"}>
               <button className="mt-10 w-full rounded-full bg-[var(--shelf-dark)] px-5 py-3.5 text-sm font-medium text-white transition hover:bg-[var(--shelf-green)]">
                 Get started
               </button>
+              </Link>
             </div>
           ))}
         </div>

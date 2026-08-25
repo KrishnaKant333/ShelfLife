@@ -54,7 +54,7 @@ export default function FeatureDecoration({
   if (!decoration) return null;
 
   return (
-    <div className="pointer-events-none absolute right-6 top-6 flex translate-y-2 items-center gap-2 text-[var(--shelf-green)] opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-70">
+    <div className="pointer-events-none absolute right-9 top-17 flex translate-y-2 items-center gap-2 text-[var(--shelf-green)] opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-70">
       {decoration.icon}
 
       <span className="text-xs font-medium">

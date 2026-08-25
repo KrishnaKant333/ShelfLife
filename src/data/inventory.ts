@@ -3,7 +3,7 @@ export interface InventoryItem {
   category: string;
   quantity: number;
   expiry: string;
-  status: "Fresh" | "Expiring";
+  status: "Fresh" | "Expiring" | "Low Stock";
 }
 
 export const inventory: InventoryItem[] = [

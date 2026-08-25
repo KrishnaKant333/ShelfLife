@@ -108,7 +108,7 @@ export default function InventoryHeroVisual() {
       </div>
 
       {/* Expiry alert */}
-      <div className="absolute right-0 top-[28%] hidden w-44 rounded-2xl border border-[var(--shelf-border)] bg-white p-4 shadow-xl shadow-black/5 sm:block animate-[heroFloat_5s_ease-in-out_infinite]">
+      <div className="absolute right-0 top-[28%] hidden w-44 rounded-2xl border border-[var(--shelf-border)] bg-white p-4 shadow-xl shadow-black/10 sm:block animate-[heroFloat_2s_ease-in-out_infinite]">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50">
             <AlertTriangle size={14} className="text-amber-600" />
@@ -125,7 +125,7 @@ export default function InventoryHeroVisual() {
       </div>
 
       {/* Analytics card */}
-      <div className="absolute bottom-[7%] left-0 hidden w-48 rounded-2xl border border-[var(--shelf-border)] bg-white p-4 shadow-xl shadow-black/5 sm:block animate-[heroFloatReverse_6s_ease-in-out_infinite]">
+      <div className="absolute bottom-[7%] left-0 hidden w-48 rounded-2xl border border-[var(--shelf-border)] bg-white p-4 shadow-xl shadow-black/10 sm:block animate-[heroFloatReverse_3s_ease-in-out_infinite]">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-[var(--shelf-dark)]">
             Waste trend
@@ -153,7 +153,7 @@ export default function InventoryHeroVisual() {
       </div>
 
       {/* AI recommendation */}
-      <div className="absolute bottom-[13%] right-[2%] hidden w-48 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-dark)] p-4 shadow-xl shadow-black/10 sm:block animate-[heroFloat_5.5s_ease-in-out_infinite]">
+      <div className="absolute bottom-[13%] right-[2%] hidden w-48 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-dark)] p-4 shadow-xl shadow-black/10 sm:block animate-[heroFloat_2.5s_ease-in-out_infinite]">
         <div className="flex items-center gap-2">
           <Sparkles
             size={15}

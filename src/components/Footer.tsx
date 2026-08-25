@@ -1,3 +1,6 @@
+import Link from "next/link";
+import Image from "next/image";
+
 const footerLinks = {
   Product: ["Features", "Dashboard", "Pricing"],
   Solutions: ["For Consumers", "For Businesses", "Analytics"],
@@ -12,8 +15,17 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
 
           <div>
-            <p className="text-2xl font-semibold tracking-tight text-[var(--shelf-dark)]">
-              shelflife
+            <p className="left-0.5 relative text-2xl font-semibold tracking-tight text-[var(--shelf-dark)]">
+              <Link href="/" className="shrink-0">
+                <Image
+                  src="/logo/shelflife.png"
+                  alt="ShelfLife"
+                  width={150}
+                  height={150}
+                  className="h-14 w-auto object-contain"
+                  priority
+                />
+              </Link>
             </p>
 
             <p className="mt-4 max-w-sm text-sm leading-6 text-[var(--shelf-muted)]">
