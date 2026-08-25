@@ -9,7 +9,7 @@ const actions = [
   {
     label: "Add Product",
     description: "Add inventory manually",
-    href: "/dashboard/inventory?action=add",
+    href: "/dashboard/inventory/new",
     icon: Plus,
   },
   {

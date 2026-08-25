@@ -2,6 +2,7 @@ import { getInventory } from "@/lib/inventory";
 import { getInventoryStatus } from "@/lib/inventory-status";
 import Link from "next/link";
 import { formatExpiry } from "@/lib/format-expiry";
+import DeleteProductButton from "@/components/dashboard/DeleteProductButton";
 
 export default async function InventoryPage() {
   const inventory = await getInventory();
@@ -25,7 +26,7 @@ export default async function InventoryPage() {
           </div>
 
           <Link
-            href="/dashboard/inventory?action=add"
+            href="/dashboard/inventory/new"
             className="inline-flex items-center justify-center rounded-xl bg-[var(--shelf-forest)] px-4 py-2.5 text-sm font-medium text-white transition hover:-translate-y-0.5"
           >
             + Add Product
@@ -55,6 +56,10 @@ export default async function InventoryPage() {
 
                   <th className="px-6 py-4 text-xs font-medium text-[var(--shelf-muted)]">
                     Status
+                  </th>
+                  
+                  <th className="px-6 py-4 text-xs font-medium text-[var(--shelf-muted)]">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -91,6 +96,15 @@ export default async function InventoryPage() {
                       <span className="rounded-full bg-[var(--shelf-cream)] px-3 py-1 text-xs text-[var(--shelf-dark)]">
                         {status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 flex gap-2"> 
+                      <Link
+                        href={`/dashboard/inventory/${item.id}/edit`}
+                        className="text-sm font-medium text-[var(--shelf-forest)] hover:underline"
+                      >
+                        Edit
+                      </Link>
+                      <DeleteProductButton id={item.id} />
                     </td>
                   </tr>
                 );
