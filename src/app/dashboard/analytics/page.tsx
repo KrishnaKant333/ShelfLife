@@ -1,21 +1,34 @@
-import { inventory } from "@/data/inventory";
+import { getInventory } from "@/lib/inventory";
+import { getInventoryStatus } from "@/lib/inventory-status";
 
-export default function AnalyticsPage() {
+export default async function AnalyticsPage() {
+  const inventory = await getInventory();
+
+  const statuses = inventory.map((item) =>
+    getInventoryStatus(
+      item.quantity,
+      item.expiryDate
+    )
+  );
+
   const total = inventory.length;
 
-  const fresh = inventory.filter(
-    (item) => item.status === "Fresh"
+  const fresh = statuses.filter(
+    (status) => status === "Fresh"
   ).length;
 
-  const expiring = inventory.filter(
-    (item) => item.status === "Expiring"
+  const expiring = statuses.filter(
+    (status) => status === "Expiring"
   ).length;
 
-  const lowStock = inventory.filter(
-    (item) => item.status === "Low Stock"
+  const lowStock = statuses.filter(
+    (status) => status === "Low Stock"
   ).length;
 
-  const health = Math.round((fresh / total) * 100);
+  const health =
+    total === 0
+      ? 0
+      : Math.round((fresh / total) * 100);
 
   return (
     <main className="p-6 md:p-8 lg:p-10">
@@ -64,6 +77,7 @@ export default function AnalyticsPage() {
             </p>
 
             <div className="mt-6 space-y-4">
+
               <div className="flex justify-between">
                 <span className="text-sm text-[var(--shelf-muted)]">
                   Fresh
@@ -93,10 +107,12 @@ export default function AnalyticsPage() {
                   {lowStock}
                 </span>
               </div>
+
             </div>
           </div>
 
         </div>
+
       </div>
     </main>
   );

@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import EditProductForm from "@/components/dashboard/EditProductForm";
+
+import { auth } from "@/auth";
 import { db } from "@/prisma/db";
 
 interface EditProductPageProps {
@@ -12,23 +14,36 @@ interface EditProductPageProps {
 export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
-  const { id } = await params;
+  const session = await auth();
 
+  if (!session?.user?.id) {
+    return (
+      <main>
+        <h1>Unauthorized</h1>
+        <Link href="/consumer/login">
+          Log in to continue
+        </Link>
+      </main>
+    );
+  }
+
+  const { id } = await params;
   const productId = Number(id);
 
   if (!Number.isInteger(productId)) {
     return <p>Invalid product ID.</p>;
   }
 
-  const product =
-    await db.orm.public.InventoryItem.first({
-      id: productId,
-    });
+  const product = await db.orm.public.InventoryItem.first({
+    id: productId,
+    userId: Number(session.user.id),
+  });
 
   if (!product) {
     return (
       <main>
         <h1>Product not found</h1>
+
         <Link href="/dashboard/inventory">
           Back to inventory
         </Link>
@@ -41,7 +56,8 @@ export default async function EditProductPage({
       <div className="mb-3 mt-8">
         <Link
           href="/dashboard/inventory"
-          className="text-sm font-medium text-[var(--shelf-forest)]">
+          className="text-sm font-medium text-[var(--shelf-forest)]"
+        >
           ← Back to inventory
         </Link>
 

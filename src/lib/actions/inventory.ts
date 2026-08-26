@@ -1,4 +1,5 @@
 "use server";
+import { auth } from "@/auth";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -34,6 +35,20 @@ const inventorySchema = z.object({
   expiryDate: z.coerce.date(),
 });
 
+async function getCurrentUser() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return null;
+  }
+
+  const user = await db.orm.public.User.first({
+    id: Number(session.user.id),
+  });
+
+  return user;
+}
+
 export type CreateInventoryState = {
   error?: string;
 };
@@ -56,18 +71,16 @@ export async function createInventoryItem(
     };
   }
 
-  const demoUser = await db.orm.public.User.first({
-    email: "demo@shelflife.app",
-  });
+  const user = await getCurrentUser();
 
-  if (!demoUser) {
+  if (!user) {
     return {
-      error: "Demo user could not be found.",
+      error: "You must be logged in to manage inventory.",
     };
   }
 
   await db.orm.public.InventoryItem.create({
-    userId: demoUser.id,
+    userId: user.id,
     name: result.data.name,
     category: result.data.category,
     quantity: result.data.quantity,
@@ -80,7 +93,7 @@ export async function createInventoryItem(
   revalidatePath("/dashboard/alerts");
   revalidatePath("/dashboard/analytics");
 
-  return {};
+  redirect("/dashboard/inventory");
 }
 
 export async function updateInventoryItem(
@@ -104,20 +117,18 @@ export async function updateInventoryItem(
     };
   }
 
-  const demoUser = await db.orm.public.User.first({
-    email: "demo@shelflife.app",
-  });
+  const user = await getCurrentUser();
 
-  if (!demoUser) {
+  if (!user) {
     return {
-      error: "Demo user could not be found.",
+      error: "You must be logged in to manage inventory.",
     };
   }
 
   await db.orm.public.InventoryItem
     .where({
       id,
-      userId: demoUser.id,
+      userId: user.id,
     })
     .update({
       name: result.data.name,
@@ -138,18 +149,16 @@ export async function updateInventoryItem(
 export async function deleteInventoryItem(
   id: number
 ) {
-  const demoUser = await db.orm.public.User.first({
-    email: "demo@shelflife.app",
-  });
+  const user = await getCurrentUser();
 
-  if (!demoUser) {
-    throw new Error("Demo user could not be found.");
+  if (!user) {
+    throw new Error("You must be logged in to manage inventory.");
   }
 
   await db.orm.public.InventoryItem
     .where({
       id,
-      userId: demoUser.id,
+      userId: user.id,
     })
     .delete();
 

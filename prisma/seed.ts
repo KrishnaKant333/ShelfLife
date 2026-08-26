@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { Temporal } from "../src/lib/temporal";
 import { db } from "../src/prisma/db";
 
 async function main() {
@@ -6,6 +7,7 @@ async function main() {
     create: {
       name: "Demo User",
       email: "demo@shelflife.app",
+      updatedAt: Temporal.Now.instant(),
     },
     update: {
       name: "Demo User",

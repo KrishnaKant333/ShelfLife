@@ -1,0 +1,160 @@
+"use client";
+
+import { useActionState } from "react";
+import Link from "next/link";
+
+import {
+  updateBusinessInventoryItem,
+  type BusinessInventoryState,
+} from "@/lib/actions/business-inventory";
+
+interface BusinessEditProductFormProps {
+  product: {
+    id: number;
+    name: string;
+    category: string;
+    quantity: number;
+    unit: string;
+    expiryDate: string;
+  };
+}
+
+const initialState: BusinessInventoryState = {};
+
+export default function BusinessEditProductForm({
+  product,
+}: BusinessEditProductFormProps) {
+  const updateAction = updateBusinessInventoryItem.bind(
+    null,
+    product.id,
+  );
+
+  const [state, formAction, pending] = useActionState(
+    updateAction,
+    initialState,
+  );
+
+  return (
+    <form
+      action={formAction}
+      className="rounded-2xl bg-white p-6 shadow-2xl"
+    >
+      <div className="grid gap-6 md:grid-cols-2">
+        <div>
+          <label
+            htmlFor="name"
+            className="mb-2 block text-sm font-medium"
+          >
+            Product name
+          </label>
+
+          <input
+            id="name"
+            name="name"
+            type="text"
+            defaultValue={product.name}
+            required
+            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="category"
+            className="mb-2 block text-sm font-medium"
+          >
+            Category
+          </label>
+
+          <input
+            id="category"
+            name="category"
+            type="text"
+            defaultValue={product.category}
+            required
+            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="quantity"
+            className="mb-2 block text-sm font-medium"
+          >
+            Quantity
+          </label>
+
+          <input
+            id="quantity"
+            name="quantity"
+            type="number"
+            min="1"
+            step="1"
+            defaultValue={product.quantity}
+            required
+            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="unit"
+            className="mb-2 block text-sm font-medium"
+          >
+            Unit
+          </label>
+
+          <input
+            id="unit"
+            name="unit"
+            type="text"
+            defaultValue={product.unit}
+            required
+            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <label
+            htmlFor="expiryDate"
+            className="mb-2 block text-sm font-medium"
+          >
+            Expiry date
+          </label>
+
+          <input
+            id="expiryDate"
+            name="expiryDate"
+            type="date"
+            defaultValue={product.expiryDate.slice(0, 10)}
+            required
+            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+          />
+        </div>
+      </div>
+
+      {state.error && (
+        <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+          {state.error}
+        </p>
+      )}
+
+      <div className="mt-8 flex justify-end gap-3">
+        <Link
+          href="/business/dashboard/inventory"
+          className="rounded-xl border border-black/10 px-5 py-3 text-sm font-medium"
+        >
+          Cancel
+        </Link>
+
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+        >
+          {pending ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
+    </form>
+  );
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.user.passwordHash",
+    "label": "Add column \"passwordHash\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "passwordHash",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"passwordHash\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "passwordHash"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"passwordHash\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"passwordHash\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"passwordHash\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "passwordHash"
+        ]
+      }
+    ]
+  }
+]

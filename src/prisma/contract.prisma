@@ -1,17 +1,46 @@
 // use prisma-next
+enum AccountType {
+  @@type("pg/text@1")
+
+  CONSUMER = "consumer"
+  BUSINESS = "business"
+}
+
 model User {
-  id        Int                        @id @default(autoincrement())
-  email     String                     @unique
-  name      String?
+  id          Int         @id @default(autoincrement())
+  email       String      @unique
+  name        String?
+  accountType AccountType @default(CONSUMER)
+
+  businessId  Int?
+  business    Business?   @relation(fields: [businessId], references: [id])
+
   inventory InventoryItem[]
-  createdAt TimestamptzString          @default(now())
-  updatedAt temporal.updatedAtString()
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+  passwordHash String?
+}
+
+model Business {
+  id        Int      @id @default(autoincrement())
+  name      String
+  industry  String?
+
+  users     User[]
+  inventoryItems InventoryItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@index([name])
 }
 
 model InventoryItem {
   id         Int                        @id @default(autoincrement())
   user       User                       @relation(fields:[userId], references:[id])
   userId     Int
+  businessId  Int?
+  business   Business?  @relation(fields: [businessId], references: [id])
   name       String
   category   String
   quantity   Int

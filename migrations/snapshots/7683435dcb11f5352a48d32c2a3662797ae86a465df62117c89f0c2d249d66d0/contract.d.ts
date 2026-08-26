@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ab4adaf7850aa4ebb2fbe906f356b41637eb4ac33fb20b3b96627a35398798d7'>;
+  StorageHashBase<'7683435dcb11f5352a48d32c2a3662797ae86a465df62117c89f0c2d249d66d0'>;
 export type ExecutionHash =
   ExecutionHashBase<'7d80476c0bb076336617ca6c01539bf0d0e03bbce6eb7ad70ff49d188d7443cd'>;
 export type ProfileHash =
@@ -268,7 +268,6 @@ export type FieldOutputTypes = {
       readonly businessId: CodecTypes['pg/int4@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly passwordHash: CodecTypes['pg/text@1']['output'] | null;
     };
   };
 };
@@ -301,7 +300,6 @@ export type FieldInputTypes = {
       readonly businessId: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly passwordHash: CodecTypes['pg/text@1']['input'] | null;
     };
   };
 };
@@ -333,7 +331,6 @@ export type StorageColumnTypes = {
       readonly email: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'] | null;
-      readonly passwordHash: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
   };
@@ -366,7 +363,6 @@ export type StorageColumnInputTypes = {
       readonly email: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'] | null;
-      readonly passwordHash: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
   };
@@ -580,11 +576,6 @@ type ContractBase = Omit<
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
-                };
-                readonly passwordHash: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -828,10 +819,6 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
-              readonly passwordHash: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
             };
             readonly relations: {
               readonly business: {
@@ -868,7 +855,6 @@ type ContractBase = Omit<
                 readonly businessId: { readonly column: 'businessId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
-                readonly passwordHash: { readonly column: 'passwordHash' };
               };
             };
           };

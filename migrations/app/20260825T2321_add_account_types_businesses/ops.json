@@ -1,0 +1,410 @@
+[
+  {
+    "id": "table.business",
+    "label": "Create table \"business\"",
+    "summary": "Creates table \"business\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "business"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"business\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"business\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"business\"",
+        "sql": "CREATE TABLE \"public\".\"business\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"industry\" text,\n  \"name\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"business\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"business\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.inventoryItem.businessId",
+    "label": "Add column \"businessId\" to \"inventoryItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "businessId",
+        "table": "inventoryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"businessId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "businessId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"businessId\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryItem\" ADD COLUMN \"businessId\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"businessId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "businessId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.accountType",
+    "label": "Add column \"accountType\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "accountType",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"accountType\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "accountType"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"accountType\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"accountType\" text DEFAULT 'consumer' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"accountType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "accountType"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.businessId",
+    "label": "Add column \"businessId\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "businessId",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"businessId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "businessId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"businessId\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"businessId\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"businessId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "businessId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.user.user_accountType_check_3458d6a6",
+    "label": "Add check constraint \"user_accountType_check_3458d6a6\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_accountType_check_3458d6a6",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_accountType_check_3458d6a6\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_accountType_check_3458d6a6",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_accountType_check_3458d6a6\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_accountType_check_3458d6a6\" CHECK (\"accountType\" IN ('consumer', 'business'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_accountType_check_3458d6a6\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_accountType_check_3458d6a6",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.business.business_name_idx_ce87e6ba",
+    "label": "Create index \"business_name_idx_ce87e6ba\" on \"business\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "business_name_idx_ce87e6ba",
+        "table": "business"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"business_name_idx_ce87e6ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"business_name_idx_ce87e6ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"business_name_idx_ce87e6ba\"",
+        "sql": "CREATE INDEX \"business_name_idx_ce87e6ba\" ON \"public\".\"business\" (\"name\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"business_name_idx_ce87e6ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"business_name_idx_ce87e6ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inventoryItem.inventoryItem_businessId_idx_ae0ed511",
+    "label": "Create index \"inventoryItem_businessId_idx_ae0ed511\" on \"inventoryItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inventoryItem_businessId_idx_ae0ed511",
+        "table": "inventoryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inventoryItem_businessId_idx_ae0ed511\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryItem_businessId_idx_ae0ed511\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inventoryItem_businessId_idx_ae0ed511\"",
+        "sql": "CREATE INDEX \"inventoryItem_businessId_idx_ae0ed511\" ON \"public\".\"inventoryItem\" (\"businessId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inventoryItem_businessId_idx_ae0ed511\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryItem_businessId_idx_ae0ed511\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.user.user_businessId_idx_ae0ed511",
+    "label": "Create index \"user_businessId_idx_ae0ed511\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "user_businessId_idx_ae0ed511",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"user_businessId_idx_ae0ed511\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_businessId_idx_ae0ed511\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"user_businessId_idx_ae0ed511\"",
+        "sql": "CREATE INDEX \"user_businessId_idx_ae0ed511\" ON \"public\".\"user\" (\"businessId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"user_businessId_idx_ae0ed511\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user_businessId_idx_ae0ed511\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inventoryItem.inventoryItem_businessId_fkey",
+    "label": "Add foreign key \"inventoryItem_businessId_fkey\" on \"inventoryItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inventoryItem_businessId_fkey",
+        "table": "inventoryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inventoryItem_businessId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryItem_businessId_fkey",
+          "public",
+          "\"public\".\"inventoryItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inventoryItem_businessId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryItem\"\nADD CONSTRAINT \"inventoryItem_businessId_fkey\"\nFOREIGN KEY (\"businessId\")\nREFERENCES \"public\".\"business\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inventoryItem_businessId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryItem_businessId_fkey",
+          "public",
+          "\"public\".\"inventoryItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.user.user_businessId_fkey",
+    "label": "Add foreign key \"user_businessId_fkey\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "user_businessId_fkey",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"user_businessId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_businessId_fkey",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"user_businessId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"user\"\nADD CONSTRAINT \"user_businessId_fkey\"\nFOREIGN KEY (\"businessId\")\nREFERENCES \"public\".\"business\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"user_businessId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_businessId_fkey",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  }
+]
