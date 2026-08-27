@@ -25,8 +25,6 @@ export default async function BusinessInventoryPage() {
               Manage everything currently tracked for your business.
             </p>
           </div>
-
-          
           <div className="flex gap-2">
             <Link
               href="/business/dashboard/inventory/import"
@@ -36,6 +34,12 @@ export default async function BusinessInventoryPage() {
               Import CSV
             </Link>
 
+            <Link
+              href="/business/dashboard/inventory/invoice"
+              className="inline-flex items-center justify-center rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-medium text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
+            >
+              Import Invoice
+            </Link>
             <Link
               href="/business/dashboard/inventory/new"
               className="inline-flex items-center justify-center rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 bg-white text-sm font-medium text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"

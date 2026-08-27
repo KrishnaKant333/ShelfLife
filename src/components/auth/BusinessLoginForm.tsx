@@ -88,7 +88,7 @@ export default function BusinessLoginForm() {
       </button>
 
       <p className="text-center text-sm">
-        Don't have a business account?{" "}
+        Don&apos;t have a business account?{" "}
         <Link
           href="/business/signup"
           className="font-semibold underline underline-offset-4"
