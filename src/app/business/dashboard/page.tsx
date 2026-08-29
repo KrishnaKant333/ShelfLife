@@ -2,12 +2,15 @@ import {
   AlertTriangle,
   Package,
   TrendingDown,
+  Activity,
 } from "lucide-react";
 
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-
 import StatCard from "@/components/dashboard/StatCard";
+import ExpiryOverview from "@/components/dashboard/ExpiryOverview";
+import InventoryOverview from "@/components/dashboard/InventoryOverview";
+import QuickActions from "@/components/dashboard/QuickActions";
 import { getBusinessInventory } from "@/lib/business-inventory";
 import { getInventoryStatus } from "@/lib/inventory-status";
 
@@ -23,81 +26,77 @@ export default async function BusinessDashboardPage() {
   }
 
   const inventory = await getBusinessInventory();
-
   const statuses = inventory.map((item) =>
-    getInventoryStatus(
-      item.quantity,
-      item.expiryDate
-    )
+    getInventoryStatus(item.quantity, item.expiryDate)
   );
 
-  const stats = {
-    totalItems: inventory.length,
+  const totalItems = inventory.length;
+  const expiringSoon = statuses.filter((status) => status === "Expiring").length;
+  const lowStock = statuses.filter((status) => status === "Low Stock").length;
+  const freshItems = statuses.filter((status) => status === "Fresh").length;
 
-    expiringSoon: statuses.filter(
-      (status) => status === "Expiring"
-    ).length,
+  const healthScore = totalItems === 0 ? 100 : Math.round((freshItems / totalItems) * 100);
 
-    lowStock: statuses.filter(
-      (status) => status === "Low Stock"
-    ).length,
-  };
+  // Map dates to ISO string to ensure safety/consistency inside child components
+  const formattedInventory = inventory.map((item) => ({
+    ...item,
+    expiryDate: typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()
+  }));
 
   return (
     <main className="p-6 md:p-8 lg:p-10">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <div>
+          <p className="text-sm font-semibold text-[var(--shelf-forest)]">
+            Business Dashboard
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--shelf-dark)] md:text-4xl">
+            Welcome back{session.user.name ? `, ${session.user.name}` : ""}
+          </h1>
+          <p className="mt-2 text-sm text-[var(--shelf-muted)]">
+            Here is a status update on your business inventory.
+          </p>
+        </div>
 
-        <p className="text-sm font-medium text-[var(--shelf-forest)]">
-          Business Overview
-        </p>
-
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--shelf-dark)] md:text-4xl">
-          Welcome back{session.user.name
-            ? `, ${session.user.name}`
-            : ""}
-        </h1>
-
-        <p className="mt-2 text-[var(--shelf-muted)]">
-          Here's what's happening with your business inventory.
-        </p>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-
+        {/* Statistic Cards Grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="Total Items"
-            value={stats.totalItems}
-            description="Products currently tracked"
+            value={totalItems}
+            description="Active products tracked"
             icon={Package}
           />
 
           <StatCard
             label="Expiring Soon"
-            value={stats.expiringSoon}
+            value={expiringSoon}
             description="Items needing attention"
             icon={AlertTriangle}
           />
 
           <StatCard
             label="Low Stock"
-            value={stats.lowStock}
-            description="Items that may need restocking"
+            value={lowStock}
+            description="Items below threshold"
             icon={TrendingDown}
           />
 
+          <StatCard
+            label="Inventory Health"
+            value={`${healthScore}%`}
+            description="Proportion of fresh stock"
+            icon={Activity}
+          />
         </div>
 
-        <div className="mt-8 rounded-2xl bg-[var(--shelf-surface)] p-8 shadow-xl">
-          <h2 className="text-xl font-semibold text-[var(--shelf-dark)]">
-            Business Inventory
-          </h2>
+        {/* Action Panel */}
+        <QuickActions isBusiness={true} />
 
-          <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-            {inventory.length === 0
-              ? "Your business has no inventory yet."
-              : `${inventory.length} products are currently being tracked.`}
-          </p>
+        {/* Breakdown Grid */}
+        <div className="grid gap-6 xl:grid-cols-2">
+          <ExpiryOverview inventory={formattedInventory as any} />
+          <InventoryOverview inventory={formattedInventory as any} />
         </div>
-
       </div>
     </main>
   );

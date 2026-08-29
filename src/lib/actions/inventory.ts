@@ -35,18 +35,18 @@ const inventorySchema = z.object({
   expiryDate: z.coerce.date(),
 });
 
-async function getCurrentUser() {
+async function getCurrentUserSession() {
   const session = await auth();
 
   if (!session?.user?.id) {
     return null;
   }
 
-  const user = await db.orm.public.User.first({
-    id: Number(session.user.id),
-  });
-
-  return user;
+  return {
+    userId: Number(session.user.id),
+    accountType: session.user.accountType,
+    businessId: session.user.businessId ? Number(session.user.businessId) : null,
+  };
 }
 
 export type CreateInventoryState = {
@@ -71,16 +71,17 @@ export async function createInventoryItem(
     };
   }
 
-  const user = await getCurrentUser();
+  const session = await getCurrentUserSession();
 
-  if (!user) {
+  if (!session) {
     return {
       error: "You must be logged in to manage inventory.",
     };
   }
 
   await db.orm.public.InventoryItem.create({
-    userId: user.id,
+    userId: session.userId,
+    businessId: session.businessId,
     name: result.data.name,
     category: result.data.category,
     quantity: result.data.quantity,
@@ -88,12 +89,17 @@ export async function createInventoryItem(
     expiryDate: result.data.expiryDate.toISOString(),
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/inventory");
-  revalidatePath("/dashboard/alerts");
-  revalidatePath("/dashboard/analytics");
-
-  redirect("/dashboard/inventory");
+  if (session.accountType === "business") {
+    revalidatePath("/business/dashboard");
+    revalidatePath("/business/dashboard/inventory");
+    redirect("/business/dashboard/inventory");
+  } else {
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard/alerts");
+    revalidatePath("/dashboard/analytics");
+    redirect("/dashboard/inventory");
+  }
 }
 
 export async function updateInventoryItem(
@@ -117,19 +123,20 @@ export async function updateInventoryItem(
     };
   }
 
-  const user = await getCurrentUser();
+  const session = await getCurrentUserSession();
 
-  if (!user) {
+  if (!session) {
     return {
       error: "You must be logged in to manage inventory.",
     };
   }
 
+  const filter = session.accountType === "business"
+    ? { id, businessId: session.businessId }
+    : { id, userId: session.userId };
+
   await db.orm.public.InventoryItem
-    .where({
-      id,
-      userId: user.id,
-    })
+    .where(filter)
     .update({
       name: result.data.name,
       category: result.data.category,
@@ -138,32 +145,88 @@ export async function updateInventoryItem(
       expiryDate: result.data.expiryDate.toISOString(),
     });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/inventory");
-  revalidatePath("/dashboard/alerts");
-  revalidatePath("/dashboard/analytics");
-
-  redirect("/dashboard/inventory");
+  if (session.accountType === "business") {
+    revalidatePath("/business/dashboard");
+    revalidatePath("/business/dashboard/inventory");
+    redirect("/business/dashboard/inventory");
+  } else {
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard/alerts");
+    revalidatePath("/dashboard/analytics");
+    redirect("/dashboard/inventory");
+  }
 }
 
 export async function deleteInventoryItem(
   id: number
 ) {
-  const user = await getCurrentUser();
+  const session = await getCurrentUserSession();
 
-  if (!user) {
+  if (!session) {
     throw new Error("You must be logged in to manage inventory.");
   }
 
+  const filter = session.accountType === "business"
+    ? { id, businessId: session.businessId }
+    : { id, userId: session.userId };
+
   await db.orm.public.InventoryItem
-    .where({
-      id,
-      userId: user.id,
-    })
+    .where(filter)
     .delete();
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/inventory");
-  revalidatePath("/dashboard/alerts");
-  revalidatePath("/dashboard/analytics");
+  if (session.accountType === "business") {
+    revalidatePath("/business/dashboard");
+    revalidatePath("/business/dashboard/inventory");
+  } else {
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard/alerts");
+    revalidatePath("/dashboard/analytics");
+  }
+}
+
+export async function importInventoryAction(
+  items: Array<{
+    name: string;
+    category: string;
+    quantity: number;
+    unit: string;
+    expiryDate: Date;
+  }>
+) {
+  const session = await getCurrentUserSession();
+
+  if (!session) {
+    throw new Error("You must be logged in to import inventory.");
+  }
+
+  await Promise.all(
+    items.map((item) =>
+      db.orm.public.InventoryItem.create({
+        userId: session.userId,
+        businessId: session.businessId,
+        name: item.name,
+        category: item.category,
+        quantity: item.quantity,
+        unit: item.unit,
+        expiryDate: item.expiryDate.toISOString(),
+      })
+    )
+  );
+
+  if (session.accountType === "business") {
+    revalidatePath("/business/dashboard");
+    revalidatePath("/business/dashboard/inventory");
+  } else {
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard/alerts");
+    revalidatePath("/dashboard/analytics");
+  }
+
+  return {
+    success: true,
+    count: items.length,
+  };
 }

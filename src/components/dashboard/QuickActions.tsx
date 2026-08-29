@@ -2,42 +2,66 @@ import Link from "next/link";
 import {
   Plus,
   ScanBarcode,
+  Camera,
+  FileText,
   Upload,
 } from "lucide-react";
 
-const actions = [
-  {
-    label: "Add Product",
-    description: "Add inventory manually",
-    href: "/dashboard/inventory/new",
-    icon: Plus,
-  },
-  {
-    label: "Scan Barcode",
-    description: "Quickly identify a product",
-    href: "/dashboard/inventory?action=scan",
-    icon: ScanBarcode,
-  },
-  {
-    label: "Import Inventory",
-    description: "Upload a CSV or invoice",
-    href: "/dashboard/inventory?action=import",
-    icon: Upload,
-  },
-];
+interface QuickActionsProps {
+  isBusiness?: boolean;
+}
 
-export default function QuickActions() {
+export default function QuickActions({ isBusiness = false }: QuickActionsProps) {
+  const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
+
+  const actions = [
+    {
+      label: "Add Product",
+      description: "Enter inventory manually",
+      href: `${prefix}/inventory/new`,
+      icon: Plus,
+      color: "text-[var(--shelf-forest)] bg-[var(--shelf-cream)]",
+    },
+    {
+      label: "Scan Barcode",
+      description: "Scan product barcode via camera",
+      href: `${prefix}/inventory/new?tab=barcode`,
+      icon: ScanBarcode,
+      color: "text-blue-700 bg-blue-50",
+    },
+    {
+      label: "Scan Label",
+      description: "Extract label details using Groq AI",
+      href: `${prefix}/inventory/new?tab=label`,
+      icon: Camera,
+      color: "text-purple-700 bg-purple-50",
+    },
+    {
+      label: "Import Invoice",
+      description: "Auto-extract items from invoice photo",
+      href: `${prefix}/inventory/invoice`,
+      icon: FileText,
+      color: "text-amber-700 bg-amber-50",
+    },
+    {
+      label: "Import CSV",
+      description: "Bulk load spreadsheet products",
+      href: `${prefix}/inventory/import`,
+      icon: Upload,
+      color: "text-emerald-700 bg-emerald-50",
+    },
+  ];
+
   return (
-    <section className="rounded-2xl bg-[var(--shelf-surface)] p-6 shadow-xl">
+    <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
         Quick Actions
       </h2>
-
       <p className="mt-1 text-sm text-[var(--shelf-muted)]">
-        Manage your inventory faster.
+        Add or import inventory items using intelligent scan tools.
       </p>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {actions.map((action) => {
           const Icon = action.icon;
 
@@ -45,20 +69,21 @@ export default function QuickActions() {
             <Link
               key={action.label}
               href={action.href}
-              className="group flex items-center gap-4 rounded-xl border border-[var(--shelf-border)] p-3 transition hover:-translate-y-0.5 hover:border-[var(--shelf-sage)]"
+              className="group flex flex-col justify-between rounded-xl border border-[var(--shelf-border)] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[var(--shelf-sage)] hover:shadow-sm"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--shelf-cream)] text-[var(--shelf-forest)]">
-                <Icon size={18} />
-              </div>
-
               <div>
-                <p className="text-sm font-medium text-[var(--shelf-dark)]">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color}`}>
+                  <Icon size={20} />
+                </div>
+                <h4 className="mt-4 text-sm font-semibold text-[var(--shelf-dark)] group-hover:text-[var(--shelf-forest)]">
                   {action.label}
-                </p>
-
-                <p className="mt-1 text-xs text-[var(--shelf-muted)]">
+                </h4>
+                <p className="mt-1 text-xs text-[var(--shelf-muted)] leading-relaxed">
                   {action.description}
                 </p>
+              </div>
+              <div className="mt-4 text-xs font-semibold text-[var(--shelf-forest)] group-hover:underline">
+                Launch →
               </div>
             </Link>
           );

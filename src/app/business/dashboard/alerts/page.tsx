@@ -1,16 +1,20 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getInventory } from "@/lib/inventory";
-import AnalyticsView from "@/components/dashboard/AnalyticsView";
+import { getBusinessInventory } from "@/lib/business-inventory";
+import AlertsView from "@/components/dashboard/AlertsView";
 
-export default async function ConsumerAnalyticsPage() {
+export default async function BusinessAlertsPage() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/consumer/login");
+    redirect("/business/login");
   }
 
-  const inventory = await getInventory();
+  if (session.user.accountType !== "business") {
+    redirect("/dashboard");
+  }
+
+  const inventory = await getBusinessInventory();
 
   // Map database dates to ISO strings for safety/consistency
   const formattedInventory = inventory.map((item) => ({
@@ -20,7 +24,7 @@ export default async function ConsumerAnalyticsPage() {
 
   return (
     <main className="p-6 md:p-8 lg:p-10">
-      <AnalyticsView inventory={formattedInventory} />
+      <AlertsView inventory={formattedInventory} isBusiness={true} />
     </main>
   );
 }

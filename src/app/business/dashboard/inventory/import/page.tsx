@@ -1,6 +1,5 @@
 import Link from "next/link";
-
-import BusinessCsvImport from "@/components/business/BusinessCsvImport";
+import CsvImport from "@/components/dashboard/CsvImport";
 
 export default function BusinessInventoryImportPage() {
   return (
@@ -8,21 +7,19 @@ export default function BusinessInventoryImportPage() {
       <div className="mb-8">
         <Link
           href="/business/dashboard/inventory"
-          className="text-sm font-medium text-[var(--shelf-forest)]"
+          className="text-sm font-semibold text-[var(--shelf-forest)] hover:underline"
         >
-          ← Back to inventory
+          ← Back to Inventory
         </Link>
-
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--shelf-dark)]">
-          Import Inventory
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-[var(--shelf-dark)]">
+          Bulk Import Products
         </h1>
-
         <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-          Upload your existing inventory and review it before importing.
+          Upload your product list CSV file and review details before committing.
         </p>
       </div>
 
-      <BusinessCsvImport />
+      <CsvImport />
     </main>
   );
 }

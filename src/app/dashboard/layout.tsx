@@ -1,17 +1,25 @@
-import Sidebar from "@/components/dashboard/Sidebar";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <div className="min-h-screen bg-[var(--shelf-cream)] lg:flex">
-      <Sidebar />
+  const session = await auth();
 
-      <main className="min-w-0 flex-1">
-        {children}
-      </main>
-    </div>
+  if (!session?.user) {
+    redirect("/consumer/login");
+  }
+
+  if (session.user.accountType !== "consumer") {
+    redirect("/business/dashboard");
+  }
+
+  return (
+    <DashboardShell user={session.user}>
+      {children}
+    </DashboardShell>
   );
 }

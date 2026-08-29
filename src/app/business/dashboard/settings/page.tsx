@@ -1,12 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import DashboardShell from "@/components/dashboard/DashboardShell";
+import SettingsView from "@/components/dashboard/SettingsView";
 
-export default async function BusinessDashboardLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function BusinessSettingsPage() {
   const session = await auth();
 
   if (!session?.user) {
@@ -18,8 +14,8 @@ export default async function BusinessDashboardLayout({
   }
 
   return (
-    <DashboardShell user={session.user}>
-      {children}
-    </DashboardShell>
+    <main className="p-6 md:p-8 lg:p-10">
+      <SettingsView user={session.user} />
+    </main>
   );
 }
