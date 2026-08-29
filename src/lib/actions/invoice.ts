@@ -1,6 +1,9 @@
 "use server";
 
 import { extractInvoiceFromImage } from "@/lib/invoice/extract-invoice";
+import { auth } from "@/auth";
+import { getInventory } from "@/lib/inventory";
+import { getBusinessInventory } from "@/lib/business-inventory";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
@@ -42,5 +45,37 @@ export async function extractInvoiceAction(
       file.type,
     );
 
-  return extraction;
+  // Fetch current inventory for session
+  const session = await auth();
+  let currentInventory: any[] = [];
+  if (session?.user) {
+    if (session.user.accountType === "business") {
+      currentInventory = await getBusinessInventory();
+    } else {
+      currentInventory = await getInventory();
+    }
+  }
+
+  const detectedCount = extraction.items.length;
+  const presentCount = extraction.items.filter(item =>
+    currentInventory.some(x => x.name.toLowerCase().trim() === item.name.toLowerCase().trim())
+  ).length;
+  const newCount = detectedCount - presentCount;
+
+  const expiringCount = extraction.items.filter(item => {
+    if (!item.expiryDate) return false;
+    const diff = new Date(item.expiryDate).getTime() - new Date().getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days >= 0 && days <= 3;
+  }).length;
+
+  return {
+    items: extraction.items,
+    stats: {
+      detectedCount,
+      newCount,
+      presentCount,
+      expiringCount,
+    }
+  };
 }

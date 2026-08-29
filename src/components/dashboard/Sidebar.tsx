@@ -12,6 +12,9 @@ import {
   Settings,
   LogOut,
   X,
+  Trash2,
+  Utensils,
+  TrendingUp,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -49,6 +52,26 @@ export default function Sidebar({ user, onCloseMobile }: SidebarProps) {
       href: `${prefix}/analytics`,
       icon: BarChart3,
     },
+    {
+      label: "Waste Insights",
+      href: `${prefix}/waste`,
+      icon: Trash2,
+    },
+    ...(isBusiness
+      ? [
+          {
+            label: "Inventory Strategy",
+            href: `${prefix}/strategy`,
+            icon: TrendingUp,
+          },
+        ]
+      : [
+          {
+            label: "Recipes",
+            href: `${prefix}/recipes`,
+            icon: Utensils,
+          },
+        ]),
   ];
 
   return (

@@ -36,6 +36,8 @@ export default function InventoryOverview({
           );
 
           const statusStyles = {
+            Expired:
+              "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)]",
             Fresh:
               "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]",
             Expiring:

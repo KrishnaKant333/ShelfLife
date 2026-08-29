@@ -1,4 +1,5 @@
 export type InventoryStatus =
+  | "Expired"
   | "Fresh"
   | "Expiring"
   | "Low Stock";
@@ -10,9 +11,12 @@ export function getInventoryStatus(
   const now = new Date();
   const expiry = new Date(expiryDate);
 
-  const daysUntilExpiry =
-    (expiry.getTime() - now.getTime()) /
-    (1000 * 60 * 60 * 24);
+  const difference = expiry.getTime() - now.getTime();
+  const daysUntilExpiry = Math.ceil(difference / (1000 * 60 * 60 * 24));
+
+  if (daysUntilExpiry < 0) {
+    return "Expired";
+  }
 
   if (quantity <= 2) {
     return "Low Stock";

@@ -22,7 +22,7 @@ interface AlertsViewProps {
 export default function AlertsView({ inventory, isBusiness = false }: AlertsViewProps) {
   const alerts = inventory.filter((item) => {
     const status = getInventoryStatus(item.quantity, item.expiryDate);
-    return status === "Expiring" || status === "Low Stock";
+    return status === "Expired" || status === "Expiring" || status === "Low Stock";
   });
 
   const dashboardUrl = isBusiness ? "/business/dashboard" : "/dashboard";
@@ -66,6 +66,7 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
           alerts.map((item) => {
             const status = getInventoryStatus(item.quantity, item.expiryDate);
             const isLowStock = status === "Low Stock";
+            const isExpired = status === "Expired";
 
             return (
               <div
@@ -74,12 +75,12 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
               >
                 <div
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
-                    isLowStock
+                    isExpired || isLowStock
                       ? "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)]"
                       : "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)]"
                   }`}
                 >
-                  {isLowStock ? <Package size={22} /> : <AlertTriangle size={22} />}
+                  {isExpired || isLowStock ? <AlertTriangle size={22} /> : <AlertTriangle size={22} />}
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -87,7 +88,9 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
                     {item.name}
                   </h4>
                   <p className="mt-1 text-sm text-[var(--shelf-muted)]">
-                    {isLowStock
+                    {isExpired
+                      ? "Expired (immediate action required)"
+                      : isLowStock
                       ? `${item.quantity} ${item.unit} remaining (Low Stock threshold reached)`
                       : `Expires ${formatExpiry(item.expiryDate)}`}
                   </p>
@@ -96,7 +99,7 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
                 <div className="flex flex-col items-end gap-2">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
-                      isLowStock
+                      isExpired || isLowStock
                         ? "bg-red-50 text-[var(--shelf-terracotta)] border border-red-100"
                         : "bg-amber-50 text-[var(--shelf-amber)] border border-amber-100"
                     }`}

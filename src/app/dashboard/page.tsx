@@ -11,6 +11,8 @@ import StatCard from "@/components/dashboard/StatCard";
 import ExpiryOverview from "@/components/dashboard/ExpiryOverview";
 import InventoryOverview from "@/components/dashboard/InventoryOverview";
 import QuickActions from "@/components/dashboard/QuickActions";
+import DashboardAiInsights from "@/components/dashboard/DashboardAiInsights";
+import DashboardUseFirst from "@/components/dashboard/DashboardUseFirst";
 import { getInventory } from "@/lib/inventory";
 import { getInventoryStatus } from "@/lib/inventory-status";
 
@@ -83,6 +85,16 @@ export default async function DashboardPage() {
             description="Proportion of fresh stock"
             icon={Activity}
           />
+        </div>
+
+        {/* AI Brief and Use First Widgets */}
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="md:col-span-2">
+            <DashboardAiInsights cacheKey="consumer" />
+          </div>
+          <div className="md:col-span-1">
+            <DashboardUseFirst inventory={formattedInventory as any} isBusiness={false} />
+          </div>
         </div>
 
         {/* Action Panel */}

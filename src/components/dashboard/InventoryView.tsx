@@ -23,7 +23,7 @@ interface InventoryViewProps {
 
 export default function InventoryView({ initialInventory, isBusiness = false }: InventoryViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"All" | "Fresh" | "Expiring" | "Low Stock">("All");
+  const [activeFilter, setActiveFilter] = useState<"All" | "Expired" | "Fresh" | "Expiring" | "Low Stock">("All");
 
   const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
 
@@ -44,6 +44,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
   });
 
   const statusStyles = {
+    Expired: "bg-red-50 text-[var(--shelf-terracotta)] border-red-200",
     Fresh: "bg-green-50 text-green-700 border-green-200",
     Expiring: "bg-amber-50 text-amber-700 border-amber-200",
     "Low Stock": "bg-red-50 text-[var(--shelf-terracotta)] border-red-200",
@@ -101,7 +102,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
 
         {/* Filter Buttons */}
         <div className="flex flex-wrap gap-1.5 bg-[var(--shelf-cream)]/50 p-1 rounded-xl border border-[var(--shelf-border)]/50">
-          {(["All", "Fresh", "Expiring", "Low Stock"] as const).map((filter) => (
+          {(["All", "Expired", "Fresh", "Expiring", "Low Stock"] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}

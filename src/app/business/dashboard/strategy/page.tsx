@@ -1,0 +1,30 @@
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getBusinessInventory } from "@/lib/business-inventory";
+import StrategyView from "@/components/dashboard/StrategyView";
+
+export default async function BusinessStrategyPage() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect("/business/login");
+  }
+
+  if (session.user.accountType !== "business") {
+    redirect("/dashboard");
+  }
+
+  const inventory = await getBusinessInventory();
+
+  // Map dates to ISO strings for safety/consistency inside client component
+  const formattedInventory = inventory.map((item) => ({
+    ...item,
+    expiryDate: typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString(),
+  }));
+
+  return (
+    <main className="p-6 md:p-8 lg:p-10">
+      <StrategyView inventory={formattedInventory} />
+    </main>
+  );
+}
