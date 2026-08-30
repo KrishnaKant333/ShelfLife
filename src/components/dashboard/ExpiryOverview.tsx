@@ -15,7 +15,8 @@ export default function ExpiryOverview({
   const expiringItems = inventory.filter(
     (item) => getInventoryStatus(
       item.quantity,
-      item.expiryDate
+      item.expiryDate,
+      item.unit
     ) === "Expiring"
   );
 

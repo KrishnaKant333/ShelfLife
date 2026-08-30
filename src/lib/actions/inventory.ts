@@ -230,3 +230,47 @@ export async function importInventoryAction(
     count: items.length,
   };
 }
+
+export async function bulkDeleteAction(
+  ids: number[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Verify ownership of every item and delete
+    for (const id of ids) {
+      const dbItem = await db.orm.public.InventoryItem.first({ id });
+      if (!dbItem) continue;
+
+      if (session.accountType === "business") {
+        if (dbItem.businessId !== session.businessId) {
+          return { success: false, error: "Unauthorized access to business product." };
+        }
+      } else {
+        if (dbItem.userId !== session.userId) {
+          return { success: false, error: "Unauthorized access to product." };
+        }
+      }
+
+      await db.orm.public.InventoryItem.where({ id }).delete();
+    }
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+      revalidatePath("/dashboard/analytics");
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Bulk delete failed:", error);
+    return { success: false, error: "Failed to delete selected items." };
+  }
+}

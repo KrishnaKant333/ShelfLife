@@ -9,6 +9,7 @@ import { getInventoryStatus } from "@/lib/inventory-status";
 import { getDaysUntilExpiry } from "@/lib/format-expiry";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { normalizeQuantity } from "@/lib/normalization";
 
 const recipeIngredientSchema = z.object({
   name: z.string(),
@@ -198,6 +199,17 @@ export async function consumeIngredientsAction(
         }
       }
 
+      // Create consumption record
+      await db.orm.public.InventoryConsumption.create({
+        userId: session.userId,
+        businessId: session.accountType === "business" ? session.businessId : null,
+        inventoryItemId: item.itemId,
+        productName: dbItem.name,
+        quantityUsed: item.quantityUsed,
+        unit: dbItem.unit,
+        normalizedQuantityUsed: normalizeQuantity(item.quantityUsed, dbItem.unit).normalizedValue,
+      });
+
       const newQty = dbItem.quantity - item.quantityUsed;
 
       if (newQty <= 0) {
@@ -325,5 +337,49 @@ Format: Return a simple text paragraph.
   } catch (error: any) {
     console.error("AI Insights generation failed:", error);
     return { success: false, error: "AI insights currently unavailable. Check your connection or try again." };
+  }
+}
+
+export type ConsumptionRecord = {
+  id: number;
+  productName: string;
+  quantityUsed: number;
+  unit: string;
+  consumedAt: string;
+};
+
+export async function getRecentConsumptionAction(): Promise<{ success: boolean; history?: ConsumptionRecord[]; error?: string }> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized." };
+    }
+
+    let records;
+    if (session.accountType === "business") {
+      records = await db.orm.public.InventoryConsumption.where({
+        businessId: session.businessId,
+      }).all();
+    } else {
+      records = await db.orm.public.InventoryConsumption.where({
+        userId: session.userId,
+      }).all();
+    }
+
+    records.sort((a, b) => new Date(b.consumedAt).getTime() - new Date(a.consumedAt).getTime());
+    const recentRecords = records.slice(0, 10);
+
+    const formatted = recentRecords.map(r => ({
+      id: r.id,
+      productName: r.productName,
+      quantityUsed: r.quantityUsed,
+      unit: r.unit,
+      consumedAt: r.consumedAt,
+    }));
+
+    return { success: true, history: formatted };
+  } catch (error: any) {
+    console.error("Failed to retrieve consumption history:", error);
+    return { success: false, error: "Failed to fetch activity history." };
   }
 }

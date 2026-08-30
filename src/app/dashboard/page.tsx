@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
   const inventory = await getInventory();
   const statuses = inventory.map((item) =>
-    getInventoryStatus(item.quantity, item.expiryDate)
+    getInventoryStatus(item.quantity, item.expiryDate, item.unit)
   );
 
   const totalItems = inventory.length;

@@ -1,3 +1,5 @@
+import { isLowStock } from "./normalization";
+
 export type InventoryStatus =
   | "Expired"
   | "Fresh"
@@ -6,7 +8,8 @@ export type InventoryStatus =
 
 export function getInventoryStatus(
   quantity: number,
-  expiryDate: string
+  expiryDate: string,
+  unit = ""
 ): InventoryStatus {
   const now = new Date();
   const expiry = new Date(expiryDate);
@@ -18,7 +21,7 @@ export function getInventoryStatus(
     return "Expired";
   }
 
-  if (quantity <= 2) {
+  if (isLowStock(quantity, unit)) {
     return "Low Stock";
   }
 

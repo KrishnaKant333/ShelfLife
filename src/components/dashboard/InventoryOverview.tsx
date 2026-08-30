@@ -32,7 +32,8 @@ export default function InventoryOverview({
         {inventory.map((item) => {
           const status = getInventoryStatus(
             item.quantity,
-            item.expiryDate
+            item.expiryDate,
+            item.unit
           );
 
           const statusStyles = {

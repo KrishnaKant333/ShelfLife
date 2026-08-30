@@ -21,7 +21,7 @@ interface AlertsViewProps {
 
 export default function AlertsView({ inventory, isBusiness = false }: AlertsViewProps) {
   const alerts = inventory.filter((item) => {
-    const status = getInventoryStatus(item.quantity, item.expiryDate);
+    const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
     return status === "Expired" || status === "Expiring" || status === "Low Stock";
   });
 
@@ -64,7 +64,7 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
           </div>
         ) : (
           alerts.map((item) => {
-            const status = getInventoryStatus(item.quantity, item.expiryDate);
+            const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
             const isLowStock = status === "Low Stock";
             const isExpired = status === "Expired";
 

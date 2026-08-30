@@ -92,7 +92,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
     .sort((a, b) => b.quantity - a.quantity);
 
   // 4. Inventory Health Calculation
-  const statuses = inventory.map((item) => getInventoryStatus(item.quantity, item.expiryDate));
+  const statuses = inventory.map((item) => getInventoryStatus(item.quantity, item.expiryDate, item.unit));
   const fresh = statuses.filter((s) => s === "Fresh").length;
   const healthScore = totalItems === 0 ? 100 : Math.round((fresh / totalItems) * 100);
 

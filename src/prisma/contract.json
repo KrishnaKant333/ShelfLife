@@ -8,6 +8,10 @@
       "model": "Business",
       "namespace": "public"
     },
+    "inventoryConsumption": {
+      "model": "InventoryConsumption",
+      "namespace": "public"
+    },
     "inventoryItem": {
       "model": "InventoryItem",
       "namespace": "public"
@@ -75,6 +79,21 @@
               }
             },
             "relations": {
+              "consumptionItems": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "businessId"
+                  ]
+                },
+                "to": {
+                  "model": "InventoryConsumption",
+                  "namespace": "public"
+                }
+              },
               "inventoryItems": {
                 "cardinality": "1:N",
                 "on": {
@@ -126,6 +145,138 @@
               },
               "namespaceId": "public",
               "table": "business"
+            }
+          },
+          "InventoryConsumption": {
+            "fields": {
+              "businessId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "consumedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "inventoryItemId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "normalizedQuantityUsed": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
+              "productName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "quantityUsed": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "unit": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "business": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "businessId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Business",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "businessId": {
+                  "column": "businessId"
+                },
+                "consumedAt": {
+                  "column": "consumedAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "inventoryItemId": {
+                  "column": "inventoryItemId"
+                },
+                "normalizedQuantityUsed": {
+                  "column": "normalizedQuantityUsed"
+                },
+                "productName": {
+                  "column": "productName"
+                },
+                "quantityUsed": {
+                  "column": "quantityUsed"
+                },
+                "unit": {
+                  "column": "unit"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "inventoryConsumption"
             }
           },
           "InventoryItem": {
@@ -351,6 +502,21 @@
                   "namespace": "public"
                 }
               },
+              "consumption": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "InventoryConsumption",
+                  "namespace": "public"
+                }
+              },
               "inventory": {
                 "cardinality": "1:N",
                 "on": {
@@ -451,6 +617,121 @@
                   ],
                   "name": "business_name_idx_ce87e6ba",
                   "prefix": "business_name_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "inventoryConsumption": {
+              "columns": {
+                "businessId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "consumedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "inventoryItemId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "normalizedQuantityUsed": {
+                  "codecId": "pg/float8@1",
+                  "nativeType": "float8",
+                  "nullable": true
+                },
+                "productName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "quantityUsed": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "unit": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "inventoryConsumption"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "businessId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "inventoryConsumption"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "business"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "businessId"
+                  ],
+                  "name": "inventoryConsumption_businessId_idx_ae0ed511",
+                  "prefix": "inventoryConsumption_businessId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "inventoryConsumption_userId_idx_a489d58a",
+                  "prefix": "inventoryConsumption_userId_idx",
                   "unique": false
                 }
               ],
@@ -705,7 +986,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ab4adaf7850aa4ebb2fbe906f356b41637eb4ac33fb20b3b96627a35398798d7"
+    "storageHash": "9682769de1d982d05c79270d7065ea8ab4be9f92bf660746fea5b2bfb60832e0"
   },
   "execution": {
     "executionHash": "7d80476c0bb076336617ca6c01539bf0d0e03bbce6eb7ad70ff49d188d7443cd",

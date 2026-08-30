@@ -16,6 +16,7 @@ export default async function InventoryPage() {
   const formattedInventory = inventory.map((item) => ({
     ...item,
     expiryDate: typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString(),
+    createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date(item.createdAt).toISOString(),
   }));
 
   return (

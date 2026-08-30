@@ -16,6 +16,7 @@ model User {
   business    Business?   @relation(fields: [businessId], references: [id])
 
   inventory InventoryItem[]
+  consumption InventoryConsumption[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime
   passwordHash String?
@@ -28,6 +29,7 @@ model Business {
 
   users     User[]
   inventoryItems InventoryItem[]
+  consumptionItems InventoryConsumption[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime
@@ -48,4 +50,18 @@ model InventoryItem {
   expiryDate TimestamptzString
   createdAt  TimestamptzString          @default(now())
   updatedAt  temporal.updatedAtString()
+}
+
+model InventoryConsumption {
+  id                 Int                        @id @default(autoincrement())
+  userId             Int
+  user               User                       @relation(fields: [userId], references: [id])
+  businessId         Int?
+  business           Business?                  @relation(fields: [businessId], references: [id])
+  inventoryItemId    Int
+  productName        String
+  quantityUsed       Int
+  unit               String
+  normalizedQuantityUsed Float?
+  consumedAt         TimestamptzString          @default(now())
 }
