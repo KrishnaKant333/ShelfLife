@@ -5,6 +5,15 @@ import Sidebar from "./Sidebar";
 import { Menu } from "lucide-react";
 import Image from "next/image";
 
+type InventoryItem = {
+  id: number;
+  name: string;
+  category: string;
+  quantity: number;
+  unit: string;
+  expiryDate: string;
+};
+
 interface DashboardShellProps {
   children: React.ReactNode;
   user: {
@@ -12,9 +21,10 @@ interface DashboardShellProps {
     email?: string | null;
     accountType: "consumer" | "business";
   };
+  inventory?: InventoryItem[];
 }
 
-export default function DashboardShell({ children, user }: DashboardShellProps) {
+export default function DashboardShell({ children, user, inventory = [] }: DashboardShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -41,7 +51,7 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden bg-black/40 backdrop-blur-xs transition-opacity duration-200">
           <div className="w-64 h-full transform transition-transform duration-300 animate-slide-in">
-            <Sidebar user={user} onCloseMobile={() => setMobileMenuOpen(false)} />
+            <Sidebar user={user} onCloseMobile={() => setMobileMenuOpen(false)} inventory={inventory} />
           </div>
           <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
         </div>
@@ -50,7 +60,7 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
       {/* Desktop Sidebar (Permanent) */}
       <div className="hidden w-64 shrink-0 lg:block">
         <div className="fixed h-screen w-64">
-          <Sidebar user={user} />
+          <Sidebar user={user} inventory={inventory} />
         </div>
       </div>
 

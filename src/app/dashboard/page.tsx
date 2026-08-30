@@ -90,7 +90,7 @@ export default async function DashboardPage() {
         {/* AI Brief and Use First Widgets */}
         <div className="grid gap-6 md:grid-cols-3">
           <div className="md:col-span-2">
-            <DashboardAiInsights cacheKey="consumer" />
+            <DashboardAiInsights cacheKey="consumer" inventory={formattedInventory as any} />
           </div>
           <div className="md:col-span-1">
             <DashboardUseFirst inventory={formattedInventory as any} isBusiness={false} />

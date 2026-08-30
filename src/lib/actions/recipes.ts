@@ -77,7 +77,9 @@ async function getCurrentUserSession() {
   };
 }
 
-export async function generateRecipesAction(): Promise<{ success: boolean; recipes?: Recipe[]; error?: string }> {
+export type RecipeMode = "use_soon" | "quick_meal" | "use_what_i_have";
+
+export async function generateRecipesAction(mode: RecipeMode = "use_soon"): Promise<{ success: boolean; recipes?: Recipe[]; excludedCount?: number; error?: string }> {
   try {
     const session = await getCurrentUserSession();
     if (!session || session.accountType !== "consumer") {
@@ -89,8 +91,25 @@ export async function generateRecipesAction(): Promise<{ success: boolean; recip
       return { success: false, error: "Your inventory is empty. Add items to generate recipes!" };
     }
 
-    // Sort inventory: closest expiry first
-    const sortedInventory = [...inventory].sort((a, b) => {
+    // CRITICAL: Filter out expired products
+    const now = new Date();
+    const safeInventory = inventory.filter(item => {
+      const expiryDate = new Date(typeof item.expiryDate === "string" ? item.expiryDate : item.expiryDate);
+      return expiryDate >= now;
+    });
+
+    const excludedCount = inventory.length - safeInventory.length;
+
+    if (safeInventory.length === 0) {
+      return {
+        success: false,
+        error: "Not enough safe ingredients are available to generate a useful recipe right now.",
+        excludedCount: excludedCount
+      };
+    }
+
+    // Sort inventory by expiry (closest first)
+    const sortedInventory = [...safeInventory].sort((a, b) => {
       const daysA = getDaysUntilExpiry(typeof a.expiryDate === "string" ? a.expiryDate : new Date(a.expiryDate).toISOString());
       const daysB = getDaysUntilExpiry(typeof b.expiryDate === "string" ? b.expiryDate : new Date(b.expiryDate).toISOString());
       return daysA - daysB;
@@ -98,25 +117,43 @@ export async function generateRecipesAction(): Promise<{ success: boolean; recip
 
     const inventoryPromptList = sortedInventory.map(item => {
       const daysLeft = getDaysUntilExpiry(typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString());
-      const expiryText = daysLeft < 0 ? "Expired" : daysLeft === 0 ? "Expires today" : `${daysLeft} days left`;
+      const expiryText = daysLeft === 0 ? "Expires today" : `${daysLeft} days left`;
       return `- ID ${item.id}: "${item.name}" (Qty: ${item.quantity} ${item.unit}, Category: ${item.category}, Expiry: ${expiryText})`;
     }).join("\n");
 
+    // Build mode-specific instructions
+    let modeInstructions = "";
+    if (mode === "use_soon") {
+      modeInstructions = `Prioritize ingredients that are safe to use and closest to expiry.
+Focus on items expiring today or within 1-3 days.`;
+    } else if (mode === "quick_meal") {
+      modeInstructions = `Generate practical recipes with short preparation times (ideally under 20-30 minutes).
+Prioritize quick-to-prepare ingredients already in the inventory.`;
+    } else if (mode === "use_what_i_have") {
+      modeInstructions = `Minimize ingredients that are NOT in inventory.
+Prioritize recipes using the highest proportion of current inventory ingredients.
+Mark optional pantry items clearly.`;
+    }
+
     const prompt = `
 You are a creative chef helping a consumer minimize food waste by cooking with what they have.
-Analyze the user's active inventory:
+
+**Safe Inventory (Expired items already excluded from this list):**
 ${inventoryPromptList}
 
 Generate 2 to 4 recipes.
-Rules:
-1. Recipes must be based ONLY on the actual inventory items listed above. Do not assume or list major ingredients that the user does not have.
-2. Prioritize items that are expired or expiring soonest (closest expiry).
-3. Clearly categorize every ingredient in the recipe into one of three statuses:
-   - "available": The item is in the inventory, belongs to the user, and is fresh/good.
-   - "expiring_soon": The item is in the inventory and expires in 3 days or fewer.
-   - "pantry_item": A common pantry staple (like water, salt, pepper, oil, basic spices, or dry pasta/rice) that is NOT in the user's inventory, but is highly likely to be available in any household. Use these sparingly and only to make the recipes practical.
-4. For each ingredient, if it corresponds to an inventory item, return its exact "itemId" from the inventory list above. If it is a "pantry_item", set "itemId" to null.
-5. Do NOT invent quantities or items. Never pretend an unavailable ingredient exists in the user's inventory.
+
+**Recipe Mode:** ${modeInstructions}
+
+**Critical Rules:**
+1. NEVER use expired ingredients. Only use items in the list above.
+2. Recipes must be based ONLY on actual inventory items. Do NOT assume or list major ingredients the user does not have.
+3. Clearly categorize every ingredient into one of three statuses:
+   - "available": Item is in inventory and is safe to use.
+   - "expiring_soon": Item is in inventory and expires in 3 days or fewer.
+   - "pantry_item": Common household staple (salt, pepper, oil, spices, water, basic pasta/rice) NOT in inventory. Use sparingly.
+4. For each ingredient, if it matches an inventory item, return its exact "itemId". If it's a "pantry_item", set "itemId" to null.
+5. Do NOT invent quantities or items.
 
 Return ONLY a JSON object matching this schema:
 {
@@ -125,7 +162,7 @@ Return ONLY a JSON object matching this schema:
       "name": "Recipe Name",
       "description": "Short description",
       "estimatedPrepTime": 25,
-      "whyRecommended": "Uses expiring Milk and Tomatoes.",
+      "whyRecommended": "Uses ingredients safe to eat and closest to expiry.",
       "ingredients": [
         { "name": "Tomatoes", "quantityUsed": "2 items", "status": "available", "itemId": 12 },
         { "name": "Milk", "quantityUsed": "1 cup", "status": "expiring_soon", "itemId": 15 },
@@ -145,7 +182,7 @@ Return ONLY a JSON object matching this schema:
       messages: [
         {
           role: "system",
-          content: "You are a professional chef. Always respond in JSON format matching the schema requested."
+          content: "You are a professional chef. Always respond in JSON format matching the schema requested. NEVER recommend expired food."
         },
         {
           role: "user",
@@ -159,13 +196,34 @@ Return ONLY a JSON object matching this schema:
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
-      return { success: false, error: "AI failed to return any recipes." };
+      return { success: false, error: "AI failed to return any recipes.", excludedCount };
     }
 
     const cleaned = extractJson(content);
     const rawParsed = JSON.parse(cleaned);
     const parsed = recipesResponseSchema.parse(rawParsed);
-    return { success: true, recipes: parsed.recipes as Recipe[] };
+    
+    // SAFETY LAYER: Validate all returned recipes use only safe inventory
+    const validatedRecipes = parsed.recipes.filter(recipe => {
+      return recipe.ingredients.every(ing => {
+        if (ing.itemId === null) {
+          // Pantry items are always safe
+          return true;
+        }
+        // Check if itemId is in safe inventory
+        return safeInventory.some(invItem => invItem.id === ing.itemId);
+      });
+    });
+
+    if (validatedRecipes.length === 0) {
+      return {
+        success: false,
+        error: "Generated recipes contained unsafe ingredients. Please try again.",
+        excludedCount
+      };
+    }
+
+    return { success: true, recipes: validatedRecipes as Recipe[], excludedCount };
   } catch (error: any) {
     console.error("AI Recipe generation failed:", error);
     return { success: false, error: "Recipe generation is temporarily unavailable. Please try again." };

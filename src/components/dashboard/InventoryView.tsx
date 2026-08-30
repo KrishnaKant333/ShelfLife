@@ -59,6 +59,10 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
   const [consumeQty, setConsumeQty] = useState<number>(1);
   const [isConsuming, setIsConsuming] = useState(false);
 
+  // Export loading states
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
+
   // Recent History states
   const [history, setHistory] = useState<ConsumptionRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -234,91 +238,100 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
 
   // CSV Export
   const handleExportCSV = () => {
-    const headers = ["Product Name", "Category", "Quantity", "Unit", "Expiry Date", "Status", "Date Added"];
-    const rows = initialInventory.map((item) => {
-      const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
-      return [
-        `"${item.name.replace(/"/g, '""')}"`,
-        `"${item.category.replace(/"/g, '""')}"`,
-        item.quantity,
-        `"${item.unit.replace(/"/g, '""')}"`,
-        new Date(item.expiryDate).toLocaleDateString(),
-        status,
-        new Date(item.createdAt).toLocaleDateString(),
-      ];
-    });
+    setExportingCSV(true);
+    setTimeout(() => {
+      const headers = ["Product Name", "Category", "Quantity", "Unit", "Expiry Date", "Status", "Date Added"];
+      const rows = initialInventory.map((item) => {
+        const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
+        return [
+          `"${item.name.replace(/"/g, '""')}"`,
+          `"${item.category.replace(/"/g, '""')}"`,
+          item.quantity,
+          `"${item.unit.replace(/"/g, '""')}"`,
+          new Date(item.expiryDate).toLocaleDateString(),
+          status,
+          new Date(item.createdAt).toLocaleDateString(),
+        ];
+      });
 
-    const csvContent = "data:text/csv;charset=utf-8,"
-      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-      
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${isBusiness ? "business" : "consumer"}_inventory_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const csvContent = "data:text/csv;charset=utf-8,"
+        + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+        
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `${isBusiness ? "business" : "consumer"}_inventory_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setExportingCSV(false);
+    }, 300);
   };
 
   // PDF Export
   const handleExportPDF = () => {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
+    setExportingPDF(true);
+    setTimeout(() => {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        setExportingPDF(false);
+        return;
+      }
 
-    const rowsHtml = initialInventory.map(item => {
-      const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
-      return `
-        <tr>
-          <td>${item.name}</td>
-          <td>${item.category}</td>
-          <td>${item.quantity} ${item.unit}</td>
-          <td>${new Date(item.expiryDate).toLocaleDateString()}</td>
-          <td>${status}</td>
-        </tr>
-      `;
-    }).join("");
+      const rowsHtml = initialInventory.map(item => {
+        const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
+        return `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.category}</td>
+            <td>${item.quantity} ${item.unit}</td>
+            <td>${new Date(item.expiryDate).toLocaleDateString()}</td>
+            <td>${status}</td>
+          </tr>
+        `;
+      }).join("");
 
-    const htmlContent = `
-      <html>
-        <head>
-          <title>${isBusiness ? "Business" : "Consumer"} ShelfLife Inventory Report</title>
-          <style>
-            body { font-family: sans-serif; padding: 20px; color: #333; }
-            h1 { font-size: 24px; margin-bottom: 5px; }
-            p { font-size: 14px; margin-bottom: 20px; color: #666; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; }
-            th { background-color: #f5f5f5; font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          <h1>ShelfLife Inventory Report</h1>
-          <p>Generated on ${new Date().toLocaleDateString()} for ${isBusiness ? "Business" : "Consumer"}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Product Name</th>
-                <th>Category</th>
-                <th>Quantity</th>
-                <th>Expiry Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-          <script>
-            window.onload = function() {
+      const htmlContent = `
+        <html>
+          <head>
+            <title>${isBusiness ? "Business" : "Consumer"} ShelfLife Inventory Report</title>
+            <style>
+              body { font-family: sans-serif; padding: 20px; color: #333; }
+              h1 { font-size: 24px; margin-bottom: 5px; }
+              p { font-size: 14px; margin-bottom: 20px; color: #666; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; }
+              th { background-color: #f5f5f5; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <h1>ShelfLife Inventory Report</h1>
+            <p>Generated on ${new Date().toLocaleDateString()} for ${isBusiness ? "Business" : "Consumer"}</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Product Name</th>
+                  <th>Category</th>
+                  <th>Quantity</th>
+                  <th>Expiry Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+            <script>
               window.print();
-            }
-          </script>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+              window.onafterprint = function() { window.close(); };
+            </script>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      setExportingPDF(false);
+    }, 300);
   };
 
   return (
@@ -341,17 +354,37 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
           {/* Export Options */}
           <button
             onClick={handleExportCSV}
-            className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-white text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
+            disabled={exportingCSV}
+            className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-white text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)] disabled:opacity-60"
           >
-            <FileText size={16} />
-            Export CSV
+            {exportingCSV ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Preparing export...
+              </>
+            ) : (
+              <>
+                <FileText size={16} />
+                Export CSV
+              </>
+            )}
           </button>
           <button
             onClick={handleExportPDF}
-            className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-white text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
+            disabled={exportingPDF}
+            className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-white text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)] disabled:opacity-60"
           >
-            <Printer size={16} />
-            Print PDF
+            {exportingPDF ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Preparing export...
+              </>
+            ) : (
+              <>
+                <Printer size={16} />
+                Print PDF
+              </>
+            )}
           </button>
           <Link
             href={`${prefix}/inventory/new?tab=import`}

@@ -13,8 +13,9 @@ import {
   Check,
   ChevronRight,
   RefreshCw,
+  Info,
 } from "lucide-react";
-import { generateRecipesAction, consumeIngredientsAction, type Recipe, type RecipeIngredient } from "@/lib/actions/recipes";
+import { generateRecipesAction, consumeIngredientsAction, type Recipe, type RecipeIngredient, type RecipeMode } from "@/lib/actions/recipes";
 
 type InventoryItem = {
   id: number;
@@ -29,6 +30,24 @@ interface RecipesViewProps {
   initialInventory: InventoryItem[];
 }
 
+const RECIPE_MODES: { value: RecipeMode; label: string; description: string }[] = [
+  {
+    value: "use_soon",
+    label: "Use Soon",
+    description: "Prioritize ingredients that should be used soon.",
+  },
+  {
+    value: "quick_meal",
+    label: "Quick Meal",
+    description: "Find something quick to prepare.",
+  },
+  {
+    value: "use_what_i_have",
+    label: "Use What I Have",
+    description: "Make a recipe mostly from your current inventory.",
+  },
+];
+
 export default function RecipesView({ initialInventory }: RecipesViewProps) {
   const router = useRouter();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -38,16 +57,20 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
   const [consuming, setConsuming] = useState(false);
   const [consumeQuantities, setConsumeQuantities] = useState<Record<number, number>>({});
   const [consumeSelected, setConsumeSelected] = useState<Record<number, boolean>>({});
+  const [recipeMode, setRecipeMode] = useState<RecipeMode>("use_soon");
+  const [excludedExpiredCount, setExcludedExpiredCount] = useState(0);
 
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await generateRecipesAction();
+      const res = await generateRecipesAction(recipeMode);
       if (res.success && res.recipes) {
         setRecipes(res.recipes);
+        setExcludedExpiredCount(res.excludedCount || 0);
       } else {
         setError(res.error || "Failed to generate recipes.");
+        setExcludedExpiredCount(res.excludedCount || 0);
       }
     } catch (err: any) {
       setError(err?.message || "An unexpected error occurred.");
@@ -135,8 +158,14 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-red-900">AI Recipe Failure</h4>
+            <h4 className="font-semibold text-red-900">Recipe Generation Failed</h4>
             <p className="mt-1 text-red-800">{error}</p>
+            {excludedExpiredCount > 0 && (
+              <p className="mt-2 text-xs text-red-700">
+                <Info className="inline h-3.5 w-3.5 mr-1" />
+                {excludedExpiredCount} expired item{excludedExpiredCount !== 1 ? "s were" : " was"} excluded from recipe suggestions for your safety.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -144,28 +173,60 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
       {/* Main View */}
       {recipes.length === 0 && !loading ? (
         /* Empty / Prompt State */
-        <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-12 text-center shadow-sm">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--shelf-cream)] text-[var(--shelf-forest)]">
-            <Utensils size={32} />
-          </div>
-          <h3 className="mt-4 text-xl font-bold text-[var(--shelf-dark)]">Ready to cook?</h3>
-          <p className="mt-2 text-sm text-[var(--shelf-muted)] max-w-md mx-auto">
-            ShelfLife will analyze your active inventory and create customized recipes, prioritizing items nearing their expiry dates first.
-          </p>
+        <div className="space-y-6">
+          {/* Recipe Mode Selector */}
+          <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
+            <div>
+              <h3 className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider">
+                How should ShelfLife help?
+              </h3>
+              <p className="mt-1 text-xs text-[var(--shelf-muted)]">
+                Choose a recipe mode to personalize your meal suggestions.
+              </p>
+            </div>
 
-          <div className="mt-8 flex justify-center">
-            {initialInventory.length === 0 ? (
-              <div className="text-sm text-[var(--shelf-muted)]">
-                Please add items to your <span className="font-bold">Inventory</span> first to unlock AI recipe generation.
-              </div>
-            ) : (
-              <button
-                onClick={handleGenerate}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 shadow-sm"
-              >
-                Generate Custom Recipes
-              </button>
-            )}
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {RECIPE_MODES.map((mode) => (
+                <button
+                  key={mode.value}
+                  onClick={() => setRecipeMode(mode.value)}
+                  className={`text-left rounded-xl border-2 p-4 transition ${
+                    recipeMode === mode.value
+                      ? "border-[var(--shelf-forest)] bg-[var(--shelf-cream)]/60 shadow-sm"
+                      : "border-[var(--shelf-border)] bg-white hover:border-[var(--shelf-border)]"
+                  }`}
+                >
+                  <h4 className="font-bold text-[var(--shelf-dark)]">{mode.label}</h4>
+                  <p className="mt-1 text-xs text-[var(--shelf-muted)]">{mode.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Generate Button & Info */}
+          <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-12 text-center shadow-sm">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--shelf-cream)] text-[var(--shelf-forest)]">
+              <Utensils size={32} />
+            </div>
+            <h3 className="mt-4 text-xl font-bold text-[var(--shelf-dark)]">Ready to cook?</h3>
+            <p className="mt-2 text-sm text-[var(--shelf-muted)] max-w-md mx-auto">
+              ShelfLife will analyze your safe inventory and create customized recipes. Expired items are automatically excluded.
+            </p>
+
+            <div className="mt-8 flex justify-center">
+              {initialInventory.length === 0 ? (
+                <div className="text-sm text-[var(--shelf-muted)]">
+                  Please add items to your <span className="font-bold">Inventory</span> first to unlock AI recipe generation.
+                </div>
+              ) : (
+                <button
+                  onClick={handleGenerate}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 shadow-sm"
+                >
+                  Generate Custom Recipes
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ) : loading ? (
@@ -174,15 +235,27 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
           <Loader2 className="h-10 w-10 animate-spin text-[var(--shelf-forest)]" />
           <h3 className="text-lg font-bold text-[var(--shelf-dark)]">Finding recipes...</h3>
           <p className="text-sm text-[var(--shelf-muted)] max-w-xs">
-            Analyzing inventory, sorting by nearest expiry, and compiling delicious meals using Groq AI.
+            Analyzing your safe ingredients and generating delicious meal ideas.
           </p>
         </div>
       ) : (
         /* Recipes Grid list */
         <div className="space-y-6">
+          {excludedExpiredCount > 0 && (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 flex items-start gap-3">
+              <Info className="h-5 w-5 shrink-0 text-blue-600 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-blue-900">Expired Items Excluded</h4>
+                <p className="mt-1 text-blue-800">
+                  {excludedExpiredCount} expired item{excludedExpiredCount !== 1 ? "s were" : " was"} excluded from recipe suggestions. ShelfLife protects you by never recommending expired food.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-[var(--shelf-muted)]">
-              We found {recipes.length} custom recipes based on your stock levels:
+              We found {recipes.length} custom recipe{recipes.length !== 1 ? "s" : ""}:
             </p>
             <button
               onClick={handleGenerate}

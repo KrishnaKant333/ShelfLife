@@ -16,6 +16,16 @@ import {
   Utensils,
   TrendingUp,
 } from "lucide-react";
+import { getInventoryStatus } from "@/lib/inventory-status";
+
+type InventoryItem = {
+  id: number;
+  name: string;
+  category: string;
+  quantity: number;
+  unit: string;
+  expiryDate: string;
+};
 
 interface SidebarProps {
   user: {
@@ -24,38 +34,50 @@ interface SidebarProps {
     accountType: "consumer" | "business";
   };
   onCloseMobile?: () => void;
+  inventory?: InventoryItem[];
 }
 
-export default function Sidebar({ user, onCloseMobile }: SidebarProps) {
+export default function Sidebar({ user, onCloseMobile, inventory = [] }: SidebarProps) {
   const pathname = usePathname();
   const isBusiness = user.accountType === "business";
   const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
+
+  // Calculate alert count from inventory
+  const alertCount = inventory.reduce((count, item) => {
+    const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
+    return status === "Expired" || status === "Expiring" || status === "Low Stock" ? count + 1 : count;
+  }, 0);
 
   const navigation = [
     {
       label: "Overview",
       href: prefix,
       icon: LayoutDashboard,
+      count: 0,
     },
     {
       label: "Inventory",
       href: `${prefix}/inventory`,
       icon: Package,
+      count: 0,
     },
     {
       label: "Alerts",
       href: `${prefix}/alerts`,
       icon: Bell,
+      count: alertCount,
     },
     {
       label: "Analytics",
       href: `${prefix}/analytics`,
       icon: BarChart3,
+      count: 0,
     },
     {
       label: "Waste Insights",
       href: `${prefix}/waste`,
       icon: Trash2,
+      count: 0,
     },
     ...(isBusiness
       ? [
@@ -63,6 +85,7 @@ export default function Sidebar({ user, onCloseMobile }: SidebarProps) {
             label: "Inventory Strategy",
             href: `${prefix}/strategy`,
             icon: TrendingUp,
+            count: 0,
           },
         ]
       : [
@@ -70,6 +93,7 @@ export default function Sidebar({ user, onCloseMobile }: SidebarProps) {
             label: "Recipes",
             href: `${prefix}/recipes`,
             icon: Utensils,
+            count: 0,
           },
         ]),
   ];
@@ -120,13 +144,20 @@ export default function Sidebar({ user, onCloseMobile }: SidebarProps) {
               key={item.href}
               href={item.href}
               onClick={onCloseMobile}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition duration-150 ${isActive
+              className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition duration-150 ${isActive
                   ? "bg-[var(--shelf-cream)] text-[var(--shelf-forest)] border-l-4 border-[var(--shelf-forest)] pl-3"
                   : "text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)]/50 hover:text-[var(--shelf-dark)]"
                 }`}
             >
-              <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
-              {item.label}
+              <span className="flex items-center gap-3">
+                <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
+                {item.label}
+              </span>
+              {item.count > 0 && (
+                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold shrink-0">
+                  {item.count > 99 ? "99+" : item.count}
+                </span>
+              )}
             </Link>
           );
         })}
