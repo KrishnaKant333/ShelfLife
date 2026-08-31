@@ -11,7 +11,10 @@ export default async function ConsumerSettingsPage() {
 
   return (
     <main className="p-6 md:p-8 lg:p-10">
-      <SettingsView user={session.user} />
+      <SettingsView user={{
+        ...session.user,
+        plan: session.user.plan as any
+      }} />
     </main>
   );
 }

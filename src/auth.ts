@@ -58,6 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           businessId: user.businessId
             ? String(user.businessId)
             : undefined,
+          plan: user.plan,
         };
       },
     }),
@@ -73,6 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.accountType = user.accountType;
         token.businessId = user.businessId;
+        token.plan = user.plan;
       }
 
       return token;
@@ -87,6 +89,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         session.user.businessId = token.businessId as
           | string
+          | undefined;
+          
+        session.user.plan = token.plan as 
+          | "consumer_free"
+          | "consumer_plus"
+          | "business_starter"
+          | "business_pro"
+          | "business_growth"
           | undefined;
       }
 

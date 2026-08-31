@@ -6,6 +6,7 @@ declare module "next-auth" {
     id: string;
     accountType: "consumer" | "business";
     businessId?: string;
+    plan?: "consumer_free" | "consumer_plus" | "business_starter" | "business_pro" | "business_growth";
   }
 
   interface Session {
@@ -16,6 +17,7 @@ declare module "next-auth" {
       image?: string | null;
       accountType: "consumer" | "business";
       businessId?: string;
+      plan?: "consumer_free" | "consumer_plus" | "business_starter" | "business_pro" | "business_growth";
     };
   }
 }
@@ -25,5 +27,6 @@ declare module "next-auth/jwt" {
     id: string;
     accountType: "consumer" | "business";
     businessId?: string;
+    plan?: "consumer_free" | "consumer_plus" | "business_starter" | "business_pro" | "business_growth";
   }
 }

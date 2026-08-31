@@ -6,11 +6,22 @@ enum AccountType {
   BUSINESS = "business"
 }
 
+enum UserPlan {
+  @@type("pg/text@1")
+
+  CONSUMER_FREE = "consumer_free"
+  CONSUMER_PLUS = "consumer_plus"
+  BUSINESS_STARTER = "business_starter"
+  BUSINESS_PRO = "business_pro"
+  BUSINESS_GROWTH = "business_growth"
+}
+
 model User {
   id          Int         @id @default(autoincrement())
   email       String      @unique
   name        String?
   accountType AccountType @default(CONSUMER)
+  plan        UserPlan    @default(CONSUMER_FREE)
 
   businessId  Int?
   business    Business?   @relation(fields: [businessId], references: [id])

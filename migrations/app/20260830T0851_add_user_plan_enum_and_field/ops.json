@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.user.plan",
+    "label": "Add column \"plan\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "plan",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"plan\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "plan"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"plan\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"plan\" text DEFAULT 'consumer_free' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"plan\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "plan"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.user.user_plan_check_41cfe064",
+    "label": "Add check constraint \"user_plan_check_41cfe064\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_plan_check_41cfe064",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_plan_check_41cfe064\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_plan_check_41cfe064",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_plan_check_41cfe064\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_plan_check_41cfe064\" CHECK (\"plan\" IN ('consumer_free', 'consumer_plus', 'business_starter', 'business_pro', 'business_growth'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_plan_check_41cfe064\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_plan_check_41cfe064",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  }
+]

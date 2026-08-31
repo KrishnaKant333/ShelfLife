@@ -81,6 +81,7 @@ export async function registerConsumer(
     email,
     passwordHash,
     accountType: "consumer",
+    plan: "consumer_free",
     updatedAt: Temporal.Now.instant(),
   });
 
@@ -138,6 +139,7 @@ export async function registerBusiness(
     passwordHash,
     accountType: "business",
     businessId: business.id,
+    plan: "business_starter",
     updatedAt: Temporal.Now.instant(),
   });
 

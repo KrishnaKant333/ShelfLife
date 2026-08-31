@@ -37,6 +37,31 @@
                 "value": "business"
               }
             ]
+          },
+          "UserPlan": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "CONSUMER_FREE",
+                "value": "consumer_free"
+              },
+              {
+                "name": "CONSUMER_PLUS",
+                "value": "consumer_plus"
+              },
+              {
+                "name": "BUSINESS_STARTER",
+                "value": "business_starter"
+              },
+              {
+                "name": "BUSINESS_PRO",
+                "value": "business_pro"
+              },
+              {
+                "name": "BUSINESS_GROWTH",
+                "value": "business_growth"
+              }
+            ]
           }
         },
         "models": {
@@ -478,6 +503,19 @@
                   "kind": "scalar"
                 }
               },
+              "plan": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "UserPlan",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -555,6 +593,9 @@
                 },
                 "passwordHash": {
                   "column": "passwordHash"
+                },
+                "plan": {
+                  "column": "plan"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -868,6 +909,11 @@
                   "expression": "\"accountType\" IN ('consumer', 'business')",
                   "name": "user_accountType_check_3458d6a6",
                   "prefix": "user_accountType_check"
+                },
+                {
+                  "expression": "\"plan\" IN ('consumer_free', 'consumer_plus', 'business_starter', 'business_pro', 'business_growth')",
+                  "name": "user_plan_check_41cfe064",
+                  "prefix": "user_plan_check"
                 }
               ],
               "columns": {
@@ -924,6 +970,21 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "plan": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "consumer_free"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "UserPlan",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
@@ -979,6 +1040,16 @@
                 "consumer",
                 "business"
               ]
+            },
+            "UserPlan": {
+              "kind": "valueSet",
+              "values": [
+                "consumer_free",
+                "consumer_plus",
+                "business_starter",
+                "business_pro",
+                "business_growth"
+              ]
             }
           }
         },
@@ -986,7 +1057,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "9682769de1d982d05c79270d7065ea8ab4be9f92bf660746fea5b2bfb60832e0"
+    "storageHash": "d4341e80715f7a0c19697cb7cdf4aeb13f5909d3fcfa44224e3c5bdec398e120"
   },
   "execution": {
     "executionHash": "7d80476c0bb076336617ca6c01539bf0d0e03bbce6eb7ad70ff49d188d7443cd",

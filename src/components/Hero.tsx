@@ -1,19 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Play } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import InventoryHeroVisual from "@/components/InventoryHeroVisual";
-import { brand } from "@/data/brand";
 
 export default function Hero(){
   return(
-      <section className="relative overflow-hidden px-6 py-16 md:py-20">
+      <section className="relative overflow-hidden px-6 py-16 md:py-24">
         <div className="mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
 
           <div>
-            <p className="mb-5 text-sm font-medium uppercase tracking-[0.2em] text-[var(--shelf-green)]">
-              {brand.productType}
+            <p className="mb-5 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--shelf-forest)]">
+              Food Inventory Intelligence
             </p>
 
-            <h1 className="max-w-3xl text-5xl font-semibold tracking-tight text-[var(--shelf-dark)] md:text-7xl">
+            <h1 className="max-w-3xl text-5xl font-bold tracking-tight text-[var(--shelf-dark)] md:text-6xl">
               Know what&apos;s on your shelf.
               <span className="block text-[var(--shelf-green)]">
                 Before it goes to waste.
@@ -21,28 +20,30 @@ export default function Hero(){
             </h1>
 
             <p className="mt-7 max-w-xl text-lg leading-8 text-[var(--shelf-muted)]">
-              ShelfLife helps households and businesses track inventory,
-              monitor expiry dates and make smarter decisions before products
-              become waste.
+              ShelfLife helps individuals and businesses track inventory, monitor expiry dates, and make smarter decisions about their food stock.
             </p>
 
-            <div className="mt-9 flex flex-wrap gap-4">
+            <div className="mt-10 flex flex-wrap gap-4">
               <Link
-                href="#product"
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-green)] px-6 py-3 font-medium text-white transition hover:bg-[var(--shelf-dark)]"
+                href="/dashboard"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-forest)] px-7 py-3.5 font-semibold text-white transition hover:bg-[var(--shelf-green)]"
               >
-                Explore ShelfLife
-                <ArrowRight size={17} />
+                Get Started Free
+                <ArrowRight size={18} />
               </Link>
 
-                            <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-full border border-[var(--shelf-border)] bg-white px-6 py-3 font-medium text-[var(--shelf-dark)] transition hover:-translate-y-0.5 hover:bg-[var(--shelf-light)]"
+              <Link
+                href="/business/dashboard"
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--shelf-forest)] bg-white px-7 py-3.5 font-semibold text-[var(--shelf-forest)] transition hover:bg-[var(--shelf-cream)]"
               >
-                Open Dashboard
-                <ArrowUpRight size={17} />
+                For Businesses
+                <ArrowUpRight size={18} />
               </Link>
             </div>
+
+            <p className="mt-8 text-sm text-[var(--shelf-muted)]">
+              ✓ No credit card required  •  ✓ Free forever plan  •  ✓ Start in seconds
+            </p>
           </div>
 
           <div className="relative">

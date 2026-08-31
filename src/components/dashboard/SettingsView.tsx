@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { User, Bell, ShieldAlert, LogOut } from "lucide-react";
+import { User, Bell, ShieldAlert, LogOut, Zap } from "lucide-react";
+import { getPlan } from "@/lib/plans";
 
 interface SettingsViewProps {
   user: {
     name?: string | null;
     email?: string | null;
     accountType: "consumer" | "business";
+    plan?: "consumer_free" | "consumer_plus" | "business_starter" | "business_pro" | "business_growth";
   };
 }
 
@@ -94,6 +97,36 @@ export default function SettingsView({ user }: SettingsViewProps) {
                 <span className="mt-1.5 inline-block rounded-full bg-[var(--shelf-cream)] px-3 py-1 text-xs font-semibold uppercase tracking-wider border border-[var(--shelf-border)] text-[var(--shelf-dark)]">
                   {user.accountType}
                 </span>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--shelf-muted)] mb-2">
+                  Current Plan
+                </label>
+                <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40">
+                  <div className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-[var(--shelf-forest)]" />
+                    <div>
+                      <p className="font-semibold text-[var(--shelf-dark)]">
+                        {user.plan ? getPlan(user.plan).name : "Free"} Plan
+                      </p>
+                      <p className="text-xs text-[var(--shelf-muted)]">
+                        {user.plan ? getPlan(user.plan).description : "Free plan"}
+                      </p>
+                    </div>
+                  </div>
+                  {user.plan && user.plan !== "consumer_free" && user.plan !== "business_starter" ? (
+                    <span className="inline-block rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-900">
+                      Active
+                    </span>
+                  ) : (
+                    <Link href="/#pricing">
+                      <button className="rounded-lg bg-[var(--shelf-forest)] px-3 py-1 text-xs font-semibold text-white hover:opacity-90 transition">
+                        Upgrade
+                      </button>
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           </section>

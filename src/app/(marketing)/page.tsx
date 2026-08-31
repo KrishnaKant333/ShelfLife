@@ -1,8 +1,11 @@
 import Hero from "@/components/Hero";
-import Features from "@/components/Features";
-import ProductPreview from "@/components/ProductPreview";
-import Audience from "@/components/Audience";
+import ConsumerValue from "@/components/ConsumerValue";
+import BusinessValue from "@/components/BusinessValue";
+import HowItWorks from "@/components/HowItWorks";
+import AIApproach from "@/components/AIApproach";
+import WasteReduction from "@/components/WasteReduction";
 import Pricing from "@/components/Pricing";
+import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 
@@ -10,10 +13,13 @@ export default function Home() {
   return (
     <main className="shelf-background">
       <Hero />
-      <Features />
-      <ProductPreview />
-      <Audience />
+      <ConsumerValue />
+      <BusinessValue />
+      <HowItWorks />
+      <AIApproach />
+      <WasteReduction />
       <Pricing />
+      <FinalCTA />
       <Footer />
       <BackToTop />
     </main>

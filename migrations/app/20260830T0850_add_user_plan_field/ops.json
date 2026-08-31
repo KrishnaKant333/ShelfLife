@@ -1,0 +1,203 @@
+[
+  {
+    "id": "table.inventoryConsumption",
+    "label": "Create table \"inventoryConsumption\"",
+    "summary": "Creates table \"inventoryConsumption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "inventoryConsumption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"inventoryConsumption\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryConsumption\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"inventoryConsumption\"",
+        "sql": "CREATE TABLE \"public\".\"inventoryConsumption\" (\n  \"businessId\" int4,\n  \"consumedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"inventoryItemId\" int4 NOT NULL,\n  \"normalizedQuantityUsed\" float8,\n  \"productName\" text NOT NULL,\n  \"quantityUsed\" int4 NOT NULL,\n  \"unit\" text NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"inventoryConsumption\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryConsumption\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inventoryConsumption.inventoryConsumption_businessId_idx_ae0ed511",
+    "label": "Create index \"inventoryConsumption_businessId_idx_ae0ed511\" on \"inventoryConsumption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inventoryConsumption_businessId_idx_ae0ed511",
+        "table": "inventoryConsumption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inventoryConsumption_businessId_idx_ae0ed511\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryConsumption_businessId_idx_ae0ed511\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inventoryConsumption_businessId_idx_ae0ed511\"",
+        "sql": "CREATE INDEX \"inventoryConsumption_businessId_idx_ae0ed511\" ON \"public\".\"inventoryConsumption\" (\"businessId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inventoryConsumption_businessId_idx_ae0ed511\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryConsumption_businessId_idx_ae0ed511\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inventoryConsumption.inventoryConsumption_userId_idx_a489d58a",
+    "label": "Create index \"inventoryConsumption_userId_idx_a489d58a\" on \"inventoryConsumption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inventoryConsumption_userId_idx_a489d58a",
+        "table": "inventoryConsumption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inventoryConsumption_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryConsumption_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inventoryConsumption_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"inventoryConsumption_userId_idx_a489d58a\" ON \"public\".\"inventoryConsumption\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inventoryConsumption_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryConsumption_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inventoryConsumption.inventoryConsumption_userId_fkey",
+    "label": "Add foreign key \"inventoryConsumption_userId_fkey\" on \"inventoryConsumption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inventoryConsumption_userId_fkey",
+        "table": "inventoryConsumption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inventoryConsumption_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryConsumption_userId_fkey",
+          "public",
+          "\"public\".\"inventoryConsumption\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inventoryConsumption_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryConsumption\"\nADD CONSTRAINT \"inventoryConsumption_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inventoryConsumption_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryConsumption_userId_fkey",
+          "public",
+          "\"public\".\"inventoryConsumption\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inventoryConsumption.inventoryConsumption_businessId_fkey",
+    "label": "Add foreign key \"inventoryConsumption_businessId_fkey\" on \"inventoryConsumption\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inventoryConsumption_businessId_fkey",
+        "table": "inventoryConsumption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inventoryConsumption_businessId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryConsumption_businessId_fkey",
+          "public",
+          "\"public\".\"inventoryConsumption\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inventoryConsumption_businessId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryConsumption\"\nADD CONSTRAINT \"inventoryConsumption_businessId_fkey\"\nFOREIGN KEY (\"businessId\")\nREFERENCES \"public\".\"business\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inventoryConsumption_businessId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryConsumption_businessId_fkey",
+          "public",
+          "\"public\".\"inventoryConsumption\""
+        ]
+      }
+    ]
+  }
+]
