@@ -146,9 +146,7 @@ export default function PricingSection() {
                   features={displayFeatures}
                   cta={plan.price === 0 ? "Get Started" : "Upgrade"}
                   ctaHref={
-                    plan.price === 0
-                      ? "/consumer/signup"
-                      : "/#upgrade-coming-soon"
+                    plan.price === 0 ? "/get-started" : "/#upgrade-coming-soon"
                   }
                 />
               );
@@ -209,9 +207,7 @@ export default function PricingSection() {
                   features={displayFeatures}
                   cta={plan.price === 0 ? "Get Started" : "Upgrade"}
                   ctaHref={
-                    plan.price === 0
-                      ? "/business/signup"
-                      : "/#upgrade-coming-soon"
+                    plan.price === 0 ? "/get-started" : "/#upgrade-coming-soon"
                   }
                 />
               );

@@ -16,7 +16,7 @@ export default function FinalCTA() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/consumer/signup"
+              href="/get-started"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--shelf-forest)] px-8 py-4 font-semibold text-white hover:opacity-90 transition"
             >
               Get Started for Free
@@ -24,7 +24,7 @@ export default function FinalCTA() {
             </Link>
 
             <Link
-              href="/business/signup"
+              href="/get-started"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--shelf-forest)] bg-white px-8 py-4 font-semibold text-[var(--shelf-forest)] hover:bg-[var(--shelf-cream)] transition"
             >
               For Your Business

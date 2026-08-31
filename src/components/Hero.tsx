@@ -25,7 +25,7 @@ export default function Hero(){
 
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
-                href="/dashboard"
+                href="/get-started"
                 className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-forest)] px-7 py-3.5 font-semibold text-white transition hover:bg-[var(--shelf-green)]"
               >
                 Get Started Free

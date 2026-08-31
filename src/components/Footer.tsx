@@ -28,7 +28,7 @@ const footerGroups = [
   {
     heading: "Account",
     links: [
-      { label: "Get Started", href: "/dashboard" },
+      { label: "Get Started", href: "/get-started" },
       { label: "Sign In", href: "/consumer/login" },
     ],
   },

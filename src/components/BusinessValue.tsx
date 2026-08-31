@@ -101,7 +101,7 @@ export default function BusinessValue() {
 
         <div className="mt-10 text-center">
           <Link
-            href="/business/signup"
+            href="/get-started"
             className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-forest)] px-7 py-3.5 font-semibold text-white transition hover:opacity-90"
           >
             Start Free for Businesses

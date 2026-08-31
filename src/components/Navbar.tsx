@@ -49,7 +49,7 @@ export default function Navbar() {
             Sign In
           </Link>
           <Link
-            href="/consumer/signup"
+            href="/get-started"
             className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-green)] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--shelf-dark)]"
           >
             Get Started
@@ -88,7 +88,7 @@ export default function Navbar() {
               Sign In
             </Link>
             <Link
-              href="/dashboard"
+              href="/get-started"
               onClick={() => setMobileOpen(false)}
               className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--shelf-green)] px-3 py-2.5 text-sm font-medium text-white"
             >
