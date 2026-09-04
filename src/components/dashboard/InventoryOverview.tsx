@@ -28,7 +28,7 @@ export default function InventoryOverview({
         </div>
       </div>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-6 max-h-80 space-y-3 overflow-y-auto pr-2">
         {inventory.map((item) => {
           const status = getInventoryStatus(
             item.quantity,

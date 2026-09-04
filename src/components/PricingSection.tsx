@@ -216,12 +216,12 @@ export default function PricingSection() {
         </div>
 
         {/* Coming Soon Note */}
-        <div className="mt-12 rounded-xl border border-[var(--shelf-blue)]/20 bg-[var(--shelf-blue)]/10 p-6 text-center text-sm text-[var(--shelf-blue)]">
-          <p className="font-semibold">Premium subscriptions are coming soon</p>
-          <p className="mt-1 text-blue-800">
-            Free plans include full access to core features. Premium plans will unlock advanced analytics, AI features and team collaboration.
-          </p>
-        </div>
+        <div className="mt-12 rounded-xl border border-[var(--shelf-info-border)] bg-[var(--shelf-info-bg)] p-6 text-center text-sm text-[var(--shelf-info-text)]">
+        <p className="font-semibold">Premium subscriptions are coming soon</p>
+        <p className="mt-1 text-[var(--shelf-info-text)]">
+          Free plans include full access to core features. Premium plans will unlock advanced analytics, AI features and team collaboration.
+        </p>
+      </div>
       </div>
     </section>
   );

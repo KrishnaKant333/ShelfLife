@@ -11,9 +11,21 @@
   --shelf-dark: #182118;
   --shelf-muted: #667066;
   --shelf-border: #dfe5d9;
-
   --shelf-green: #4f7f3a;
   --background: #f3f6ee;
+
+  /* Card colors */
+  --shelf-warning-bg: #fff8e7;
+  --shelf-warning-border: #f0d99b;
+  --shelf-warning-text: #7a5700;
+
+  --shelf-success-bg: #edf6eb;
+  --shelf-success-border: #b8d5b2;
+  --shelf-success-text: #31572c;
+
+  --shelf-info-bg: #edf4f8;
+  --shelf-info-border: #b9cfdd;
+  --shelf-info-text: #3e6078;
 }
 
 .dark {
@@ -27,9 +39,21 @@
   --shelf-dark: #95d88f;
   --shelf-muted: #8b9196;
   --shelf-border: #2e3336;
-
   --shelf-green: #4f9f45;
   --background: #171a18;
+
+  /* Card colors */
+  --shelf-warning-bg: #2b2618;
+  --shelf-warning-border: #665323;
+  --shelf-warning-text: #e2ae4d;
+
+  --shelf-success-bg: #19271a;
+  --shelf-success-border: #315a32;
+  --shelf-success-text: #95d88f;
+
+  --shelf-info-bg: #19252c;
+  --shelf-info-border: #344e5d;
+  --shelf-info-text: #9bc1d9;
 }
 .shelf-card {
   background: var(--shelf-surface);

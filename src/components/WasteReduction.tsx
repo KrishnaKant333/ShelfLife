@@ -75,26 +75,46 @@ export default function WasteReduction() {
           </div>
 
           <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-8 md:p-12">
-            <div className="space-y-6">
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-                <p className="text-xs font-semibold text-amber-900 uppercase">Food Waste</p>
-                <p className="mt-2 text-3xl font-bold text-amber-900">30%</p>
-                <p className="mt-1 text-xs text-amber-800">of household food is wasted annually</p>
-              </div>
+          <div className="space-y-6">
 
-              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                <p className="text-xs font-semibold text-green-900 uppercase">ShelfLife Impact</p>
-                <p className="mt-2 text-lg font-bold text-green-900">Know what you have</p>
-                <p className="mt-1 text-xs text-green-800">Track expiry, get alerts, use smarter</p>
-              </div>
-
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                <p className="text-xs font-semibold text-blue-900 uppercase">Your Benefit</p>
-                <p className="mt-2 text-lg font-bold text-blue-900">Save money & reduce waste</p>
-                <p className="mt-1 text-xs text-blue-800">Spend less, consume smarter, help the planet</p>
-              </div>
+            <div className="rounded-lg border border-[var(--shelf-warning-border)] bg-[var(--shelf-warning-bg)] p-4">
+              <p className="text-xs font-semibold uppercase text-[var(--shelf-warning-text)]">
+                Food Waste
+              </p>
+              <p className="mt-2 text-3xl font-bold text-[var(--shelf-warning-text)]">
+                30%
+              </p>
+              <p className="mt-1 text-xs text-[var(--shelf-warning-text)]">
+                of household food is wasted annually
+              </p>
             </div>
+
+            <div className="rounded-lg border border-[var(--shelf-success-border)] bg-[var(--shelf-success-bg)] p-4">
+              <p className="text-xs font-semibold uppercase text-[var(--shelf-success-text)]">
+                ShelfLife Impact
+              </p>
+              <p className="mt-2 text-lg font-bold text-[var(--shelf-success-text)]">
+                Know what you have
+              </p>
+              <p className="mt-1 text-xs text-[var(--shelf-success-text)]">
+                Track expiry, get alerts, use smarter
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-[var(--shelf-info-border)] bg-[var(--shelf-info-bg)] p-4">
+              <p className="text-xs font-semibold uppercase text-[var(--shelf-info-text)]">
+                Your Benefit
+              </p>
+              <p className="mt-2 text-lg font-bold text-[var(--shelf-info-text)]">
+                Save money & reduce waste
+              </p>
+              <p className="mt-1 text-xs text-[var(--shelf-info-text)]">
+                Spend less, consume smarter, help the planet
+              </p>
+            </div>
+
           </div>
+        </div>
         </div>
       </div>
     </section>

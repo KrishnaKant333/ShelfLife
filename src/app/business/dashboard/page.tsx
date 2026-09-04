@@ -109,7 +109,7 @@ export default async function BusinessDashboardPage() {
 
         {/* Breakdown Grid */}
         <div className="grid gap-6 xl:grid-cols-2">
-          <ExpiryOverview inventory={formattedInventory as any} />
+          <ExpiryOverview inventory={formattedInventory as any} isBusiness={true} />
           <InventoryOverview inventory={formattedInventory as any} />
         </div>
       </div>

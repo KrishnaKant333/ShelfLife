@@ -6,11 +6,13 @@ import type { InventoryItem } from "@/lib/inventory";
 
 interface ExpiryOverviewProps {
   inventory: InventoryItem[];
+  isBusiness?: boolean;
 }
 
 
 export default function ExpiryOverview({
   inventory,
+  isBusiness = false,
 }: ExpiryOverviewProps) {
   const expiringItems = inventory.filter(
     (item) => getInventoryStatus(
@@ -62,7 +64,7 @@ export default function ExpiryOverview({
       </div>
 
       <Link
-        href="/dashboard/inventory"
+        href={isBusiness ? "/business/dashboard/inventory" : "/dashboard/inventory"}
         className="mt-6 flex items-center gap-2 text-sm font-medium text-[var(--shelf-forest)] transition-all hover:gap-3"
       >
         View inventory
