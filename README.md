@@ -1,6 +1,6 @@
 # ShelfLife
 
-> Know what you have. Know what to use first. Waste less.
+> Know what's on your shelf. Before it goes to waste.
 
 ShelfLife is a food inventory intelligence SaaS for consumers and food businesses.
 
@@ -397,23 +397,3 @@ Including:
 14. Mobile responsiveness
 
 The goal is for ShelfLife to look and feel like a real production SaaS product, not merely a functional prototype.
-
-
-### Folder structure
-
-```text
-ShelfLife/
-│
-├── Context/
-│   ├── Project overview.md
-│   ├── Architecture.md
-│   ├── Code standards.md
-│   ├── Progress tracker.md
-│   ├── Claude.md
-│   └── Ai workflow types.md
-│
-├── Specs/
-│   └── Next task.md
-│
-└── Readme.md
-```

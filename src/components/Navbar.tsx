@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useState } from "react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navItems = [
   { label: "For Consumers", href: "#consumer" },
@@ -42,6 +43,7 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           <Link
             href="/consumer/login"
             className="rounded-full px-4 py-2 text-sm font-medium text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
@@ -50,7 +52,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/get-started"
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-green)] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--shelf-dark)]"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-green)] px-5 py-2.5 font-medium font-sm text-white transition hover:opacity-90"
           >
             Get Started
             <ArrowRight size={16} />
@@ -60,7 +62,7 @@ export default function Navbar() {
         <button
           type="button"
           aria-label="Toggle navigation menu"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--shelf-border)] bg-white text-[var(--shelf-dark)] md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] md:hidden"
           onClick={() => setMobileOpen((open) => !open)}
         >
           {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -95,6 +97,9 @@ export default function Navbar() {
               Get Started
               <ArrowRight size={16} />
             </Link>
+            <div className="mt-3 flex justify-center">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       )}

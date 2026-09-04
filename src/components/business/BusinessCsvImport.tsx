@@ -115,21 +115,21 @@ export default function BusinessCsvImport() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
           {error}
         </div>
       )}
 
       {/* Success */}
       {success && (
-        <div className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
           {success}
         </div>
       )}
 
       {/* Results */}
       {rows.length > 0 && (
-        <div className="rounded-2xl bg-[var(--shelf-surface)] shadow-xl">
+        <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-sm">
 
           <div className="border-b border-[var(--shelf-border)] p-6">
             <h2 className="text-xl font-semibold text-[var(--shelf-dark)]">
@@ -137,12 +137,12 @@ export default function BusinessCsvImport() {
             </h2>
 
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              <span className="rounded-full bg-green-50 px-3 py-1 text-green-700">
+              <span className="rounded-full bg-[var(--shelf-forest)]/10 px-3 py-1 text-[var(--shelf-forest)]">
                 ✓ {validRows.length} valid
               </span>
 
               {invalidRows.length > 0 && (
-                <span className="rounded-full bg-red-50 px-3 py-1 text-red-700">
+                <span className="rounded-full bg-[var(--shelf-terracotta)]/10 px-3 py-1 text-[var(--shelf-terracotta)]">
                   ⚠ {invalidRows.length} invalid
                 </span>
               )}
@@ -208,14 +208,14 @@ export default function BusinessCsvImport() {
                           {row.data.expiryDate.toLocaleDateString()}
                         </td>
 
-                        <td className="px-6 py-4 text-sm text-green-700">
+                        <td className="px-6 py-4 text-sm text-[var(--shelf-forest)]">
                           Valid
                         </td>
                       </>
                     ) : (
                       <td
                         colSpan={5}
-                        className="px-6 py-4 text-sm text-red-700"
+                        className="px-6 py-4 text-sm text-[var(--shelf-terracotta)]"
                       >
                         {row.error}
                       </td>

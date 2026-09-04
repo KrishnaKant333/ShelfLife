@@ -18,7 +18,7 @@ export default function InventoryHeroVisual() {
       <div className="absolute inset-10 rounded-full bg-[var(--shelf-light)] blur-3xl" />
 
       {/* Main dashboard */}
-      <div className="absolute left-[8%] top-[10%] w-[84%] rounded-[2rem] border border-[var(--shelf-border)] bg-white p-5 shadow-2xl shadow-black/5 sm:p-7">
+      <div className="absolute left-[8%] top-[10%] w-[84%] rounded-[2rem] border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-2xl shadow-black/5 sm:p-7">
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -108,7 +108,7 @@ export default function InventoryHeroVisual() {
       </div>
 
       {/* Expiry alert */}
-      <div className="absolute right-0 top-[28%] hidden w-44 rounded-2xl border border-[var(--shelf-border)] bg-white p-4 shadow-xl shadow-black/10 sm:block animate-[heroFloat_2s_ease-in-out_infinite]">
+      <div className="absolute right-0 top-[28%] hidden w-44 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-xl shadow-black/10 sm:block animate-[heroFloat_2s_ease-in-out_infinite]">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50">
             <AlertTriangle size={14} className="text-amber-600" />
@@ -125,7 +125,7 @@ export default function InventoryHeroVisual() {
       </div>
 
       {/* Analytics card */}
-      <div className="absolute bottom-[7%] left-0 hidden w-48 rounded-2xl border border-[var(--shelf-border)] bg-white p-4 shadow-xl shadow-black/10 sm:block animate-[heroFloatReverse_3s_ease-in-out_infinite]">
+      <div className="absolute bottom-[7%] left-0 hidden w-48 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-xl shadow-black/10 sm:block animate-[heroFloatReverse_3s_ease-in-out_infinite]">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-[var(--shelf-dark)]">
             Waste trend
@@ -145,7 +145,7 @@ export default function InventoryHeroVisual() {
           {[35, 50, 42, 65, 55, 78, 88].map((height, index) => (
             <div
               key={index}
-              className="flex-1 rounded-sm bg-[var(--shelf-green)] opacity-30"
+              className="flex-1 rounded-sm bg-[var(--shelf-forest)] opacity-30"
               style={{ height: `${height}%` }}
             />
           ))}
@@ -157,15 +157,15 @@ export default function InventoryHeroVisual() {
         <div className="flex items-center gap-2">
           <Sparkles
             size={15}
-            className="text-[var(--shelf-light)]"
+            className="text-(--shelf-border)"
           />
 
-          <p className="text-xs font-medium text-white">
+          <p className="text-xs font-medium text-(--shelf-border)">
             AI Insight
           </p>
         </div>
 
-        <p className="mt-3 text-xs leading-5 text-white/60">
+        <p className="mt-3 text-xs leading-5 text-(--shelf-border)">
           Use your tomatoes soon. They could work well in a quick pasta
           recipe.
         </p>

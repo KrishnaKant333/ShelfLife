@@ -114,7 +114,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
       {/* Summary KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-xs flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-[var(--shelf-blue)]/10 text-[var(--shelf-blue)] flex items-center justify-center shrink-0">
             <Layers size={20} />
           </div>
           <div>
@@ -124,7 +124,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
         </div>
 
         <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-xs flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-green-50 text-green-700 flex items-center justify-center shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] flex items-center justify-center shrink-0">
             <Package2 size={20} />
           </div>
           <div>
@@ -134,7 +134,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
         </div>
 
         <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-xs flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-amber-50 text-[var(--shelf-amber)] flex items-center justify-center shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] flex items-center justify-center shrink-0">
             <Calendar size={20} />
           </div>
           <div>
@@ -146,7 +146,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
         </div>
 
         <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-xs flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-red-50 text-[var(--shelf-terracotta)] flex items-center justify-center shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)] flex items-center justify-center shrink-0">
             <Activity size={20} />
           </div>
           <div>
@@ -200,7 +200,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                   <span className="text-[var(--shelf-muted)]">{warning} items ({pct(warning)}%)</span>
                 </div>
                 <div className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
-                  <div className="h-full rounded-full bg-amber-300" style={{ width: `${pct(warning)}%` }} />
+                  <div className="h-full rounded-full bg-[var(--shelf-amber)]/60" style={{ width: `${pct(warning)}%` }} />
                 </div>
               </div>
 
@@ -211,7 +211,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                   <span className="text-[var(--shelf-muted)]">{short} items ({pct(short)}%)</span>
                 </div>
                 <div className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
-                  <div className="h-full rounded-full bg-blue-400" style={{ width: `${pct(short)}%` }} />
+                  <div className="h-full rounded-full bg-[var(--shelf-blue)]" style={{ width: `${pct(short)}%` }} />
                 </div>
               </div>
 

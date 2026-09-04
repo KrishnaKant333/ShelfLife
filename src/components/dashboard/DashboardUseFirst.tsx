@@ -65,7 +65,7 @@ export default function DashboardUseFirst({ inventory, isBusiness = false }: Das
               return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between text-xs p-2 rounded-lg border border-[var(--shelf-border)]/40 bg-white"
+                  className="flex items-center justify-between text-xs p-2 rounded-lg border border-[var(--shelf-border)]/40 bg-[var(--shelf-surface)]"
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="font-bold text-[var(--shelf-muted)]">{idx + 1}.</span>

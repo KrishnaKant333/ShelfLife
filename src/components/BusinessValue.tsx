@@ -67,11 +67,11 @@ export default function BusinessValue() {
               ShelfLife gives operations teams a structured view of what should move first, what needs attention, and where waste risk is creeping in.
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-[var(--shelf-border)] bg-white p-4">
+              <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--shelf-forest)]">Priority</p>
                 <p className="mt-2 text-base font-semibold text-[var(--shelf-dark)]">FIFO across inventory</p>
               </div>
-              <div className="rounded-2xl border border-[var(--shelf-border)] bg-white p-4">
+              <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--shelf-forest)]">Action</p>
                 <p className="mt-2 text-base font-semibold text-[var(--shelf-dark)]">Real-time expiry alerts</p>
               </div>

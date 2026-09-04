@@ -94,7 +94,7 @@ export default function BusinessLoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-2xl bg-[var(--shelf-forest)] px-4 py-3.5 font-semibold text-white transition hover:bg-[var(--shelf-dark)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-2xl bg-[var(--shelf-forest)] px-4 py-3.5 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Signing in..." : "Sign In to Business"}
       </button>

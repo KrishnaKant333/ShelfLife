@@ -27,28 +27,28 @@ export default function QuickActions({ isBusiness = false }: QuickActionsProps) 
       description: "Scan product barcode via camera",
       href: `${prefix}/inventory/new?tab=barcode`,
       icon: ScanBarcode,
-      color: "text-blue-700 bg-blue-50",
+      color: "text-[var(--shelf-blue)] bg-[var(--shelf-blue)]/10",
     },
     {
       label: "Scan Label",
       description: "Extract label details using Groq AI",
       href: `${prefix}/inventory/new?tab=label`,
       icon: Camera,
-      color: "text-purple-700 bg-purple-50",
+      color: "text-[var(--shelf-sage)] bg-[var(--shelf-sage)]/10",
     },
     {
       label: "Import Invoice",
       description: "Auto-extract items from invoice photo",
       href: `${prefix}/inventory/invoice`,
       icon: FileText,
-      color: "text-amber-700 bg-amber-50",
+      color: "text-[var(--shelf-amber)] bg-[var(--shelf-amber)]/10",
     },
     {
       label: "Import CSV",
       description: "Bulk load spreadsheet products",
       href: `${prefix}/inventory/import`,
       icon: Upload,
-      color: "text-emerald-700 bg-emerald-50",
+      color: "text-[var(--shelf-forest)] bg-[var(--shelf-forest)]/10",
     },
   ];
 

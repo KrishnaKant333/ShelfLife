@@ -56,13 +56,13 @@ export default function GetStartedPage() {
                 className="group block rounded-[2rem] border border-[var(--shelf-border)] bg-gradient-to-br p-[1px] shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
               >
                 <div
-                  className={`flex h-full flex-col rounded-[calc(2rem-1px)] bg-gradient-to-br ${option.accent} p-8 text-left md:p-10`}
+                  className={`flex h-full flex-col rounded-[calc(2rem-1px)] bg-gradient-to-br ${option.accent} dark:from-[var(--shelf-surface)] dark:to-[var(--shelf-cream)] p-8 text-left md:p-10`}
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[var(--shelf-forest)] shadow-sm ring-1 ring-[var(--shelf-border)]">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[var(--shelf-forest)] shadow-sm ring-1 ring-[var(--shelf-border)] dark:bg-[var(--shelf-surface)]">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <span className="rounded-full border border-[var(--shelf-border)] bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--shelf-dark)]">
+                    <span className="rounded-full border border-[var(--shelf-border)] bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--shelf-dark)] dark:bg-[var(--shelf-surface)]/80">
                       {option.badge}
                     </span>
                   </div>

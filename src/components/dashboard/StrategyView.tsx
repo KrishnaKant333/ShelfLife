@@ -165,7 +165,7 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
                   <p className="mt-2 text-sm text-[var(--shelf-dark)]">
                     {rec.description}
                   </p>
-                  <div className="mt-4 rounded-xl bg-white border border-[var(--shelf-border)]/50 p-3.5 text-xs text-[var(--shelf-muted)]">
+                  <div className="mt-4 rounded-xl bg-[var(--shelf-surface)] border border-[var(--shelf-border)]/50 p-3.5 text-xs text-[var(--shelf-muted)]">
                     <span className="font-bold text-[var(--shelf-forest)]">Recommendation:</span>{" "}
                     {rec.recommendation}
                   </div>
@@ -243,7 +243,7 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
           </Link>
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-xl border border-[var(--shelf-border)] bg-white">
+        <div className="mt-6 overflow-hidden rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-left">
               <thead className="border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/35 text-xs font-bold uppercase tracking-wider text-[var(--shelf-muted)]">
@@ -324,7 +324,7 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
             lowStockItems.map((item) => (
               <div
                 key={item.id}
-                className="rounded-xl border border-[var(--shelf-border)] bg-white p-4 flex justify-between items-center hover:border-[var(--shelf-sage)] transition"
+                className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 flex justify-between items-center hover:border-[var(--shelf-sage)] transition"
               >
                 <div>
                   <h4 className="font-bold text-[var(--shelf-dark)] text-sm">{item.name}</h4>

@@ -149,7 +149,7 @@ export default function BusinessInvoiceUpload() {
   return (
     <div className="space-y-6">
       {/* Upload */}
-      <div className="rounded-2xl bg-[var(--shelf-surface)] p-8 shadow-xl">
+      <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-8 shadow-sm">
         <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-10 text-center">
           <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
             Upload an invoice
@@ -198,20 +198,20 @@ export default function BusinessInvoiceUpload() {
 
       {/* Messages */}
       {error && (
-        <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
           {success}
         </div>
       )}
 
       {/* Preview */}
       {items.length > 0 && (
-        <div className="overflow-hidden rounded-2xl bg-[var(--shelf-surface)] shadow-xl">
+        <div className="overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-sm">
           <div className="border-b border-[var(--shelf-border)] p-6">
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
@@ -225,7 +225,7 @@ export default function BusinessInvoiceUpload() {
                 </p>
               </div>
 
-              <span className="w-fit rounded-full bg-green-50 px-3 py-1 text-sm text-green-700">
+              <span className="w-fit rounded-full bg-[var(--shelf-forest)]/10 px-3 py-1 text-sm text-[var(--shelf-forest)]">
                 {items.length} products
               </span>
             </div>
@@ -340,7 +340,7 @@ export default function BusinessInvoiceUpload() {
                       />
 
                       {!item.expiryDate && (
-                        <p className="mt-1 text-xs text-amber-600">
+                        <p className="mt-1 text-xs text-[var(--shelf-amber)]">
                           Required
                         </p>
                       )}
@@ -350,7 +350,7 @@ export default function BusinessInvoiceUpload() {
                       <button
                         type="button"
                         onClick={() => removeItem(index)}
-                        className="text-sm font-medium text-red-600 hover:underline"
+                        className="text-sm font-medium text-[var(--shelf-terracotta)] hover:underline"
                       >
                         Remove
                       </button>

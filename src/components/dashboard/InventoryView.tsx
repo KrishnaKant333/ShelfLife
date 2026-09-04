@@ -29,6 +29,8 @@ import {
 } from "@/lib/actions/recipes";
 import { bulkDeleteAction } from "@/lib/actions/inventory";
 import DeleteProductButton from "@/components/dashboard/DeleteProductButton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ToastProvider, useToast } from "@/components/ui/Toast";
 
 type InventoryItem = {
   id: number;
@@ -45,14 +47,23 @@ interface InventoryViewProps {
   isBusiness?: boolean;
 }
 
-export default function InventoryView({ initialInventory, isBusiness = false }: InventoryViewProps) {
+function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryViewProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"All" | "Expired" | "Fresh" | "Expiring" | "Low Stock">("All");
   const [sortBy, setSortBy] = useState<"expiry-asc" | "expiry-desc" | "name-asc" | "name-desc" | "qty-asc" | "qty-desc" | "date-added">("expiry-asc");
 
   // Selection states for bulk actions
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDestructive?: boolean;
+  } | null>(null);
 
   // Consumption Modal states
   const [consumeItem, setConsumeItem] = useState<InventoryItem | null>(null);
@@ -138,10 +149,10 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
     });
 
   const statusStyles = {
-    Expired: "bg-red-50 text-[var(--shelf-terracotta)] border-red-200",
-    Fresh: "bg-green-50 text-green-700 border-green-200",
-    Expiring: "bg-amber-50 text-amber-700 border-amber-200",
-    "Low Stock": "bg-red-50 text-[var(--shelf-terracotta)] border-red-200",
+    Expired: "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)] border-[var(--shelf-terracotta)]/20",
+    Fresh: "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] border-[var(--shelf-forest)]/20",
+    Expiring: "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] border-[var(--shelf-amber)]/20",
+    "Low Stock": "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)] border-[var(--shelf-terracotta)]/20",
   };
 
   // Toggle single item selection
@@ -182,10 +193,10 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
         fetchHistory();
         router.refresh();
       } else {
-        alert(res.error || "Failed to record consumption.");
+        showToast(res.error || "Failed to record consumption.", "error");
       }
     } catch (err) {
-      alert("Error occurred while saving consumption.");
+      showToast("Error occurred while saving consumption.", "error");
     } finally {
       setIsConsuming(false);
     }
@@ -194,46 +205,55 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
   // Bulk actions handlers
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} items?`)) {
-      return;
-    }
-    try {
-      const res = await bulkDeleteAction(selectedIds);
-      if (res.success) {
-        setSelectedIds([]);
-        router.refresh();
-      } else {
-        alert(res.error || "Bulk delete failed.");
-      }
-    } catch (err) {
-      alert("Error executing bulk delete.");
-    }
+    setConfirmDialog({
+      title: "Delete Items",
+      message: `Are you sure you want to delete ${selectedIds.length} item(s)?`,
+      isDestructive: true,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        try {
+          const res = await bulkDeleteAction(selectedIds);
+          if (res.success) {
+            setSelectedIds([]);
+            router.refresh();
+          } else {
+            showToast(res.error || "Bulk delete failed.", "error");
+          }
+        } catch (err) {
+          showToast("Error executing bulk delete.", "error");
+        }
+      },
+    });
   };
 
   const handleBulkConsume = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Mark ${selectedIds.length} items as fully consumed?`)) {
-      return;
-    }
-    try {
-      const itemsToConsume = selectedIds.map((id) => {
-        const item = initialInventory.find((x) => x.id === id);
-        return {
-          itemId: id,
-          quantityUsed: item ? item.quantity : 1,
-        };
-      });
-      const res = await consumeIngredientsAction(itemsToConsume);
-      if (res.success) {
-        setSelectedIds([]);
-        fetchHistory();
-        router.refresh();
-      } else {
-        alert(res.error || "Bulk consume failed.");
-      }
-    } catch (err) {
-      alert("Error executing bulk consumption.");
-    }
+    setConfirmDialog({
+      title: "Mark as Consumed",
+      message: `Mark ${selectedIds.length} item(s) as fully consumed?`,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        try {
+          const itemsToConsume = selectedIds.map((id) => {
+            const item = initialInventory.find((x) => x.id === id);
+            return {
+              itemId: id,
+              quantityUsed: item ? item.quantity : 1,
+            };
+          });
+          const res = await consumeIngredientsAction(itemsToConsume);
+          if (res.success) {
+            setSelectedIds([]);
+            fetchHistory();
+            router.refresh();
+          } else {
+            showToast(res.error || "Bulk consume failed.", "error");
+          }
+        } catch (err) {
+          showToast("Error executing bulk consumption.", "error");
+        }
+      },
+    });
   };
 
   // CSV Export
@@ -355,7 +375,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
           <button
             onClick={handleExportCSV}
             disabled={exportingCSV}
-            className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-white text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)] disabled:opacity-60"
+            className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-[var(--shelf-surface)] text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)] disabled:opacity-60"
           >
             {exportingCSV ? (
               <>
@@ -372,7 +392,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
           <button
             onClick={handleExportPDF}
             disabled={exportingPDF}
-            className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-white text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)] disabled:opacity-60"
+            className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-[var(--shelf-surface)] text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)] disabled:opacity-60"
           >
             {exportingPDF ? (
               <>
@@ -388,7 +408,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
           </button>
           <Link
             href={`${prefix}/inventory/new?tab=import`}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-white text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-[var(--shelf-surface)] text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
           >
             <Upload size={16} />
             Import
@@ -434,7 +454,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
                     onClick={() => setActiveFilter(filter)}
                     className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold tracking-wide uppercase transition ${
                       activeFilter === filter
-                        ? "bg-white text-[var(--shelf-forest)] shadow-xs"
+                        ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)] shadow-xs"
                         : "text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
                     }`}
                   >
@@ -465,14 +485,14 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
 
           {/* Bulk Action Controls */}
           {selectedIds.length > 0 && (
-            <div className="flex items-center justify-between bg-red-50/50 border border-red-200/60 p-4 rounded-xl">
+            <div className="flex items-center justify-between bg-[var(--shelf-terracotta)]/5 border border-[var(--shelf-terracotta)]/20 p-4 rounded-xl">
               <span className="text-xs font-semibold text-[var(--shelf-terracotta)]">
                 {selectedIds.length} item(s) selected
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={handleBulkConsume}
-                  className="cursor-pointer rounded-lg bg-green-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-green-700"
+                  className="cursor-pointer rounded-lg bg-[var(--shelf-forest)] px-3.5 py-2 text-xs font-semibold text-white transition hover:opacity-90"
                 >
                   Mark fully consumed
                 </button>
@@ -597,7 +617,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
                               <div className="flex justify-end gap-3 items-center">
                                 <button
                                   onClick={() => handleOpenConsume(item)}
-                                  className="cursor-pointer text-sm font-bold text-green-700 hover:underline bg-transparent border-none"
+                                  className="cursor-pointer text-sm font-bold text-[var(--shelf-forest)] hover:underline bg-transparent border-none"
                                 >
                                   Use
                                 </button>
@@ -670,7 +690,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
                         <div className="flex gap-4 items-center">
                           <button
                             onClick={() => handleOpenConsume(item)}
-                            className="cursor-pointer text-xs font-bold text-green-700 hover:underline bg-transparent border-none"
+                            className="cursor-pointer text-xs font-bold text-[var(--shelf-forest)] hover:underline bg-transparent border-none"
                           >
                             Use
                           </button>
@@ -719,7 +739,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
                       <span className="font-semibold text-[var(--shelf-dark)] truncate max-w-[120px]">
                         {record.productName}
                       </span>
-                      <span className="text-[9px] bg-green-50 border border-green-100 text-green-700 px-1.5 py-0.5 rounded shrink-0 font-bold">
+                      <span className="text-[9px] bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 text-[var(--shelf-forest)] px-1.5 py-0.5 rounded shrink-0 font-bold">
                         -{record.quantityUsed} {record.unit}
                       </span>
                     </div>
@@ -743,7 +763,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
       {/* Manual Consume Item Dialog */}
       {consumeItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4">
-          <div className="relative flex flex-col w-full max-w-sm bg-white rounded-2xl shadow-xl border border-[var(--shelf-border)] p-6 space-y-4">
+          <div className="relative flex flex-col w-full max-w-sm bg-[var(--shelf-surface)] rounded-2xl shadow-xl border border-[var(--shelf-border)] p-6 space-y-4">
             <div>
               <h3 className="text-lg font-bold text-[var(--shelf-dark)]">Use Product</h3>
               <p className="text-xs text-[var(--shelf-muted)] mt-1">
@@ -781,7 +801,7 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
               <button
                 type="button"
                 onClick={() => setConsumeItem(null)}
-                className="cursor-pointer rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-white hover:bg-[var(--shelf-cream)] transition"
+                className="cursor-pointer rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] transition"
               >
                 Cancel
               </button>
@@ -797,6 +817,26 @@ export default function InventoryView({ initialInventory, isBusiness = false }: 
           </div>
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      {confirmDialog && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          isDestructive={confirmDialog.isDestructive}
+          confirmLabel={confirmDialog.isDestructive ? "Delete" : "Confirm"}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(null)}
+        />
+      )}
     </div>
+  );
+}
+
+export default function InventoryView(props: InventoryViewProps) {
+  return (
+    <ToastProvider>
+      <InventoryViewInner {...props} />
+    </ToastProvider>
   );
 }

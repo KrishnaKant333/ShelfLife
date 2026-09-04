@@ -21,7 +21,7 @@ export default function ExpiryOverview({
   );
 
   return (
-    <section className="rounded-2xl bg-[var(--shelf-surface)] p-6 shadow-xl">
+    <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
@@ -33,7 +33,7 @@ export default function ExpiryOverview({
           </p>
         </div>
 
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-[var(--shelf-amber)]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)]">
           <AlertTriangle size={18} />
         </div>
       </div>
@@ -54,7 +54,7 @@ export default function ExpiryOverview({
               </p>
             </div>
 
-            <span className="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-[var(--shelf-amber)]">
+            <span className="shrink-0 rounded-full bg-[var(--shelf-amber)]/10 px-3 py-1 text-xs font-medium text-[var(--shelf-amber)]">
               {new Date(item.expiryDate).toLocaleDateString()}
             </span>
           </div>

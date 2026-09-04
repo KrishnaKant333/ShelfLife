@@ -100,13 +100,13 @@ export default function CsvImport() {
 
       {/* Error & Success Messages */}
       {error && (
-        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
           {success}
         </div>
       )}
@@ -119,11 +119,11 @@ export default function CsvImport() {
               Import Preview
             </h2>
             <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              <span className="rounded-full bg-green-100 border border-green-200 px-3 py-1 text-green-800 font-medium">
+              <span className="rounded-full bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-3 py-1 text-[var(--shelf-forest)] font-medium">
                 ✓ {validRows.length} valid
               </span>
               {invalidRows.length > 0 && (
-                <span className="rounded-full bg-red-100 border border-red-200 px-3 py-1 text-red-800 font-medium">
+                <span className="rounded-full bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-3 py-1 text-[var(--shelf-terracotta)] font-medium">
                   ⚠ {invalidRows.length} invalid
                 </span>
               )}
@@ -152,10 +152,10 @@ export default function CsvImport() {
                         <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.category}</td>
                         <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.quantity} {row.data.unit}</td>
                         <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.expiryDate.toLocaleDateString()}</td>
-                        <td className="px-6 py-4 text-sm text-green-700 font-medium">Valid</td>
+                        <td className="px-6 py-4 text-sm text-[var(--shelf-forest)] font-medium">Valid</td>
                       </>
                     ) : (
-                      <td colSpan={5} className="px-6 py-4 text-sm text-red-700 font-medium">
+                      <td colSpan={5} className="px-6 py-4 text-sm text-[var(--shelf-terracotta)] font-medium">
                         {row.error}
                       </td>
                     )}

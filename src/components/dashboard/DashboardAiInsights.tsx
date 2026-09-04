@@ -99,7 +99,7 @@ export default function DashboardAiInsights({ cacheKey, inventory = [] }: Dashbo
         
         <div className="flex flex-col items-start gap-1">
           <span className="text-xs font-semibold text-[var(--shelf-muted)] uppercase tracking-wider">Items Need Attention</span>
-          <span className={`text-2xl font-bold ${alertItems > 0 ? "text-[var(--shelf-terracotta)]" : "text-green-600"}`}>
+          <span className={`text-2xl font-bold ${alertItems > 0 ? "text-[var(--shelf-terracotta)]" : "text-[var(--shelf-forest)]"}`}>
             {alertItems}
           </span>
           <span className="text-[10px] text-[var(--shelf-muted)]">expired, expiring, or low stock</span>

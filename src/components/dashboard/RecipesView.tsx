@@ -16,6 +16,7 @@ import {
   Info,
 } from "lucide-react";
 import { generateRecipesAction, consumeIngredientsAction, type Recipe, type RecipeIngredient, type RecipeMode } from "@/lib/actions/recipes";
+import { ToastProvider, useToast } from "@/components/ui/Toast";
 
 type InventoryItem = {
   id: number;
@@ -48,8 +49,9 @@ const RECIPE_MODES: { value: RecipeMode; label: string; description: string }[] 
   },
 ];
 
-export default function RecipesView({ initialInventory }: RecipesViewProps) {
+function RecipesViewInner({ initialInventory }: RecipesViewProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +118,7 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
       }));
 
     if (itemsToConsume.length === 0) {
-      alert("No ingredients selected for consumption.");
+      showToast("No ingredients selected for consumption.", "error");
       return;
     }
 
@@ -124,16 +126,16 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
     try {
       const res = await consumeIngredientsAction(itemsToConsume);
       if (res.success) {
-        alert("Selected ingredients have been marked as consumed!");
+        showToast("Selected ingredients have been marked as consumed!", "success");
         handleCloseRecipe();
         router.refresh();
         // Update local list if we have it
         handleGenerate(); // re-generate to update recipe lists based on new stock levels
       } else {
-        alert(res.error || "Failed to mark ingredients as consumed.");
+        showToast(res.error || "Failed to mark ingredients as consumed.", "error");
       }
     } catch (err: any) {
-      alert("Failed to update inventory.");
+      showToast("Failed to update inventory.", "error");
     } finally {
       setConsuming(false);
     }
@@ -155,13 +157,13 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
+        <div className="rounded-xl border border-[var(--shelf-terracotta)]/20 bg-[var(--shelf-terracotta)]/10 p-4 text-sm text-[var(--shelf-terracotta)] flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--shelf-terracotta)] mt-0.5" />
           <div>
-            <h4 className="font-semibold text-red-900">Recipe Generation Failed</h4>
-            <p className="mt-1 text-red-800">{error}</p>
+            <h4 className="font-semibold text-[var(--shelf-terracotta)]">Recipe Generation Failed</h4>
+            <p className="mt-1 text-[var(--shelf-terracotta)]">{error}</p>
             {excludedExpiredCount > 0 && (
-              <p className="mt-2 text-xs text-red-700">
+              <p className="mt-2 text-xs text-[var(--shelf-terracotta)]">
                 <Info className="inline h-3.5 w-3.5 mr-1" />
                 {excludedExpiredCount} expired item{excludedExpiredCount !== 1 ? "s were" : " was"} excluded from recipe suggestions for your safety.
               </p>
@@ -193,7 +195,7 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
                   className={`text-left rounded-xl border-2 p-4 transition ${
                     recipeMode === mode.value
                       ? "border-[var(--shelf-forest)] bg-[var(--shelf-cream)]/60 shadow-sm"
-                      : "border-[var(--shelf-border)] bg-white hover:border-[var(--shelf-border)]"
+                      : "border-[var(--shelf-border)] bg-[var(--shelf-surface)] hover:border-[var(--shelf-border)]"
                   }`}
                 >
                   <h4 className="font-bold text-[var(--shelf-dark)]">{mode.label}</h4>
@@ -242,11 +244,11 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
         /* Recipes Grid list */
         <div className="space-y-6">
           {excludedExpiredCount > 0 && (
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 flex items-start gap-3">
-              <Info className="h-5 w-5 shrink-0 text-blue-600 mt-0.5" />
+            <div className="rounded-xl border border-[var(--shelf-blue)]/20 bg-[var(--shelf-blue)]/10 p-4 text-sm text-[var(--shelf-blue)] flex items-start gap-3">
+              <Info className="h-5 w-5 shrink-0 text-[var(--shelf-blue)] mt-0.5" />
               <div>
-                <h4 className="font-semibold text-blue-900">Expired Items Excluded</h4>
-                <p className="mt-1 text-blue-800">
+                <h4 className="font-semibold text-[var(--shelf-blue)]">Expired Items Excluded</h4>
+                <p className="mt-1 text-[var(--shelf-blue)]">
                   {excludedExpiredCount} expired item{excludedExpiredCount !== 1 ? "s were" : " was"} excluded from recipe suggestions. ShelfLife protects you by never recommending expired food.
                 </p>
               </div>
@@ -299,15 +301,15 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {recipe.ingredients.slice(0, 5).map((ing, i) => {
-                        let statusIcon = <Check className="h-3 w-3 text-green-600" />;
-                        let style = "bg-green-50 text-green-700 border-green-200";
+                        let statusIcon = <Check className="h-3 w-3 text-[var(--shelf-forest)]" />;
+                        let style = "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] border-[var(--shelf-forest)]/20";
 
                         if (ing.status === "expiring_soon") {
-                          statusIcon = <AlertTriangle className="h-3 w-3 text-amber-600" />;
-                          style = "bg-amber-50 text-amber-700 border-amber-200";
+                          statusIcon = <AlertTriangle className="h-3 w-3 text-[var(--shelf-amber)]" />;
+                          style = "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] border-[var(--shelf-amber)]/20";
                         } else if (ing.status === "pantry_item") {
-                          statusIcon = <HelpCircle className="h-3 w-3 text-gray-500" />;
-                          style = "bg-gray-100 text-gray-600 border-gray-200";
+                          statusIcon = <HelpCircle className="h-3 w-3 text-[var(--shelf-muted)]" />;
+                          style = "bg-[var(--shelf-cream)] text-[var(--shelf-muted)] border-[var(--shelf-border)]";
                         }
 
                         return (
@@ -346,7 +348,7 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
       {/* Recipe Detail Modal */}
       {selectedRecipe && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative flex flex-col w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-xl overflow-hidden border border-[var(--shelf-border)]">
+          <div className="relative flex flex-col w-full max-w-2xl max-h-[85vh] bg-[var(--shelf-surface)] rounded-2xl shadow-xl overflow-hidden border border-[var(--shelf-border)]">
             
             {/* Modal Header */}
             <div className="p-6 border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40 pr-12">
@@ -363,7 +365,7 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
               
               <button
                 onClick={handleCloseRecipe}
-                className="absolute top-6 right-6 text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)] rounded-lg p-1.5 hover:bg-gray-100"
+                className="absolute top-6 right-6 text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)] rounded-lg p-1.5 hover:bg-[var(--shelf-cream)]"
               >
                 <X size={20} />
               </button>
@@ -373,12 +375,12 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               
               {/* Recommendation advisory */}
-              <div className="rounded-xl bg-green-50 border border-green-200 p-4">
-                <h4 className="text-sm font-semibold text-green-900 flex items-center gap-1.5">
-                  <CheckCircle className="h-4 w-4 text-green-700" />
+              <div className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 p-4">
+                <h4 className="text-sm font-semibold text-[var(--shelf-forest)] flex items-center gap-1.5">
+                  <CheckCircle className="h-4 w-4 text-[var(--shelf-forest)]" />
                   ShelfLife Recommendation
                 </h4>
-                <p className="mt-1 text-sm text-green-800">
+                <p className="mt-1 text-sm text-[var(--shelf-forest)]">
                   {selectedRecipe.whyRecommended}
                 </p>
               </div>
@@ -395,14 +397,14 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
                       ? `(${matchedItem.quantity} ${matchedItem.unit} in stock)`
                       : "";
 
-                    let badgeColor = "bg-green-50 text-green-700 border-green-200";
+                    let badgeColor = "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] border-[var(--shelf-forest)]/20";
                     let badgeLabel = "Available";
 
                     if (ing.status === "expiring_soon") {
-                      badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
+                      badgeColor = "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] border-[var(--shelf-amber)]/20";
                       badgeLabel = "Expiring soon";
                     } else if (ing.status === "pantry_item") {
-                      badgeColor = "bg-gray-100 text-gray-600 border-gray-200";
+                      badgeColor = "bg-[var(--shelf-cream)] text-[var(--shelf-muted)] border-[var(--shelf-border)]";
                       badgeLabel = "Pantry Item";
                     }
 
@@ -425,8 +427,8 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
                               className="h-4.5 w-4.5 rounded-sm border-[var(--shelf-border)] text-[var(--shelf-forest)] focus:ring-[var(--shelf-forest)]"
                             />
                           ) : (
-                            <div className="h-4.5 w-4.5 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center">
-                              <span className="text-[10px] font-bold text-gray-500">○</span>
+                            <div className="h-4.5 w-4.5 rounded-full bg-[var(--shelf-cream)] border border-[var(--shelf-border)] flex items-center justify-center">
+                              <span className="text-[10px] font-bold text-[var(--shelf-muted)]">○</span>
                             </div>
                           )}
 
@@ -505,7 +507,7 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
             <div className="p-4 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 flex justify-between gap-3">
               <button
                 onClick={handleCloseRecipe}
-                className="rounded-xl border border-[var(--shelf-border)] px-5 py-2.5 text-sm font-semibold text-[var(--shelf-dark)] bg-white hover:bg-[var(--shelf-cream)] transition"
+                className="rounded-xl border border-[var(--shelf-border)] px-5 py-2.5 text-sm font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] transition"
               >
                 Close
               </button>
@@ -525,5 +527,13 @@ export default function RecipesView({ initialInventory }: RecipesViewProps) {
       )}
 
     </div>
+  );
+}
+
+export default function RecipesView(props: RecipesViewProps) {
+  return (
+    <ToastProvider>
+      <RecipesViewInner {...props} />
+    </ToastProvider>
   );
 }

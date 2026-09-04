@@ -19,7 +19,7 @@ export default function AddProductForm() {
   return (
     <form
       action={formAction}
-      className="rounded-2xl bg-white p-6 shadow-2xl"
+      className="rounded-2xl bg-[var(--shelf-surface)] p-6 shadow-2xl"
     >
       <div className="grid gap-6 md:grid-cols-2">
         <div>

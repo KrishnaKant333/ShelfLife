@@ -287,7 +287,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                     Open Camera & Scan
                   </button>
                   {scanError && (
-                    <p className="text-sm font-medium text-red-600 flex items-center justify-center gap-1">
+                    <p className="text-sm font-medium text-[var(--shelf-terracotta)] flex items-center justify-center gap-1">
                       <AlertCircle size={15} />
                       {scanError}
                     </p>
@@ -387,7 +387,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
           {activeTab === "manual" && (
             <form action={formAction} className="space-y-6">
               {lookupMessage && (
-                <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 text-xs text-blue-700 font-medium">
+                <div className="rounded-xl bg-[var(--shelf-blue)]/10 border border-[var(--shelf-blue)]/20 px-4 py-3 text-xs text-[var(--shelf-blue)] font-medium">
                   {lookupMessage}
                 </div>
               )}
@@ -476,7 +476,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
               </div>
 
               {state.error && (
-                <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                <p className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm font-medium text-[var(--shelf-terracotta)]">
                   {state.error}
                 </p>
               )}

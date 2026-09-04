@@ -8,10 +8,10 @@ export default function BusinessSignupPage() {
     <main className="min-h-screen bg-[var(--shelf-cream)]/30 px-6 py-12 md:py-16">
       <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--shelf-border)] bg-[var(--background)] shadow-[0_20px_50px_rgba(12,40,26,0.08)]">
         <div className="grid min-h-[820px] lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="flex flex-col justify-between bg-gradient-to-br from-[var(--shelf-dark)] via-[var(--shelf-forest)] to-[#1f5a4a] p-8 text-white md:p-12">
+          <section className="flex flex-col justify-between bg-gradient-to-br from-[var(--shelf-forest)] via-[var(--shelf-green)] to-[var(--shelf-dark)] p-8 text-white md:p-12">
             <div>
               <Link href="/" className="inline-block">
-                <Image src="/logo/shelflife.png" alt="ShelfLife" width={150} height={150} className="h-12 w-auto object-contain brightness-0 invert" priority />
+                <Image src="/logo/ShelfLife.png" alt="ShelfLife" width={150} height={150} className="h-12 w-auto object-contain" priority />
               </Link>
               <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100/80">
                 Business account

@@ -35,6 +35,9 @@ export default async function DashboardPage() {
 
   const healthScore = totalItems === 0 ? 100 : Math.round((freshItems / totalItems) * 100);
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
   // Map dates to ISO string to ensure safety/consistency inside child components
   const formattedInventory = inventory.map(item => ({
     ...item,
@@ -49,7 +52,7 @@ export default async function DashboardPage() {
             Overview Dashboard
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--shelf-dark)] md:text-4xl">
-            Good morning{session.user.name ? `, ${session.user.name}` : ""}
+            {greeting}{session.user.name ? `, ${session.user.name}` : ""}
           </h1>
           <p className="mt-2 text-sm text-[var(--shelf-muted)]">
             Here is a status update on your consumer inventory.

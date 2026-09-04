@@ -1,0 +1,938 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Fix undefined `--background` CSS variable": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255062896
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255086159
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255136652
+      }
+    ],
+    "2.1 Install `next-themes` as a production dependency": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255063329
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255142777
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255275014
+      }
+    ],
+    "2.2 Create `src/components/ThemeProvider.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255063742
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255284178
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255328746
+      }
+    ],
+    "2.3 Update `src/app/layout.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255063946
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255336519
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255429105
+      }
+    ],
+    "3.1 Create `src/components/ThemeToggle.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255064394
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255436040
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255505202
+      }
+    ],
+    "3.2 Add `<ThemeToggle />` to `src/components/Navbar.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255064544
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255511046
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255583544
+      }
+    ],
+    "4.1 `src/components/dashboard/InventoryView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255064673
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255590201
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255728927
+      }
+    ],
+    "4.2 `src/components/dashboard/WasteView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255064798
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255590891
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255729759
+      }
+    ],
+    "4.3 `src/components/dashboard/RecipesView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255064919
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255591350
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255729931
+      }
+    ],
+    "4.4 `src/components/dashboard/StrategyView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255065178
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255591905
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255730220
+      }
+    ],
+    "4.5 `src/components/dashboard/InvoiceImport.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255065461
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255592520
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255730500
+      }
+    ],
+    "4.6 `src/components/dashboard/AddProductForm.tsx` and `src/components/dashboard/EditProductForm.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255065582
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255737753
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256109589
+      }
+    ],
+    "4.7 `src/components/dashboard/DashboardUseFirst.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255065698
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255738687
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256110203
+      }
+    ],
+    "4.8 `src/components/Navbar.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255065826
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255739398
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256110536
+      }
+    ],
+    "4.9 `src/components/Hero.tsx`, `src/components/FinalCTA.tsx`, `src/components/ConsumerValue.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255065952
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255739917
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256111101
+      }
+    ],
+    "4.10 `src/components/InventoryHeroVisual.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255066078
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255740701
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256111716
+      }
+    ],
+    "5.1 Create a reusable `src/components/ui/Toast.tsx` component": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255066351
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256119472
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256338265
+      }
+    ],
+    "5.2 Create a reusable `src/components/ui/ConfirmDialog.tsx` component": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255066633
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256120248
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256338894
+      }
+    ],
+    "5.3 Replace `alert()` / `confirm()` in `src/components/dashboard/InventoryView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255066759
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256346114
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257092285
+      }
+    ],
+    "5.4 Replace `alert()` calls in `src/components/dashboard/WasteView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255066878
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256346659
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257090413
+      }
+    ],
+    "5.5 Replace `alert()` calls in `src/components/dashboard/RecipesView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255067000
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256347252
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257090867
+      }
+    ],
+    "5.6 Replace `window.confirm()` in `src/components/dashboard/DeleteProductButton.tsx` and `src/components/business/DeleteBusinessProductButton.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255067122
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256347824
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257091650
+      }
+    ],
+    "6.1 Create `src/app/dashboard/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255067252
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257107936
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257223334
+      }
+    ],
+    "6.2 Create `src/app/dashboard/inventory/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255067419
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257108445
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257222380
+      }
+    ],
+    "6.3 Create `src/app/dashboard/analytics/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255067559
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257109409
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257220433
+      }
+    ],
+    "6.4 Create `src/app/dashboard/alerts/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255067705
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257110293
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257219790
+      }
+    ],
+    "6.5 Create `src/app/dashboard/waste/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255067842
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257110595
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257219319
+      }
+    ],
+    "6.6 Create `src/app/dashboard/recipes/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255067995
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257229392
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257964529
+      }
+    ],
+    "6.7 Create `src/app/business/dashboard/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255068185
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257229875
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257963593
+      }
+    ],
+    "6.8 Create `src/app/business/dashboard/inventory/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255068623
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257230564
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257963361
+      }
+    ],
+    "6.9 Create `src/app/business/dashboard/analytics/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255068758
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257231157
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257962753
+      }
+    ],
+    "6.10 Create `src/app/business/dashboard/alerts/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255068896
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257231830
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257962110
+      }
+    ],
+    "6.11 Create `src/app/business/dashboard/waste/loading.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255069030
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257970051
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258002550
+      }
+    ],
+    "7. Remove unused three.js dependencies": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255069185
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255337399
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255429892
+      }
+    ],
+    "8. Checkpoint — build must pass after P0 + P1": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255069321
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258009295
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258145267
+      }
+    ],
+    "9. Fix Sidebar dark mode issues (`src/components/dashboard/Sidebar.tsx`)": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255069495
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258152646
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258576364
+      }
+    ],
+    "10. Make dashboard greeting time-aware": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255069645
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258153154
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258577845
+      }
+    ],
+    "11. Add theme selector section to Settings page (`src/components/dashboard/SettingsView.tsx`)": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255070088
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258153731
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258577110
+      }
+    ],
+    "12.1 `src/components/Navbar.tsx` — verify backdrop, mobile drawer, and all text use CSS variables (fix any remaining raw colour values)": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255070247
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258586694
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258655102
+      }
+    ],
+    "12.2 `src/components/Footer.tsx` — verify all colours use CSS variables": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255070383
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258587221
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258655680
+      }
+    ],
+    "12.3 `src/app/(marketing)/page.tsx` — spot-check the landing page for raw `bg-white`, `text-black`, `border-gray-*`; replace with semantic tokens": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255070525
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258587450
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258656817
+      }
+    ],
+    "12.4 `src/components/Hero.tsx`, `src/components/ConsumerValue.tsx`, `src/components/BusinessValue.tsx`, `src/components/HowItWorks.tsx`, `src/components/Pricing.tsx`, `src/components/WasteReduction.tsx`, `src/components/AIApproach.tsx`, `src/components/FinalCTA.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255070672
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258588469
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258658492
+      }
+    ],
+    "13.1 `src/app/consumer/login/page.tsx` and `src/app/consumer/signup/page.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255070799
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258667408
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258693442
+      }
+    ],
+    "13.2 `src/app/business/login/page.tsx` and `src/app/business/signup/page.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255070943
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258666150
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258694092
+      }
+    ],
+    "13.3 `src/components/auth/ConsumerLoginForm.tsx`, `ConsumerSignupForm.tsx`, `BusinessLoginForm.tsx`, `BusinessSignupForm.tsx`, `AuthInput.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255071078
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258667036
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258694946
+      }
+    ],
+    "14.1 `src/components/dashboard/AlertsView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255071225
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258701772
+      }
+    ],
+    "14.2 `src/components/dashboard/AnalyticsView.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255071354
+      }
+    ],
+    "14.3 `src/components/dashboard/StatCard.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255071493
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258702982
+      }
+    ],
+    "14.4 `src/components/dashboard/ExpiryOverview.tsx` and `src/components/dashboard/InventoryOverview.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255071628
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258704239
+      }
+    ],
+    "14.5 `src/components/dashboard/QuickActions.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255071779
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258702482
+      }
+    ],
+    "14.6 `src/components/dashboard/DashboardAiInsights.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255071917
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258703445
+      }
+    ],
+    "14.7 `src/components/dashboard/AddProductFlow.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255072058
+      }
+    ],
+    "14.8 `src/components/dashboard/CsvImport.tsx` and `src/components/business/BusinessCsvImport.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255072183
+      }
+    ],
+    "14.9 `src/components/business/BusinessAddProductForm.tsx`, `BusinessEditProductForm.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255072307
+      }
+    ],
+    "14.10 `src/components/business/BusinessInvoiceUpload.tsx`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255072426
+      }
+    ],
+    "15. Remove `src/lib/db-test.ts`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255072574
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258154348
+      },
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258578422
+      }
+    ],
+    "16. Full build verification and smoke check": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255072697
+      }
+    ],
+    "2. Install `next-themes` and create `ThemeProvider`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255429679
+      }
+    ],
+    "3. Add theme toggle to the public Navbar": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788255584043
+      }
+    ],
+    "4. Replace hardcoded `bg-white` with `bg-[var(--shelf-surface)]`": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788256111858
+      }
+    ],
+    "5. Replace `alert()` / `confirm()` with inline UI feedback": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788257092426
+      }
+    ],
+    "6. Add route-level loading skeletons": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258002895
+      }
+    ],
+    "12. Audit and fix dark mode on marketing/public pages": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258658837
+      }
+    ],
+    "13. Audit and fix dark mode on auth pages": [
+      {
+        "executionId": "f89e9e4e-e314-4083-9539-c8eea2d2cd40",
+        "chatSessionId": "sess_9661d854-7a4b-40ff-b81e-00f6a8dc9f91",
+        "timestamp": 1788258695071
+      }
+    ]
+  }
+}

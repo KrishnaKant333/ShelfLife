@@ -3,43 +3,34 @@
 :root {
   --shelf-forest: #31572c;
   --shelf-sage: #90a955;
-
   --shelf-cream: #f7f5ed;
-  --shelf-surface: #ffffff;
-
+  --shelf-surface: #f2f8f29d;
   --shelf-amber: #d99a2b;
   --shelf-terracotta: #c76b4b;
   --shelf-blue: #5b7c99;
-
   --shelf-dark: #182118;
   --shelf-muted: #667066;
-
   --shelf-border: #dfe5d9;
 
-  --shelf-green: var(--shelf-forest);
-
-  
+  --shelf-green: #4f7f3a;
+  --background: #f3f6ee;
 }
 
 .dark {
-  --shelf-forest: #90b887;
-  --shelf-sage: #a9c47f;
-
-  --shelf-cream: #101610;
-  --shelf-surface: #182019;
-
+  --shelf-forest: #34a32c;
+  --shelf-sage: #8fb87a;
+  --shelf-cream: #1a1d1e;
+  --shelf-surface: #242729c4;
   --shelf-amber: #e2ae4d;
   --shelf-terracotta: #d27b5c;
   --shelf-blue: #7fa1bd;
+  --shelf-dark: #95d88f;
+  --shelf-muted: #8b9196;
+  --shelf-border: #2e3336;
 
-  --shelf-dark: #f1f4ed;
-  --shelf-muted: #aab4a8;
-
-  --shelf-border: #2b382d;
-
-  --shelf-green: var(--shelf-forest);
+  --shelf-green: #4f9f45;
+  --background: #171a18;
 }
-
 .shelf-card {
   background: var(--shelf-surface);
   border: 1px solid var(--shelf-border);
@@ -99,12 +90,12 @@ body {
   background:
     radial-gradient(
       circle at 15% 20%,
-      rgba(144, 169, 85, 0.08),
+      rgba(109, 191, 103, 0.06),
       transparent 28%
     ),
     radial-gradient(
       circle at 85% 70%,
-      rgba(49, 87, 44, 0.15),
+      rgba(109, 191, 103, 0.04),
       transparent 30%
     ),
     var(--shelf-cream);

@@ -11,7 +11,7 @@ export default function ConsumerSignupPage() {
           <section className="flex flex-col justify-between bg-gradient-to-br from-[var(--shelf-forest)] via-[var(--shelf-green)] to-[var(--shelf-dark)] p-8 text-white md:p-12">
             <div>
               <Link href="/" className="inline-block">
-                <Image src="/logo/shelflife.png" alt="ShelfLife" width={150} height={150} className="h-12 w-auto object-contain brightness-0 invert" priority />
+                <Image src="/logo/ShelfLife.png" alt="ShelfLife" width={150} height={150} className="h-12 w-auto object-contain" priority />
               </Link>
               <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100/80">
                 Consumer account

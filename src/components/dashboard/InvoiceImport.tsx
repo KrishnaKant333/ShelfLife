@@ -205,7 +205,7 @@ export default function InvoiceImport() {
             </div>
 
             {stats && (
-              <div className="rounded-xl border border-[var(--shelf-border)] bg-white p-4 text-xs space-y-2">
+              <div className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 text-xs space-y-2">
                 <h4 className="font-bold text-[var(--shelf-dark)] uppercase tracking-wider">
                   Invoice Intelligence Analysis
                 </h4>

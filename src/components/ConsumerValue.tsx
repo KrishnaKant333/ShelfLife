@@ -67,9 +67,9 @@ export default function ConsumerValue() {
               Get personalized ideas based on what's expiring soon, reduce duplicate purchases, and turn your inventory into useful meals instead of waste.
             </p>
             <div className="mt-8 flex flex-wrap gap-3 text-sm text-[var(--shelf-dark)]">
-              <span className="rounded-full border border-[var(--shelf-border)] bg-white px-3 py-1.5">Expiry-led recipes</span>
-              <span className="rounded-full border border-[var(--shelf-border)] bg-white px-3 py-1.5">Smart reminders</span>
-              <span className="rounded-full border border-[var(--shelf-border)] bg-white px-3 py-1.5">Pantry visibility</span>
+              <span className="rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3 py-1.5">Expiry-led recipes</span>
+              <span className="rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3 py-1.5">Smart reminders</span>
+              <span className="rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3 py-1.5">Pantry visibility</span>
             </div>
           </div>
 

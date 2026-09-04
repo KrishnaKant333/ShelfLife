@@ -44,7 +44,7 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
       <div className="space-y-4">
         {alerts.length === 0 ? (
           <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-12 text-center shadow-sm">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-700">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]">
               <CheckCircle2 size={32} />
             </div>
             <h3 className="mt-4 text-lg font-semibold text-[var(--shelf-dark)]">
@@ -100,8 +100,8 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
                       isExpired || isLowStock
-                        ? "bg-red-50 text-[var(--shelf-terracotta)] border border-red-100"
-                        : "bg-amber-50 text-[var(--shelf-amber)] border border-amber-100"
+                        ? "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)] border border-[var(--shelf-terracotta)]/20"
+                        : "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] border border-[var(--shelf-amber)]/20"
                     }`}
                   >
                     {status}

@@ -11,7 +11,7 @@ export default function InventoryOverview({
   inventory,
 }: InventoryOverviewProps) {
   return (
-    <section className="rounded-2xl bg-[var(--shelf-surface)] p-6 shadow-xl">
+    <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">

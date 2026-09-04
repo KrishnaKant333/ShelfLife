@@ -14,7 +14,7 @@ export default function StatCard({
   icon: Icon,
 }: StatCardProps) {
   return (
-    <div className="rounded-2xl bg-[var(--shelf-surface)] p-5 shadow-xl">
+    <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-[var(--shelf-muted)]">

@@ -26,7 +26,7 @@ export default function Hero(){
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
                 href="/get-started"
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-forest)] px-7 py-3.5 font-semibold text-white transition hover:bg-[var(--shelf-green)]"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-forest)] px-7 py-3.5 font-semibold text-white transition hover:opacity-90"
               >
                 Get Started Free
                 <ArrowRight size={18} />
@@ -34,7 +34,7 @@ export default function Hero(){
 
               <Link
                 href="/business/dashboard"
-                className="inline-flex items-center gap-2 rounded-full border border-[var(--shelf-forest)] bg-white px-7 py-3.5 font-semibold text-[var(--shelf-forest)] transition hover:bg-[var(--shelf-cream)]"
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--shelf-forest)] bg-[var(--shelf-surface)] px-7 py-3.5 font-semibold text-[var(--shelf-forest)] transition hover:bg-[var(--shelf-cream)]"
               >
                 For Businesses
                 <ArrowUpRight size={18} />

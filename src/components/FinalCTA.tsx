@@ -25,7 +25,7 @@ export default function FinalCTA() {
 
             <Link
               href="/get-started"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--shelf-forest)] bg-white px-8 py-4 font-semibold text-[var(--shelf-forest)] hover:bg-[var(--shelf-cream)] transition"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--shelf-forest)] bg-[var(--shelf-surface)] px-8 py-4 font-semibold text-[var(--shelf-forest)] hover:bg-[var(--shelf-cream)] transition"
             >
               For Your Business
             </Link>

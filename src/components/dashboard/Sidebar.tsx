@@ -179,7 +179,7 @@ export default function Sidebar({ user, onCloseMobile, inventory = [] }: Sidebar
 
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition duration-150 text-left"
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[var(--shelf-terracotta)] hover:bg-[var(--shelf-terracotta)]/10 transition duration-150 text-left"
         >
           <LogOut size={18} strokeWidth={1.8} />
           Sign out

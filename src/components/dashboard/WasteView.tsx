@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { getDaysUntilExpiry, formatExpiry } from "@/lib/format-expiry";
 import { consumeIngredientsAction } from "@/lib/actions/recipes";
+import { ToastProvider, useToast } from "@/components/ui/Toast";
 
 type InventoryItem = {
   id: number;
@@ -31,8 +32,9 @@ interface WasteViewProps {
   isBusiness?: boolean;
 }
 
-export default function WasteView({ inventory, isBusiness = false }: WasteViewProps) {
+function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [useQuantity, setUseQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -59,25 +61,25 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
 
   // Get risk rating text
   let riskLevel = "Low Risk";
-  let riskColor = "text-green-600 bg-green-50 border-green-200";
+  let riskColor = "text-[var(--shelf-forest)] bg-[var(--shelf-forest)]/10 border-[var(--shelf-forest)]/20";
   let riskBarColor = "bg-green-600";
 
   if (riskScore >= 70) {
     riskLevel = "Critical Expiry Exposure";
-    riskColor = "text-[var(--shelf-terracotta)] bg-red-50 border-red-200";
+    riskColor = "text-[var(--shelf-terracotta)] bg-[var(--shelf-terracotta)]/10 border-[var(--shelf-terracotta)]/20";
     riskBarColor = "bg-[var(--shelf-terracotta)]";
   } else if (riskScore >= 30) {
     riskLevel = "Moderate Waste Risk";
-    riskColor = "text-[var(--shelf-amber)] bg-amber-50 border-amber-200";
+    riskColor = "text-[var(--shelf-amber)] bg-[var(--shelf-amber)]/10 border-[var(--shelf-amber)]/20";
     riskBarColor = "bg-[var(--shelf-amber)]";
   }
 
   // Combined "At Risk" list prioritized by urgency
   const atRiskList = [
-    ...expiredItems.map(x => ({ ...x, statusLabel: "Expired", statusColor: "text-[var(--shelf-terracotta)] bg-red-50 border-red-200" })),
-    ...criticalItems.map(x => ({ ...x, statusLabel: `Expiring in ${formatExpiry(x.expiryDate)}`, statusColor: "text-[var(--shelf-amber)] bg-amber-50 border-amber-200" })),
-    ...warningItems.map(x => ({ ...x, statusLabel: `Expires in ${formatExpiry(x.expiryDate)}`, statusColor: "text-blue-700 bg-blue-50 border-blue-200" })),
-    ...lowStockItems.map(x => ({ ...x, statusLabel: "Low Stock", statusColor: "text-purple-700 bg-purple-50 border-purple-200" }))
+    ...expiredItems.map(x => ({ ...x, statusLabel: "Expired", statusColor: "text-[var(--shelf-terracotta)] bg-[var(--shelf-terracotta)]/10 border-[var(--shelf-terracotta)]/20" })),
+    ...criticalItems.map(x => ({ ...x, statusLabel: `Expiring in ${formatExpiry(x.expiryDate)}`, statusColor: "text-[var(--shelf-amber)] bg-[var(--shelf-amber)]/10 border-[var(--shelf-amber)]/20" })),
+    ...warningItems.map(x => ({ ...x, statusLabel: `Expires in ${formatExpiry(x.expiryDate)}`, statusColor: "text-[var(--shelf-blue)] bg-[var(--shelf-blue)]/10 border-[var(--shelf-blue)]/20" })),
+    ...lowStockItems.map(x => ({ ...x, statusLabel: "Low Stock", statusColor: "text-[var(--shelf-muted)] bg-[var(--shelf-cream)] border-[var(--shelf-border)]" }))
   ];
 
   const handleOpenUseFirst = (item: InventoryItem) => {
@@ -93,14 +95,14 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
         { itemId: selectedItem.id, quantityUsed: useQuantity }
       ]);
       if (res.success) {
-        alert(`${selectedItem.name} updated successfully.`);
+        showToast(`${selectedItem.name} updated successfully.`, "success");
         setSelectedItem(null);
         router.refresh();
       } else {
-        alert(res.error || "Failed to update item.");
+        showToast(res.error || "Failed to update item.", "error");
       }
     } catch (err: any) {
-      alert("Failed to consume item.");
+      showToast("Failed to consume item.", "error");
     } finally {
       setLoading(false);
     }
@@ -185,11 +187,11 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
                 </div>
               ) : (
                 useFirstList.map((item, idx) => {
-                  let badge = "text-green-700 bg-green-50 border border-green-100";
+                  let badge = "text-[var(--shelf-forest)] bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20";
                   if (item.days < 0) {
-                    badge = "text-[var(--shelf-terracotta)] bg-red-50 border border-red-100";
+                    badge = "text-[var(--shelf-terracotta)] bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20";
                   } else if (item.days <= 3) {
-                    badge = "text-[var(--shelf-amber)] bg-amber-50 border border-amber-100";
+                    badge = "text-[var(--shelf-amber)] bg-[var(--shelf-amber)]/10 border border-[var(--shelf-amber)]/20";
                   }
 
                   return (
@@ -253,7 +255,7 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
         <div className="mt-6 space-y-3">
           {atRiskList.length === 0 ? (
             <div className="rounded-xl border border-dashed border-[var(--shelf-border)] p-12 text-center">
-              <CheckCircle2 className="mx-auto h-10 w-10 text-green-600" />
+              <CheckCircle2 className="mx-auto h-10 w-10 text-[var(--shelf-forest)]" />
               <h4 className="mt-3 text-sm font-bold text-[var(--shelf-dark)]">Zero risk detected</h4>
               <p className="mt-1 text-xs text-[var(--shelf-muted)]">
                 All inventory items are fresh and have healthy stock levels!
@@ -263,7 +265,7 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
             atRiskList.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-[var(--shelf-border)] bg-white p-4 hover:border-[var(--shelf-sage)] transition"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 hover:border-[var(--shelf-sage)] transition"
               >
                 <div className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-[var(--shelf-terracotta)]" />
@@ -284,7 +286,7 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
                     {!isBusiness && (
                       <button
                         onClick={handleRecipeRedirect}
-                        className="inline-flex items-center gap-1 rounded-lg border border-[var(--shelf-border)] px-3 py-1.5 text-xs font-semibold text-[var(--shelf-dark)] bg-white hover:bg-[var(--shelf-cream)]"
+                        className="inline-flex items-center gap-1 rounded-lg border border-[var(--shelf-border)] px-3 py-1.5 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)]"
                       >
                         <Utensils size={13} />
                         Use in Recipe
@@ -307,7 +309,7 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
       {/* Consume Modal */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative flex flex-col w-full max-w-sm bg-white rounded-2xl shadow-xl border border-[var(--shelf-border)] overflow-hidden">
+          <div className="relative flex flex-col w-full max-w-sm bg-[var(--shelf-surface)] rounded-2xl shadow-xl border border-[var(--shelf-border)] overflow-hidden">
             <div className="p-5 border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40">
               <h3 className="text-lg font-bold text-[var(--shelf-dark)]">Use Product</h3>
               <p className="text-xs text-[var(--shelf-muted)] mt-0.5">
@@ -315,7 +317,7 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
               </p>
               <button
                 onClick={() => setSelectedItem(null)}
-                className="absolute top-5 right-5 text-[var(--shelf-muted)] hover:text-gray-700"
+                className="absolute top-5 right-5 text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
               >
                 <X size={18} />
               </button>
@@ -351,7 +353,7 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
             <div className="p-4 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 flex justify-end gap-3">
               <button
                 onClick={() => setSelectedItem(null)}
-                className="rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-white hover:bg-[var(--shelf-cream)]"
+                className="rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)]"
               >
                 Cancel
               </button>
@@ -367,5 +369,13 @@ export default function WasteView({ inventory, isBusiness = false }: WasteViewPr
         </div>
       )}
     </div>
+  );
+}
+
+export default function WasteView(props: WasteViewProps) {
+  return (
+    <ToastProvider>
+      <WasteViewInner {...props} />
+    </ToastProvider>
   );
 }

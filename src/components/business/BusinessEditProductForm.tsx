@@ -37,7 +37,7 @@ export default function BusinessEditProductForm({
   return (
     <form
       action={formAction}
-      className="rounded-2xl bg-white p-6 shadow-2xl"
+      className="rounded-2xl bg-[var(--shelf-surface)] border border-[var(--shelf-border)] p-6 shadow-sm"
     >
       <div className="grid gap-6 md:grid-cols-2">
         <div>
@@ -54,7 +54,7 @@ export default function BusinessEditProductForm({
             type="text"
             defaultValue={product.name}
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] placeholder:text-[var(--shelf-muted)] px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>
 
@@ -72,7 +72,7 @@ export default function BusinessEditProductForm({
             type="text"
             defaultValue={product.category}
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] placeholder:text-[var(--shelf-muted)] px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>
 
@@ -92,7 +92,7 @@ export default function BusinessEditProductForm({
             step="1"
             defaultValue={product.quantity}
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] placeholder:text-[var(--shelf-muted)] px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>
 
@@ -110,7 +110,7 @@ export default function BusinessEditProductForm({
             type="text"
             defaultValue={product.unit}
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] placeholder:text-[var(--shelf-muted)] px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>
 
@@ -128,13 +128,13 @@ export default function BusinessEditProductForm({
             type="date"
             defaultValue={product.expiryDate.slice(0, 10)}
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>
       </div>
 
       {state.error && (
-        <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="mt-5 rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
           {state.error}
         </p>
       )}
@@ -142,7 +142,7 @@ export default function BusinessEditProductForm({
       <div className="mt-8 flex justify-end gap-3">
         <Link
           href="/business/dashboard/inventory"
-          className="rounded-xl border border-black/10 px-5 py-3 text-sm font-medium"
+          className="rounded-xl border border-[var(--shelf-border)] px-5 py-3 text-sm font-medium text-[var(--shelf-dark)] hover:bg-[var(--shelf-cream)] transition"
         >
           Cancel
         </Link>
