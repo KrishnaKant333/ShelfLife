@@ -1,4 +1,6 @@
 {
+  "roadmap": "ordered-p0-p1-p2",
+  "lastAudited": "2026-09-05",
   "pbtResults": {},
   "executionHistory": {
     "1. Fix undefined `--background` CSS variable": [

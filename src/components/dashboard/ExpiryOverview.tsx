@@ -57,7 +57,9 @@ export default function ExpiryOverview({
             </div>
 
             <span className="shrink-0 rounded-full bg-[var(--shelf-amber)]/10 px-3 py-1 text-xs font-medium text-[var(--shelf-amber)]">
-              {new Date(item.expiryDate).toLocaleDateString()}
+              {item.expiryDate
+                ? new Date(item.expiryDate).toLocaleDateString()
+                : "Expiry not available"}
             </span>
           </div>
         ))}

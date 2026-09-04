@@ -11,7 +11,7 @@ type InventoryItem = {
   category: string;
   quantity: number;
   unit: string;
-  expiryDate: string;
+  expiryDate: string | null;
 };
 
 interface DashboardShellProps {
@@ -26,6 +26,7 @@ interface DashboardShellProps {
 
 export default function DashboardShell({ children, user, inventory = [] }: DashboardShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[var(--shelf-cream)] flex flex-col lg:flex-row">
@@ -58,9 +59,9 @@ export default function DashboardShell({ children, user, inventory = [] }: Dashb
       )}
 
       {/* Desktop Sidebar (Permanent) */}
-      <div className="hidden w-64 shrink-0 lg:block">
-        <div className="fixed h-screen w-64">
-          <Sidebar user={user} inventory={inventory} />
+      <div className={`hidden shrink-0 lg:block ${sidebarCollapsed ? "w-20" : "w-64"}`}>
+        <div className="fixed h-screen">
+          <Sidebar user={user} inventory={inventory} collapsed={sidebarCollapsed} onToggleCollapsed={() => setSidebarCollapsed((value) => !value)} />
         </div>
       </div>
 

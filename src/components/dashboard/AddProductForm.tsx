@@ -71,7 +71,7 @@ export default function AddProductForm() {
             name="quantity"
             type="number"
             min="1"
-            step="1"
+            step="any"
             placeholder="e.g. 2"
             required
             className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
@@ -108,7 +108,6 @@ export default function AddProductForm() {
             id="expiryDate"
             name="expiryDate"
             type="date"
-            required
             className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>

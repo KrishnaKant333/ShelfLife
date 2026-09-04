@@ -7,6 +7,11 @@ import { z } from "zod";
 import { redirect } from "next/navigation";
 
 import { db } from "@/prisma/db";
+import { createHash, randomBytes } from "node:crypto";
+import {
+  isEmailVerificationConfigured,
+  sendVerificationEmail,
+} from "@/lib/email";
 
 
 const baseSignupSchema = z
@@ -45,6 +50,15 @@ type AuthActionResult = {
   error?: string;
 };
 
+function createVerificationToken() {
+  const token = randomBytes(32).toString("hex");
+  return {
+    token,
+    hash: createHash("sha256").update(token).digest("hex"),
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  };
+}
+
 export async function registerConsumer(
   _previousState: AuthActionResult,
   formData: FormData,
@@ -64,6 +78,12 @@ export async function registerConsumer(
 
   const { name, email, password } = result.data;
 
+  if (!isEmailVerificationConfigured() && process.env.NODE_ENV !== "development") {
+    return {
+      error: "Email verification is temporarily unavailable. Please try again later.",
+    };
+  }
+
   const existingUser = await db.orm.public.User.first({
     email,
   });
@@ -75,6 +95,7 @@ export async function registerConsumer(
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
+  const verification = createVerificationToken();
 
   await db.orm.public.User.create({
     name,
@@ -82,8 +103,17 @@ export async function registerConsumer(
     passwordHash,
     accountType: "consumer",
     plan: "consumer_free",
+    emailVerificationTokenHash: verification.hash,
+    emailVerificationExpiresAt: verification.expiresAt,
+    emailVerifiedAt: isEmailVerificationConfigured()
+      ? null
+      : new Date().toISOString(),
     updatedAt: Temporal.Now.instant(),
   });
+
+  if (isEmailVerificationConfigured()) {
+    await sendVerificationEmail(email, verification.token);
+  }
 
   redirect("/consumer/login");
 }
@@ -115,6 +145,12 @@ export async function registerBusiness(
     industry,
   } = result.data;
 
+  if (!isEmailVerificationConfigured() && process.env.NODE_ENV !== "development") {
+    return {
+      error: "Email verification is temporarily unavailable. Please try again later.",
+    };
+  }
+
   const existingUser = await db.orm.public.User.first({
     email,
   });
@@ -126,6 +162,7 @@ export async function registerBusiness(
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
+  const verification = createVerificationToken();
 
   const business = await db.orm.public.Business.create({
     name: businessName,
@@ -140,8 +177,40 @@ export async function registerBusiness(
     accountType: "business",
     businessId: business.id,
     plan: "business_starter",
+    emailVerificationTokenHash: verification.hash,
+    emailVerificationExpiresAt: verification.expiresAt,
+    emailVerifiedAt: isEmailVerificationConfigured()
+      ? null
+      : new Date().toISOString(),
     updatedAt: Temporal.Now.instant(),
   });
 
+  if (isEmailVerificationConfigured()) {
+    await sendVerificationEmail(email, verification.token);
+  }
+
   redirect("/business/login");
+}
+
+export async function verifyEmailAction(token: string): Promise<void> {
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const user = await db.orm.public.User.first({
+    emailVerificationTokenHash: tokenHash,
+  });
+
+  if (!user || !user.emailVerificationExpiresAt) {
+    throw new Error("This verification link is invalid or has expired.");
+  }
+
+  if (new Date(user.emailVerificationExpiresAt).getTime() < Date.now()) {
+    throw new Error("This verification link has expired. Request a new one.");
+  }
+
+  await db.orm.public.User.where({ id: user.id }).update({
+    emailVerifiedAt: new Date().toISOString(),
+    emailVerificationTokenHash: null,
+    emailVerificationExpiresAt: null,
+  });
+
+  redirect(user.accountType === "business" ? "/business/login?verified=1" : "/consumer/login?verified=1");
 }

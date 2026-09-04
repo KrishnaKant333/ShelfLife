@@ -1,28 +1,21 @@
 export type UnitCategory = "weight" | "volume" | "count" | "incompatible";
 
+const UNIT_ALIASES = {
+  weight: ["mg", "g", "gm", "gram", "grams", "kg", "kilogram", "kilograms", "tonne", "tonnes", "t", "oz", "ounce", "ounces", "lb", "lbs", "pound", "pounds"],
+  volume: ["ml", "millilitre", "millilitres", "milliliter", "milliliters", "l", "litre", "litres", "liter", "liters", "cl", "gallon", "gallons", "gal", "fl oz"],
+  count: ["piece", "pieces", "pc", "pcs", "unit", "units", "pack", "packs", "packet", "packets", "bottle", "bottles", "box", "boxes", "can", "cans", "jar", "jars"],
+} as const;
+
 export function getUnitCategory(unit: string): UnitCategory {
   const u = unit.toLowerCase().trim();
-  if (["mg", "g", "gm", "gram", "grams", "kg", "tonne"].includes(u)) {
+  if (UNIT_ALIASES.weight.includes(u as (typeof UNIT_ALIASES.weight)[number])) {
     return "weight";
   }
-  if (["ml", "l", "litre", "liter", "litres", "cl"].includes(u)) {
+  if (UNIT_ALIASES.volume.includes(u as (typeof UNIT_ALIASES.volume)[number])) {
     return "volume";
   }
   if (
-    [
-      "piece",
-      "pieces",
-      "unit",
-      "units",
-      "pack",
-      "packs",
-      "bottle",
-      "bottles",
-      "box",
-      "boxes",
-      "can",
-      "cans",
-    ].includes(u)
+    UNIT_ALIASES.count.includes(u as (typeof UNIT_ALIASES.count)[number])
   ) {
     return "count";
   }
@@ -45,14 +38,18 @@ export function normalizeQuantity(
   if (cat === "weight") {
     if (u === "mg") return { normalizedValue: quantity / 1000, category: cat };
     if (["g", "gm", "gram", "grams"].includes(u)) return { normalizedValue: quantity, category: cat };
-    if (u === "kg") return { normalizedValue: quantity * 1000, category: cat };
-    if (u === "tonne") return { normalizedValue: quantity * 1000000, category: cat };
+    if (["kg", "kilogram", "kilograms"].includes(u)) return { normalizedValue: quantity * 1000, category: cat };
+    if (["tonne", "tonnes", "t"].includes(u)) return { normalizedValue: quantity * 1000000, category: cat };
+    if (["oz", "ounce", "ounces"].includes(u)) return { normalizedValue: quantity * 28.3495, category: cat };
+    if (["lb", "lbs", "pound", "pounds"].includes(u)) return { normalizedValue: quantity * 453.592, category: cat };
   }
 
   if (cat === "volume") {
-    if (u === "ml") return { normalizedValue: quantity, category: cat };
-    if (["l", "litre", "liter", "litres"].includes(u)) return { normalizedValue: quantity * 1000, category: cat };
+    if (["ml", "millilitre", "millilitres", "milliliter", "milliliters"].includes(u)) return { normalizedValue: quantity, category: cat };
+    if (["l", "litre", "litres", "liter", "liters"].includes(u)) return { normalizedValue: quantity * 1000, category: cat };
     if (u === "cl") return { normalizedValue: quantity * 10, category: cat };
+    if (["gallon", "gallons", "gal"].includes(u)) return { normalizedValue: quantity * 3785.41, category: cat };
+    if (u === "fl oz") return { normalizedValue: quantity * 29.5735, category: cat };
   }
 
   if (cat === "count") {
@@ -108,6 +105,9 @@ export function isLowStock(quantity: number, unit: string): boolean {
     return normalizedValue <= 250;
   }
   
-  // Default for count/unrecognized units
-  return quantity <= 2;
+  if (category === "count") {
+    return normalizedValue <= 2;
+  }
+
+  return false;
 }

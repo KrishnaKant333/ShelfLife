@@ -15,7 +15,7 @@ interface EditProductFormProps {
     category: string;
     quantity: number;
     unit: string;
-    expiryDate: string;
+    expiryDate: string | null;
   };
 }
 
@@ -53,7 +53,6 @@ export default function EditProductForm({
             name="name"
             type="text"
             defaultValue={product.name}
-            required
             className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>
@@ -89,7 +88,7 @@ export default function EditProductForm({
             name="quantity"
             type="number"
             min="1"
-            step="1"
+            step="any"
             defaultValue={product.quantity}
             required
             className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
@@ -126,8 +125,7 @@ export default function EditProductForm({
             id="expiryDate"
             name="expiryDate"
             type="date"
-            defaultValue={product.expiryDate.slice(0, 10)}
-            required
+            defaultValue={product.expiryDate?.slice(0, 10) ?? ""}
             className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>

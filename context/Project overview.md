@@ -1,298 +1,31 @@
-# ShelfLife — Project Overview
+# ShelfLife Project Overview
 
 ## Product
 
-ShelfLife is a food inventory intelligence SaaS designed for both individual consumers and food businesses.
+ShelfLife helps households and food businesses know what inventory they have, what needs attention, and what should be used first. Deterministic application logic is the source of truth; AI assists with extraction and recommendations.
 
-The core objective is:
+## Account types
 
-> Know what you have. Know what to use first. Waste less.
+Consumer data is owned by the authenticated user and uses `/dashboard`. Business data is owned by the authenticated user and authenticated business and uses `/business/dashboard`. Shared UI is preferred where behavior is identical.
 
-ShelfLife combines deterministic inventory management with AI-assisted intelligence.
+Implemented capabilities include inventory CRUD, expiry/status tracking, imports and exports, barcode/label scanning, alerts, analytics, waste management, consumption tracking, recipes, FIFO, Business Inventory Strategy, and theme support.
 
-It is NOT simply an AI application.
+## Current gaps
 
-Deterministic application logic is responsible for safety-critical decisions such as:
+The data model currently requires `expiryDate`, there is no expired-item discard/archive workflow, and email verification is absent. Normalization exists for common weight, volume, and count units but requires expansion and stronger handling of unknown/incompatible units. Product detail, image, activity, notification, and collapsed-sidebar features are also pending.
 
-- Expiry classification
-- Inventory ownership
-- Quantity calculations
-- Unit normalization
-- Expired-product exclusion
-- Stock status
+## Safety principles
 
-AI is used to enhance the experience through:
+- Ownership is established from the server session.
+- Expiry status is deterministic.
+- Expired inventory is excluded before recipe AI calls and AI responses are validated.
+- AI may not invent dates, quantities, IDs, or ownership facts.
+- Missing expiry remains explicitly unknown rather than silently becoming a guessed date.
 
-- Invoice extraction
-- Product label extraction
-- Inventory insights
-- Consumer recipe generation
-- Business intelligence recommendations
+## Roadmap order
 
----
+P0: expired discard, robust unit normalization, safe missing-expiry handling, email verification.
 
-# Account Types
+P1: sidebar collapse/mobile navigation, list/grid inventory, product detail, images/default icons, inventory activity, consumption/discard history, sorting, notifications.
 
-ShelfLife has two account types.
-
-## Consumer
-
-Designed for household/personal inventory.
-
-Primary capabilities:
-
-- Personal inventory
-- Expiry tracking
-- Alerts
-- Analytics
-- Waste insights
-- Barcode scanning
-- Label scanning
-- CSV import
-- Invoice import
-- Consumption tracking
-- AI recipe generation
-- Recipe modes
-- Shopping assistance
-- Data export
-
-Consumer dashboard route:
-
-`/dashboard`
-
----
-
-## Business
-
-Designed for food businesses such as:
-
-- Grocery stores
-- Restaurants
-- Cafes
-- Bakeries
-- Small food businesses
-
-Primary capabilities:
-
-- Business inventory
-- Expiry tracking
-- Alerts
-- Analytics
-- Waste management
-- Barcode scanning
-- Label scanning
-- CSV import
-- Invoice import
-- Consumption tracking
-- FIFO prioritization
-- Inventory Strategy
-- AI insights
-- Data export
-
-Business dashboard route:
-
-`/business/dashboard`
-
----
-
-# Feature Philosophy
-
-Consumer and Business accounts should have strong feature parity where functionality is generally useful to both.
-
-The distinction should primarily come from the context of the feature rather than arbitrary restrictions.
-
-Examples:
-
-Common:
-- Inventory
-- Alerts
-- Analytics
-- Waste Management
-- Barcode
-- Label scanning
-- CSV import
-- Invoice import
-- Consumption tracking
-- Exports
-
-Consumer-focused:
-- AI Recipes
-- Recipe modes
-- Personal meal/shopping assistance
-
-Business-focused:
-- FIFO
-- Inventory Strategy
-- Operational insights
-- Future team/location management
-
----
-
-# Current Application
-
-The application currently has:
-
-- Landing page
-- Account-type selection page
-- Consumer authentication
-- Business authentication
-- Shared dashboard visual language
-- Consumer dashboard
-- Business dashboard
-- Inventory management
-- Alerts
-- Analytics
-- Waste Management
-- Consumer AI Recipes
-- Settings
-- Sign out
-- Barcode scanning
-- Label/OCR scanning
-- CSV import
-- Invoice import
-- Groq integration
-- CSV export
-- PDF export
-- Consumption tracking
-- Quantity/unit normalization
-- FIFO
-- Business Inventory Strategy
-- AI ShelfLife Brief
-
----
-
-# AI Provider
-
-Current AI provider:
-
-Groq
-
-Current model usage includes:
-
-- Invoice extraction
-- Label extraction
-- AI inventory insights
-- Recipe generation
-
-AI output must always be validated before being treated as authoritative inventory information.
-
----
-
-# Critical AI Safety Rule
-
-Expired products MUST NOT be used as recipe ingredients.
-
-The correct flow is:
-
-Database inventory
-→ deterministic expiry classification
-→ remove expired products
-→ select valid candidates
-→ send candidates to AI
-→ validate AI response
-→ display recipe
-
-AI must never be allowed to decide that an expired product is safe to consume.
-
----
-
-# Current Pricing Model
-
-## Consumers
-
-Free:
-₹0/month
-
-Plus:
-₹149/month
-
-## Businesses
-
-Starter:
-₹0/month
-
-Pro:
-₹499/month
-
-Growth:
-₹999/month
-
-The current product does not have real payment processing.
-
-Future premium features should be represented as "Coming Soon" until actually implemented.
-
----
-
-# Current Design Direction
-
-The landing page has already received a major redesign and is currently the strongest visual part of the application.
-
-Current visual language:
-
-- Warm cream/off-white backgrounds
-- Forest/deep green
-- Muted green
-- Amber
-- Terracotta
-- Subtle borders
-- Rounded cards
-- Restrained shadows
-- Clean typography
-- Minimal animations
-
-However, the dashboard/application UI still requires a major visual refinement.
-
-The next major objective is to make the ENTIRE application feel visually consistent with a polished commercial SaaS product.
-
-The application should NOT remain monochromatically green.
-
-The new design should use a restrained multi-color palette with meaningful semantic colors while remaining professional.
-
----
-
-# Current Navigation
-
-The application uses a shared sidebar for Consumer and Business dashboards.
-
-Navigation includes:
-
-- Overview
-- Inventory
-- Alerts
-- Analytics
-- Waste Insights
-- Recipes
-- Settings
-- Sign Out
-
-The navbar on the public landing page contains:
-
-- Product
-- For Business
-- For Consumers
-- Pricing
-- Get Started
-
-A new theme/mode control is required in the public navbar.
-
-Modes:
-
-- Light
-- Dark
-- System
-
----
-
-# Product Positioning
-
-Consumer:
-
-> Know what's in your kitchen. Eat what you have. Waste nothing.
-
-Business:
-
-> Turn inventory data into smarter stock decisions.
-
-Overall:
-
-> Start free. Upgrade when you need more.
+P2: remaining UI/UX consistency work from the existing specifications.

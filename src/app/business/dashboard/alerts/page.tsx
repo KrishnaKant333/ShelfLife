@@ -19,7 +19,7 @@ export default async function BusinessAlertsPage() {
   // Map database dates to ISO strings for safety/consistency
   const formattedInventory = inventory.map((item) => ({
     ...item,
-    expiryDate: typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString(),
+    expiryDate: item.expiryDate ? (typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()) : null,
   }));
 
   return (

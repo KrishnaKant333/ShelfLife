@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const optionalExpiryDate = z.preprocess(
+  (value) => (value === "" || value == null ? null : value),
+  z.coerce.date().nullable(),
+);
+
 export const inventoryImportSchema = z.object({
   name: z
     .string()
@@ -15,7 +20,7 @@ export const inventoryImportSchema = z.object({
 
   quantity: z.coerce
     .number()
-    .int("Quantity must be a whole number")
+    .finite("Quantity must be a valid number")
     .positive("Quantity must be greater than 0"),
 
   unit: z
@@ -24,7 +29,7 @@ export const inventoryImportSchema = z.object({
     .min(1, "Unit is required")
     .max(30, "Unit is too long"),
 
-  expiryDate: z.coerce.date(),
+  expiryDate: optionalExpiryDate,
 });
 
 export type InventoryImportItem = z.infer<

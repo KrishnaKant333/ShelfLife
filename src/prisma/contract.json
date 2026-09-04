@@ -8,6 +8,10 @@
       "model": "Business",
       "namespace": "public"
     },
+    "inventoryActivity": {
+      "model": "InventoryActivity",
+      "namespace": "public"
+    },
     "inventoryConsumption": {
       "model": "InventoryConsumption",
       "namespace": "public"
@@ -104,6 +108,21 @@
               }
             },
             "relations": {
+              "activityItems": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "businessId"
+                  ]
+                },
+                "to": {
+                  "model": "InventoryActivity",
+                  "namespace": "public"
+                }
+              },
               "consumptionItems": {
                 "cardinality": "1:N",
                 "on": {
@@ -170,6 +189,138 @@
               },
               "namespaceId": "public",
               "table": "business"
+            }
+          },
+          "InventoryActivity": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "businessId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "inventoryItemId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "occurredAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "productName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "quantity": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
+              "unit": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "business": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "businessId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Business",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "businessId": {
+                  "column": "businessId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "inventoryItemId": {
+                  "column": "inventoryItemId"
+                },
+                "occurredAt": {
+                  "column": "occurredAt"
+                },
+                "productName": {
+                  "column": "productName"
+                },
+                "quantity": {
+                  "column": "quantity"
+                },
+                "unit": {
+                  "column": "unit"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "inventoryActivity"
             }
           },
           "InventoryConsumption": {
@@ -328,7 +479,7 @@
                 }
               },
               "expiryDate": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
@@ -338,6 +489,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "imageUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -351,7 +509,7 @@
               "quantity": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/float8@1",
                   "kind": "scalar"
                 }
               },
@@ -426,6 +584,9 @@
                 "id": {
                   "column": "id"
                 },
+                "imageUrl": {
+                  "column": "imageUrl"
+                },
                 "name": {
                   "column": "name"
                 },
@@ -482,6 +643,27 @@
                   "kind": "scalar"
                 }
               },
+              "emailVerificationExpiresAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "emailVerificationTokenHash": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "emailVerifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -525,6 +707,21 @@
               }
             },
             "relations": {
+              "activity": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "InventoryActivity",
+                  "namespace": "public"
+                }
+              },
               "business": {
                 "cardinality": "N:1",
                 "on": {
@@ -584,6 +781,15 @@
                 },
                 "email": {
                   "column": "email"
+                },
+                "emailVerificationExpiresAt": {
+                  "column": "emailVerificationExpiresAt"
+                },
+                "emailVerificationTokenHash": {
+                  "column": "emailVerificationTokenHash"
+                },
+                "emailVerifiedAt": {
+                  "column": "emailVerifiedAt"
                 },
                 "id": {
                   "column": "id"
@@ -658,6 +864,121 @@
                   ],
                   "name": "business_name_idx_ce87e6ba",
                   "prefix": "business_name_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "inventoryActivity": {
+              "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "businessId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "inventoryItemId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "occurredAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "productName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "quantity": {
+                  "codecId": "pg/float8@1",
+                  "nativeType": "float8",
+                  "nullable": true
+                },
+                "unit": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "inventoryActivity"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "businessId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "inventoryActivity"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "business"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "businessId"
+                  ],
+                  "name": "inventoryActivity_businessId_idx_ae0ed511",
+                  "prefix": "inventoryActivity_businessId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "inventoryActivity_userId_idx_a489d58a",
+                  "prefix": "inventoryActivity_userId_idx",
                   "unique": false
                 }
               ],
@@ -807,7 +1128,7 @@
                 "expiryDate": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
-                  "nullable": false
+                  "nullable": true
                 },
                 "id": {
                   "codecId": "pg/int4@1",
@@ -818,14 +1139,19 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "imageUrl": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
                 "quantity": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/float8@1",
+                  "nativeType": "float8",
                   "nullable": false
                 },
                 "unit": {
@@ -951,6 +1277,21 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "emailVerificationExpiresAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "emailVerificationTokenHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "emailVerifiedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -1057,7 +1398,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d4341e80715f7a0c19697cb7cdf4aeb13f5909d3fcfa44224e3c5bdec398e120"
+    "storageHash": "b70d5295c1bd97549f3e243febfb4d8089f4ecf243f67f8dd528a5430956032a"
   },
   "execution": {
     "executionHash": "7d80476c0bb076336617ca6c01539bf0d0e03bbce6eb7ad70ff49d188d7443cd",

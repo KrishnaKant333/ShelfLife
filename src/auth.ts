@@ -37,6 +37,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        // Existing accounts predate verification and have no token to complete.
+        // Only block accounts that were explicitly issued an unverified token.
+        if (!user.emailVerifiedAt && user.emailVerificationTokenHash) {
+          return null;
+        }
+
         if (user.accountType !== accountType) {
           return null;
         }

@@ -21,7 +21,7 @@ export default async function DashboardLayout({
   const inventory = await getInventory();
   const formattedInventory = inventory.map((item) => ({
     ...item,
-    expiryDate: typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()
+    expiryDate: item.expiryDate ? (typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()) : null
   }));
 
   return (

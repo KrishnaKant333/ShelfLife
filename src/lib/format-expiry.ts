@@ -1,4 +1,8 @@
-export function getDaysUntilExpiry(expiryDate: string) {
+export function getDaysUntilExpiry(expiryDate: string | null) {
+  if (!expiryDate) {
+    return Number.POSITIVE_INFINITY;
+  }
+
   const now = new Date();
   const expiry = new Date(expiryDate);
 
@@ -10,8 +14,12 @@ export function getDaysUntilExpiry(expiryDate: string) {
   );
 }
 
-export function formatExpiry(expiryDate: string) {
+export function formatExpiry(expiryDate: string | null) {
   const days = getDaysUntilExpiry(expiryDate);
+
+  if (!Number.isFinite(days)) {
+    return "Expiry not available";
+  }
 
   if (days < 0) {
     return "Expired";

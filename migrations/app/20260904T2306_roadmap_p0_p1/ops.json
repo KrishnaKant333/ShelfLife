@@ -1,0 +1,544 @@
+[
+  {
+    "id": "table.inventoryActivity",
+    "label": "Create table \"inventoryActivity\"",
+    "summary": "Creates table \"inventoryActivity\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "inventoryActivity"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"inventoryActivity\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryActivity\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"inventoryActivity\"",
+        "sql": "CREATE TABLE \"public\".\"inventoryActivity\" (\n  \"action\" text NOT NULL,\n  \"businessId\" int4,\n  \"id\" SERIAL NOT NULL,\n  \"inventoryItemId\" int4 NOT NULL,\n  \"occurredAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"productName\" text NOT NULL,\n  \"quantity\" float8,\n  \"unit\" text,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"inventoryActivity\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryActivity\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.inventoryItem.imageUrl",
+    "label": "Add column \"imageUrl\" to \"inventoryItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "imageUrl",
+        "table": "inventoryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"imageUrl\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "imageUrl"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"imageUrl\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryItem\" ADD COLUMN \"imageUrl\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"imageUrl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "imageUrl"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.emailVerificationExpiresAt",
+    "label": "Add column \"emailVerificationExpiresAt\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "emailVerificationExpiresAt",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"emailVerificationExpiresAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "emailVerificationExpiresAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"emailVerificationExpiresAt\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"emailVerificationExpiresAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"emailVerificationExpiresAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "emailVerificationExpiresAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.emailVerificationTokenHash",
+    "label": "Add column \"emailVerificationTokenHash\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "emailVerificationTokenHash",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"emailVerificationTokenHash\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "emailVerificationTokenHash"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"emailVerificationTokenHash\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"emailVerificationTokenHash\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"emailVerificationTokenHash\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "emailVerificationTokenHash"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.emailVerifiedAt",
+    "label": "Add column \"emailVerifiedAt\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "emailVerifiedAt",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"emailVerifiedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "emailVerifiedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"emailVerifiedAt\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"emailVerifiedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"emailVerifiedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "emailVerifiedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.user.plan",
+    "label": "Add column \"plan\" to \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "plan",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"plan\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "plan"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"plan\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD COLUMN \"plan\" text DEFAULT 'consumer_free' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"plan\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "user",
+          "plan"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterType.inventoryItem.quantity",
+    "label": "Alter type of \"inventoryItem\".\"quantity\" to float8",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "quantity",
+        "table": "inventoryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"quantity\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "quantity"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"quantity\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryItem\" ALTER COLUMN \"quantity\" TYPE float8 USING \"quantity\"::float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"quantity\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "quantity",
+          "double precision"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  },
+  {
+    "id": "alterNullability.dropNotNull.inventoryItem.expiryDate",
+    "label": "Drop NOT NULL on \"inventoryItem\".\"expiryDate\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "expiryDate",
+        "table": "inventoryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"expiryDate\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "expiryDate"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"expiryDate\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryItem\" ALTER COLUMN \"expiryDate\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"expiryDate\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "expiryDate",
+          "YES"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.user.user_plan_check_41cfe064",
+    "label": "Add check constraint \"user_plan_check_41cfe064\" on \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "user_plan_check_41cfe064",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_plan_check_41cfe064\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_plan_check_41cfe064",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"user_plan_check_41cfe064\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_plan_check_41cfe064\" CHECK (\"plan\" IN ('consumer_free', 'consumer_plus', 'business_starter', 'business_pro', 'business_growth'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_plan_check_41cfe064\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_plan_check_41cfe064",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inventoryActivity.inventoryActivity_businessId_idx_ae0ed511",
+    "label": "Create index \"inventoryActivity_businessId_idx_ae0ed511\" on \"inventoryActivity\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inventoryActivity_businessId_idx_ae0ed511",
+        "table": "inventoryActivity"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inventoryActivity_businessId_idx_ae0ed511\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryActivity_businessId_idx_ae0ed511\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inventoryActivity_businessId_idx_ae0ed511\"",
+        "sql": "CREATE INDEX \"inventoryActivity_businessId_idx_ae0ed511\" ON \"public\".\"inventoryActivity\" (\"businessId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inventoryActivity_businessId_idx_ae0ed511\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryActivity_businessId_idx_ae0ed511\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.inventoryActivity.inventoryActivity_userId_idx_a489d58a",
+    "label": "Create index \"inventoryActivity_userId_idx_a489d58a\" on \"inventoryActivity\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "inventoryActivity_userId_idx_a489d58a",
+        "table": "inventoryActivity"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"inventoryActivity_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryActivity_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"inventoryActivity_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"inventoryActivity_userId_idx_a489d58a\" ON \"public\".\"inventoryActivity\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"inventoryActivity_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"inventoryActivity_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inventoryActivity.inventoryActivity_userId_fkey",
+    "label": "Add foreign key \"inventoryActivity_userId_fkey\" on \"inventoryActivity\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inventoryActivity_userId_fkey",
+        "table": "inventoryActivity"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inventoryActivity_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryActivity_userId_fkey",
+          "public",
+          "\"public\".\"inventoryActivity\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inventoryActivity_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryActivity\"\nADD CONSTRAINT \"inventoryActivity_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inventoryActivity_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryActivity_userId_fkey",
+          "public",
+          "\"public\".\"inventoryActivity\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.inventoryActivity.inventoryActivity_businessId_fkey",
+    "label": "Add foreign key \"inventoryActivity_businessId_fkey\" on \"inventoryActivity\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "inventoryActivity_businessId_fkey",
+        "table": "inventoryActivity"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"inventoryActivity_businessId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryActivity_businessId_fkey",
+          "public",
+          "\"public\".\"inventoryActivity\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"inventoryActivity_businessId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryActivity\"\nADD CONSTRAINT \"inventoryActivity_businessId_fkey\"\nFOREIGN KEY (\"businessId\")\nREFERENCES \"public\".\"business\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"inventoryActivity_businessId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "inventoryActivity_businessId_fkey",
+          "public",
+          "\"public\".\"inventoryActivity\""
+        ]
+      }
+    ]
+  }
+]

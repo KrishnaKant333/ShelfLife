@@ -8,6 +8,9 @@ export const invoiceExtractionSchema = z.object({
       quantity: z.number().positive(),
       unit: z.string().min(1),
       expiryDate: z.string().nullable(),
+      bestBeforeDate: z.string().nullable().optional(),
+      manufacturingDate: z.string().nullable().optional(),
+      shelfLifeDays: z.number().positive().nullable().optional(),
     }),
   ),
 });

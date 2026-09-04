@@ -45,6 +45,8 @@ export default function InventoryOverview({
               "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)]",
             "Low Stock":
               "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)]",
+            "Not trackable":
+              "bg-[var(--shelf-cream)] text-[var(--shelf-muted)]",
           };
 
           return (

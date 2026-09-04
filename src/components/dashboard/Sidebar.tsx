@@ -24,7 +24,7 @@ type InventoryItem = {
   category: string;
   quantity: number;
   unit: string;
-  expiryDate: string;
+  expiryDate: string | null;
 };
 
 interface SidebarProps {
@@ -35,9 +35,11 @@ interface SidebarProps {
   };
   onCloseMobile?: () => void;
   inventory?: InventoryItem[];
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
 }
 
-export default function Sidebar({ user, onCloseMobile, inventory = [] }: SidebarProps) {
+export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed = false, onToggleCollapsed }: SidebarProps) {
   const pathname = usePathname();
   const isBusiness = user.accountType === "business";
   const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
@@ -64,6 +66,12 @@ export default function Sidebar({ user, onCloseMobile, inventory = [] }: Sidebar
     {
       label: "Alerts",
       href: `${prefix}/alerts`,
+      icon: Bell,
+      count: alertCount,
+    },
+    {
+      label: "Notifications",
+      href: `${prefix}/notifications`,
       icon: Bell,
       count: alertCount,
     },
@@ -99,10 +107,10 @@ export default function Sidebar({ user, onCloseMobile, inventory = [] }: Sidebar
   ];
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm">
+    <aside className={`flex h-full flex-col border-r border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm transition-[width] duration-200 ${collapsed ? "w-20" : "w-64"}`}>
       {/* Header / Logo */}
       <div className="mb-8 flex items-center justify-between">
-        <div>
+        <div className={collapsed ? "hidden" : ""}>
           <Link href={prefix} onClick={onCloseMobile} className="shrink-0">
             <Image
               src="/logo/shelflife.png"
@@ -127,6 +135,16 @@ export default function Sidebar({ user, onCloseMobile, inventory = [] }: Sidebar
             <X size={18} />
           </button>
         )}
+        {onToggleCollapsed && !onCloseMobile && (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="rounded-lg p-1.5 text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)] hover:text-[var(--shelf-dark)]"
+          >
+            {collapsed ? "»" : "«"}
+          </button>
+        )}
       </div>
 
       {/* Nav links */}
@@ -149,11 +167,11 @@ export default function Sidebar({ user, onCloseMobile, inventory = [] }: Sidebar
                   : "text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)]/50 hover:text-[var(--shelf-dark)]"
                 }`}
             >
-              <span className="flex items-center gap-3">
+              <span className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`} title={collapsed ? item.label : undefined}>
                 <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
-                {item.label}
+                <span className={collapsed ? "hidden" : ""}>{item.label}</span>
               </span>
-              {item.count > 0 && (
+              {item.count > 0 && !collapsed && (
                 <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold shrink-0">
                   {item.count > 99 ? "99+" : item.count}
                 </span>
@@ -174,7 +192,7 @@ export default function Sidebar({ user, onCloseMobile, inventory = [] }: Sidebar
             }`}
         >
           <Settings size={18} strokeWidth={1.8} />
-          Settings
+          <span className={collapsed ? "hidden" : ""}>Settings</span>
         </Link>
 
         <button
@@ -182,10 +200,10 @@ export default function Sidebar({ user, onCloseMobile, inventory = [] }: Sidebar
           className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[var(--shelf-terracotta)] hover:bg-[var(--shelf-terracotta)]/10 transition duration-150 text-left"
         >
           <LogOut size={18} strokeWidth={1.8} />
-          Sign out
+          <span className={collapsed ? "hidden" : ""}>Sign out</span>
         </button>
 
-        <div className="px-4 py-2 bg-[var(--shelf-cream)]/30 rounded-xl border border-[var(--shelf-border)]/50">
+        <div className={`px-4 py-2 bg-[var(--shelf-cream)]/30 rounded-xl border border-[var(--shelf-border)]/50 ${collapsed ? "hidden" : ""}`}>
           <p className="truncate text-xs font-semibold text-[var(--shelf-dark)]">
             {user.name || "Default User"}
           </p>

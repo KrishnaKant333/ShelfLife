@@ -151,7 +151,7 @@ export default function CsvImport() {
                         <td className="px-6 py-4 text-sm font-medium text-[var(--shelf-dark)]">{row.data.name}</td>
                         <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.category}</td>
                         <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.quantity} {row.data.unit}</td>
-                        <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.expiryDate.toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.expiryDate?.toLocaleDateString() ?? "Expiry not available"}</td>
                         <td className="px-6 py-4 text-sm text-[var(--shelf-forest)] font-medium">Valid</td>
                       </>
                     ) : (

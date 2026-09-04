@@ -469,7 +469,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
-                    required
                     className="w-full rounded-xl border border-[var(--shelf-border)] bg-transparent px-4 py-3 text-sm outline-none transition focus:border-[var(--shelf-forest)] font-mono"
                   />
                 </div>

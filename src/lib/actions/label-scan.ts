@@ -2,6 +2,7 @@
 
 import { groq } from "@/lib/groq";
 import { z } from "zod";
+import { deriveExpiryDate } from "@/lib/expiry";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png"];
@@ -12,6 +13,9 @@ const labelExtractionSchema = z.object({
   quantity: z.number().nullable(),
   unit: z.string().nullable(),
   expiryDate: z.string().nullable(),
+  bestBeforeDate: z.string().nullable().optional(),
+  manufacturingDate: z.string().nullable().optional(),
+  shelfLifeDays: z.number().positive().nullable().optional(),
 });
 
 export type LabelExtraction = z.infer<typeof labelExtractionSchema>;
@@ -48,6 +52,9 @@ Attempt to extract the following fields if present on the label:
 - quantity: A numeric quantity.
 - unit: The unit of measurement (e.g., kg, litres, ml, g, packets, pieces, oz).
 - expiryDate: The expiry or best-by date formatted as YYYY-MM-DD.
+- bestBeforeDate: A separate best-before date formatted as YYYY-MM-DD, if visible.
+- manufacturingDate: A manufacturing/production date formatted as YYYY-MM-DD, if visible.
+- shelfLifeDays: A clearly stated shelf-life duration in days, if visible; otherwise null.
 
 Rules:
 1. Do NOT invent or make up values.
@@ -95,7 +102,11 @@ Expected JSON format:
 
   try {
     const parsed = JSON.parse(content);
-    return labelExtractionSchema.parse(parsed);
+    const result = labelExtractionSchema.parse(parsed);
+    return {
+      ...result,
+      expiryDate: deriveExpiryDate(result),
+    };
   } catch (err) {
     throw new Error("Failed to parse extracted product details: " + (err instanceof Error ? err.message : String(err)));
   }

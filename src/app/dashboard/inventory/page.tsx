@@ -15,7 +15,7 @@ export default async function InventoryPage() {
   // Map inventory dates to ISO string for safety
   const formattedInventory = inventory.map((item) => ({
     ...item,
-    expiryDate: typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString(),
+    expiryDate: item.expiryDate ? (typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()) : null,
     createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date(item.createdAt).toISOString(),
   }));
 

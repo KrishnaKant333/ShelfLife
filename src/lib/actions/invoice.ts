@@ -4,6 +4,7 @@ import { extractInvoiceFromImage } from "@/lib/invoice/extract-invoice";
 import { auth } from "@/auth";
 import { getInventory } from "@/lib/inventory";
 import { getBusinessInventory } from "@/lib/business-inventory";
+import { deriveExpiryDate } from "@/lib/expiry";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
@@ -70,7 +71,10 @@ export async function extractInvoiceAction(
   }).length;
 
   return {
-    items: extraction.items,
+    items: extraction.items.map((item) => ({
+      ...item,
+      expiryDate: deriveExpiryDate(item),
+    })),
     stats: {
       detectedCount,
       newCount,

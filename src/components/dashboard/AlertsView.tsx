@@ -11,7 +11,7 @@ type InventoryItem = {
   category: string;
   quantity: number;
   unit: string;
-  expiryDate: string;
+  expiryDate: string | null;
 };
 
 interface AlertsViewProps {

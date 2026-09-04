@@ -8,6 +8,11 @@ import { z } from "zod";
 import { db } from "@/prisma/db";
 import { InventoryImportItem } from "../import/inventory-schema";
 
+const optionalExpiryDate = z.preprocess(
+  (value) => (value === "" || value == null ? null : value),
+  z.coerce.date().nullable(),
+);
+
 const businessInventorySchema = z.object({
   name: z
     .string()
@@ -23,7 +28,7 @@ const businessInventorySchema = z.object({
 
   quantity: z.coerce
     .number()
-    .int("Quantity must be a whole number")
+    .finite("Quantity must be a valid number")
     .positive("Quantity must be greater than 0"),
 
   unit: z
@@ -32,7 +37,7 @@ const businessInventorySchema = z.object({
     .min(1, "Unit is required")
     .max(30, "Unit is too long"),
 
-  expiryDate: z.coerce.date(),
+  expiryDate: optionalExpiryDate,
 });
 
 async function getBusinessUser() {
@@ -92,7 +97,7 @@ export async function createBusinessInventoryItem(
     category: result.data.category,
     quantity: result.data.quantity,
     unit: result.data.unit,
-    expiryDate: result.data.expiryDate.toISOString(),
+    expiryDate: result.data.expiryDate?.toISOString() ?? null,
   });
 
   revalidatePath("/business/dashboard");
@@ -141,7 +146,7 @@ export async function updateBusinessInventoryItem(
       category: result.data.category,
       quantity: result.data.quantity,
       unit: result.data.unit,
-      expiryDate: result.data.expiryDate.toISOString(),
+      expiryDate: result.data.expiryDate?.toISOString() ?? null,
     });
 
   revalidatePath("/business/dashboard");
@@ -196,7 +201,7 @@ export async function importBusinessInventory(
         category: item.category,
         quantity: item.quantity,
         unit: item.unit,
-        expiryDate: item.expiryDate.toISOString(),
+        expiryDate: item.expiryDate?.toISOString() ?? null,
       }),
     ),
   );

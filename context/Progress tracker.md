@@ -1,205 +1,45 @@
-# ShelfLife — Progress Tracker
+# ShelfLife Progress Tracker
 
-Last major phase:
-SaaS productization + UI refinement
+Last audited: 2026-09-05
 
-Status:
-Active development
+## Baseline
 
----
+- [x] Production build passes before this roadmap (`npm run build`)
+- [x] Consumer and Business authentication and route isolation
+- [x] Inventory CRUD, imports, exports, scanning, alerts, analytics, waste, consumption, recipes, FIFO, pricing definitions
+- [x] Recipe safety excludes expired inventory before AI
+- [x] Light/Dark/System theme support exists
 
-# Authentication
+## P0
 
-- [x] Consumer signup
-- [x] Consumer login
-- [x] Business signup
-- [x] Business login
-- [x] Session handling
-- [x] Consumer/business routing
-- [x] Sign out
-- [x] Account type selection page
-- [x] Authentication UI refinement
+- [x] Discard/archive all expired items through an ownership-safe confirmed inventory action
+- [x] Expand unit normalization and incompatible-unit handling
+- [x] Support missing/ambiguous expiry safely and derive only from reliable evidence
+- [x] Email verification flow (SMTP configuration required for deployment)
+- [x] P0 build checkpoints (`npm run build`)
 
----
+## P1
 
-# Shared Dashboard
+- [x] Collapsible sidebar, hamburger/mobile navigation, icons-only collapsed state
+- [x] Inventory List/Grid toggle
+- [x] Clickable inventory items and product detail pages
+- [x] Product image field and category-aware default icons
+- [x] Inventory activity/history records for consumption and expired discard
+- [x] Consumption/discard history writes and quantity summaries in activity records
+- [x] Expiry/quantity/name/recently-added sorting alongside search/filter
+- [x] Notification center for expiry, low-stock, and waste-related inventory attention
+- [x] P1 build checkpoint (`npm run build`)
 
-- [x] Shared sidebar
-- [x] Responsive navigation
-- [x] Overview
-- [x] Inventory
-- [x] Alerts
-- [x] Analytics
-- [x] Waste Insights
-- [x] Settings
-- [x] Sign out
+## P2
 
----
+- [x] Remaining roadmap UI/UX work completed in this pass without replacing working business logic
+- [x] Final production build and migration graph review
 
-# Inventory
+## Deployment follow-up
 
-- [x] Manual product creation
-- [x] Edit
-- [x] Delete
-- [x] Search
-- [x] Filtering
-- [x] Sorting
-- [x] Expiry countdown
-- [x] Expired status
-- [x] Expiring status
-- [x] Fresh status
-- [x] Low Stock status
-- [x] Barcode scanning
-- [x] Label scanning
-- [x] CSV import
-- [x] Invoice import
-- [x] CSV export
-- [x] PDF export
-- [x] Consumption tracking
-- [x] Quantity-used tracking
-- [x] Unit normalization
-- [x] Bulk actions where implemented
+- [x] Apply Prisma-next migration with `npx prisma db migrate --to b70d5295c1bd`
+- [ ] Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM`
 
----
+## Do not break
 
-# Consumer
-
-- [x] Consumer dashboard
-- [x] Personal inventory
-- [x] Alerts
-- [x] Analytics
-- [x] Waste insights
-- [x] AI ShelfLife Brief
-- [x] AI recipes
-- [x] Recipe modes
-- [x] Shopping functionality where implemented
-- [x] Settings
-
----
-
-# Business
-
-- [x] Business dashboard
-- [x] Business inventory
-- [x] Alerts
-- [x] Analytics
-- [x] Waste management
-- [x] FIFO priority
-- [x] Inventory Strategy
-- [x] Invoice import
-- [x] CSV import
-- [x] Barcode
-- [x] Label scan
-- [x] Exports
-- [x] Settings
-
----
-
-# AI
-
-- [x] Groq integration
-- [x] Invoice extraction
-- [x] Label extraction
-- [x] AI ShelfLife Brief
-- [x] Consumer recipes
-- [x] Recipe modes
-- [x] Expired-product recipe exclusion
-
----
-
-# SaaS
-
-- [x] Pricing strategy
-- [x] Consumer Free plan definition
-- [x] Consumer Plus plan definition
-- [x] Business Starter plan definition
-- [x] Business Pro plan definition
-- [x] Business Growth plan definition
-- [x] Landing page pricing
-- [x] Account type selection
-- [ ] Real payments
-- [ ] Subscription billing
-- [ ] Team management
-- [ ] Roles/permissions
-- [ ] Multi-location
-- [ ] Forecasting
-- [ ] Integrations
-- [ ] Advanced historical analytics
-
----
-
-# Landing Page
-
-- [x] Hero
-- [x] Product section
-- [x] Consumer section
-- [x] Business section
-- [x] How ShelfLife Works
-- [x] AI/safety section
-- [x] Waste/impact section
-- [x] Pricing
-- [x] Final CTA
-- [x] Navbar refinement
-- [x] Footer refinement
-- [x] Get Started flow
-
----
-
-# UI
-
-- [x] Landing page redesign
-- [x] Dashboard redesign
-- [x] Business dashboard redesign
-- [x] Auth UI redesign
-- [x] Sidebar redesign
-- [x] Settings UI
-- [ ] Complete application-wide visual overhaul
-- [ ] Multi-color design system
-- [ ] Light mode
-- [ ] Dark mode
-- [ ] System theme
-- [ ] Global theme persistence
-- [ ] Final mobile UI polish
-- [ ] Final loading-state polish
-- [ ] Final empty/error-state polish
-
----
-
-# Current Priority
-
-## P0 — UI Overhaul
-
-The next development phase is a major visual polish pass across the entire application.
-
-Goals:
-
-1. Create a polished multi-color ShelfLife design system.
-2. Support Light / Dark / System modes.
-3. Add theme toggle to public navbar.
-4. Apply theme consistently across landing, auth, consumer and business dashboards.
-5. Remove inconsistent white/off-white shades.
-6. Improve cards, tables, forms, navigation, charts and status states.
-7. Preserve all existing functionality.
-
----
-
-# Do Not Break
-
-Critical working functionality:
-
-- Authentication
-- Consumer/business separation
-- Inventory ownership
-- Inventory CRUD
-- Imports
-- Barcode
-- Label scan
-- Groq
-- Alerts
-- Analytics
-- Waste
-- Recipes
-- FIFO
-- Inventory Strategy
-- Consumption tracking
-- Exports
+Authentication, ownership, Consumer/Business isolation, AI and recipe safety, expiry logic, imports, exports, barcode/label scanning, analytics, waste, FIFO, and pricing behavior.

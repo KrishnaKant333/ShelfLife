@@ -1,399 +1,91 @@
 # ShelfLife
 
-> Know what's on your shelf. Before it goes to waste.
-
-ShelfLife is a food inventory intelligence SaaS for consumers and food businesses.
-
-It combines deterministic inventory management with AI-assisted intelligence to help users understand inventory, expiry, consumption and waste.
-
----
-
-# Product
-
-ShelfLife supports two account types:
-
-## Consumer
-
-For personal food inventory.
-
-Features include:
-
-- Inventory management
-- Expiry tracking
-- Alerts
-- Analytics
-- Waste insights
-- Barcode scanning
-- Label scanning
-- CSV import
-- Invoice import
-- Consumption tracking
-- AI recipes
-- Recipe modes
-- Shopping assistance
-- Data export
-
-## Business
-
-For food businesses.
-
-Features include:
-
-- Inventory management
-- Expiry tracking
-- Alerts
-- Analytics
-- Waste management
-- Barcode scanning
-- Label scanning
-- CSV import
-- Invoice import
-- Consumption tracking
-- FIFO prioritization
-- Inventory Strategy
-- AI insights
-- Data export
-
----
-
-# Core Philosophy
-
-ShelfLife uses:
-
-## Deterministic Logic
-
-For:
-
-- expiry
-- stock status
-- quantity
-- units
-- ownership
-- recipe safety
-
-## AI
-
-For:
-
-- invoice extraction
-- label extraction
-- insights
-- recipes
-- recommendations
-
-AI enhances ShelfLife.
-
-It does not replace the application's source of truth.
-
----
-
-# Important Safety Rule
-
-Expired products must NEVER be presented as usable recipe ingredients.
-
-Expiry is determined by deterministic application logic before AI receives recipe candidates.
-
----
-
-# Technology
-
-- Next.js 16.3.2
-- TypeScript
-- React
-- Tailwind CSS
-- Auth.js
-- PostgreSQL / Neon
-- Prisma-next
-- Groq
-
----
-
-# Authentication
-
-Consumer:
-
-`/login`
-
-`/signup`
-
-Business:
-
-`/business/login`
-
-`/business/signup`
-
-Users first choose their account type through:
-
-`/get-started`
-
----
-
-# Dashboard
-
-Consumer:
-
-`/dashboard`
-
-Business:
-
-`/business/dashboard`
-
-Both use a shared navigation philosophy.
-
-Navigation:
-
-- Overview
-- Inventory
-- Alerts
-- Analytics
-- Waste Insights
-- Recipes
-- Settings
-- Sign Out
-
----
-
-# Inventory Input
-
-Products can be added through:
-
-1. Manual entry
-2. Barcode scanning
-3. Label scanning
-4. CSV import
-5. Invoice import
-
-AI-extracted information should be reviewed before saving.
-
----
-
-# Inventory Status
-
-ShelfLife distinguishes:
-
-- Expired
-- Expiring
-- Fresh
-- Low Stock
-
-Expired is NOT the same as Expiring.
-
----
-
-# Quantity
-
-Supported examples:
-
-- 500 g
-- 1 kg
-- 500 ml
-- 1 litre
-- 10 pack
-- 5 pieces
-
-Quantities must be normalized when compatible units need comparison.
-
-Example:
-
-500 g = 0.5 kg
-
-1 kg = 1000 g
-
-1000 ml = 1 litre
-
-The original unit should remain visible to the user.
-
----
-
-# Business Intelligence
-
-Business users have:
-
-## FIFO
-
-First In, First Out prioritization.
-
-## Inventory Strategy
-
-Operational insights around:
-
-- stock
-- expiry
-- FIFO
-- replenishment
-- overstock
-- waste exposure
-
----
-
-# Waste Management
-
-Available to both account types.
-
-Includes:
-
-- waste-risk estimation
-- at-risk inventory
-- expiry exposure
-- consumption-aware insights
-- recommendations
-
----
-
-# AI Recipes
-
-Primarily a consumer feature.
-
-Recipe modes may include:
-
-- Use Soon
-- Quick Meal
-- Use What I Have
-
-Expired inventory is always excluded.
-
----
-
-# Pricing
-
-## Consumer
-
-Free:
-
-₹0/month
-
-Plus:
-
-₹149/month
-
-## Business
-
-Starter:
-
-₹0/month
-
-Pro:
-
-₹499/month
-
-Growth:
-
-₹999/month
-
-Real payment processing is not currently implemented.
-
-Future functionality should be labelled:
-
-**Coming Soon**
-
-until actually implemented.
-
----
-
-# Design
-
-ShelfLife uses a warm, premium design language.
-
-Primary visual concepts:
-
-- warm cream
-- forest green
-- deep teal
-- warm amber
-- terracotta
-- muted green
-- warm slate
-- subtle borders
-- rounded surfaces
-- restrained shadows
-
-The UI supports:
-
-- Light
-- Dark
-- System
-
-The application should remain professional and restrained rather than becoming overly colourful.
-
----
-
-# Development
-
-Install:
+ShelfLife is a Next.js food-inventory intelligence application for consumers and food businesses. It combines deterministic inventory, expiry, ownership, quantity, FIFO, waste, and recipe-safety logic with AI-assisted extraction and recommendations.
+
+## Current implementation
+
+- Consumer and Business authentication with isolated dashboard routes.
+- Auth.js credentials sessions and server-side ownership checks.
+- Inventory CRUD, search, filtering, sorting, bulk delete, consumption recording, CSV/PDF export.
+- Manual, barcode, label, CSV, and invoice inventory entry flows.
+- Deterministic Expired, Expiring, Fresh, and Low Stock status logic.
+- Weight, volume, and count normalization for supported units.
+- Alerts, analytics, waste insights, FIFO and Business Inventory Strategy.
+- Groq-powered invoice/label extraction, ShelfLife Brief, and consumer recipe modes.
+- Expired inventory is filtered before recipe generation and returned recipes are validated.
+- Light, Dark, and System themes with persisted theme selection.
+- Responsive shared dashboard shell and loading/feedback UI in the existing implemented areas.
+
+## Known gaps at the start of the current roadmap
+
+- Expired items can now be discarded through an ownership-safe confirmed action in both inventory dashboards; historical discard records are still part of P1.
+- Inventory expiry is nullable and missing dates are displayed as `Expiry not available` / `Not trackable`.
+- Unit normalization supports broader aliases, decimal quantities, compatible conversions, and explicit incompatible-unit handling.
+- AI/import/label flows derive expiry only from reliable evidence and never invent a date.
+- Email verification is implemented with SMTP delivery; deployment requires SMTP environment variables.
+- The ordered P1 workflow is implemented: collapsible sidebar, List/Grid view, ownership-scoped detail routes, product image field with default icons, activity records, consumption/discard quantities, sorting, and notification center.
+- The new nullable-expiry, image, verification, and activity fields require the corresponding Prisma-next migrations to be applied to the deployment database.
+
+## Routes
+
+Consumer: `/consumer/login`, `/consumer/signup`, `/dashboard`
+
+Business: `/business/login`, `/business/signup`, `/business/dashboard`
+
+## Technology
+
+- Next.js 16.3.2 App Router
+- React 19 and TypeScript
+- Tailwind CSS 4
+- Auth.js credentials authentication
+- PostgreSQL with Prisma-next
+- Groq SDK
+- Zod validation
+
+## Development
 
 ```bash
 npm install
-```
-Run:
-
-```bash
 npm run dev
-```
-Build:
-
-```bash
+npm run lint
 npm run build
 ```
-A feature is not complete if the production build fails.
 
----
-# Development Rules
+The production build is the required checkpoint after each major phase.
 
-Before modifying the application:
+The current contract migration has been applied to the configured database. Email verification requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM` in deployment environment variables.
 
-1. Inspect existing code.
-2. Reuse existing components.
-3. Avoid unnecessary rewrites.
-4. Preserve working functionality.
-5. Protect Consumer/Business ownership.
-6. Keep deterministic safety logic authoritative.
-7. Validate AI output.
-8. Run npm run build.
+## Safety and engineering rules
 
----
+- Server-side session ownership is authoritative. Never trust user or business IDs from the browser.
+- Deterministic expiry, quantity, stock, and FIFO logic is authoritative over AI output.
+- Expired products must never be sent to recipe generation or presented as usable ingredients.
+- Missing or ambiguous expiry data must never be invented.
+- Consumer and Business data and routes must remain isolated.
+- Reuse shared components and existing actions before adding new abstractions.
 
-# Future Roadmap
+## Ordered roadmap
 
-Potential future capabilities:
+### P0
 
-1. Advanced historical analytics
-2. XLSX export
-3. Weekly meal planning
-4. Advanced shopping automation
-5. Team management
-6. Roles and permissions
-7. Multiple locations
-8. Cross-location inventory
-9. Forecasting
-10. Integrations
-11. Advanced automation
-12. Real subscription/payment infrastructure
+1. [x] Discard all expired items.
+2. [x] Complete quantity/unit normalization and robust incompatible-unit handling.
+3. [x] Handle ambiguous or missing expiry information in AI, import, and label flows.
+4. [x] Add email verification.
 
-Do not claim these features are implemented until they actually are.
+### P1
 
----
+5. [x] Add a collapsible dashboard sidebar with hamburger/mobile navigation and icons-only collapsed mode.
+6. [x] Add Inventory List/Grid view toggle.
+7. [x] Make inventory items clickable with dedicated product detail pages.
+8. [x] Add product image field with sensible default icons.
+9. [x] Add inventory history/activity tracking.
+10. [x] Add product consumption/discard history and quantity summaries.
+11. [x] Add inventory sorting for expiry, quantity, name, and recently added alongside existing search/filter.
+12. [x] Add a notification center for expiry, low-stock, and waste alerts.
 
-# Current Priority
+### P2
 
-The next major phase is:
+13. [x] Continue remaining UI/UX polish and consistency work identified by the existing specs.
 
-## Complete Application-Wide UI Overhaul
-
-Including:
-
-1. Light/Dark/System theme
-2. Navbar theme selector
-3. Multi-color but restrained design system
-4. Consumer dashboard polish
-5. Business dashboard polish
-6. Inventory polish
-7. Analytics polish
-8. Alerts polish
-9. Waste polish
-10. Recipe polish
-11. Settings polish
-12. Authentication polish
-13. Loading/error states
-14. Mobile responsiveness
-
-The goal is for ShelfLife to look and feel like a real production SaaS product, not merely a functional prototype.
+Features not listed as implemented must remain labelled as incomplete or Coming Soon.

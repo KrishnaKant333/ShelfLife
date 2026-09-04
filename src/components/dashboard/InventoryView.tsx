@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Search,
+  Grid2X2,
+  List,
   Filter,
   Plus,
   FileText,
@@ -27,7 +29,10 @@ import {
   getRecentConsumptionAction,
   type ConsumptionRecord,
 } from "@/lib/actions/recipes";
-import { bulkDeleteAction } from "@/lib/actions/inventory";
+import {
+  bulkDeleteAction,
+  discardExpiredItemsAction,
+} from "@/lib/actions/inventory";
 import DeleteProductButton from "@/components/dashboard/DeleteProductButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
@@ -38,7 +43,7 @@ type InventoryItem = {
   category: string;
   quantity: number;
   unit: string;
-  expiryDate: string;
+  expiryDate: string | null;
   createdAt: string;
 };
 
@@ -53,6 +58,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"All" | "Expired" | "Fresh" | "Expiring" | "Low Stock">("All");
   const [sortBy, setSortBy] = useState<"expiry-asc" | "expiry-desc" | "name-asc" | "name-desc" | "qty-asc" | "qty-desc" | "date-added">("expiry-asc");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   // Selection states for bulk actions
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -123,21 +129,27 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
         return b.name.localeCompare(a.name);
       }
       if (sortBy === "expiry-asc") {
-        return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
+        return (a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity) -
+          (b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity);
       }
       if (sortBy === "expiry-desc") {
-        return new Date(b.expiryDate).getTime() - new Date(a.expiryDate).getTime();
+        return (b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity) -
+          (a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity);
       }
       if (sortBy === "qty-asc") {
+        const normalizedA = normalizeQuantity(a.quantity, a.unit);
+        const normalizedB = normalizeQuantity(b.quantity, b.unit);
+        if (normalizedA.category !== normalizedB.category) return 0;
         return (
-          normalizeQuantity(a.quantity, a.unit).normalizedValue -
-          normalizeQuantity(b.quantity, b.unit).normalizedValue
+          normalizedA.normalizedValue - normalizedB.normalizedValue
         );
       }
       if (sortBy === "qty-desc") {
+        const normalizedA = normalizeQuantity(a.quantity, a.unit);
+        const normalizedB = normalizeQuantity(b.quantity, b.unit);
+        if (normalizedA.category !== normalizedB.category) return 0;
         return (
-          normalizeQuantity(b.quantity, b.unit).normalizedValue -
-          normalizeQuantity(a.quantity, a.unit).normalizedValue
+          normalizedB.normalizedValue - normalizedA.normalizedValue
         );
       }
       if (sortBy === "date-added") {
@@ -153,6 +165,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
     Fresh: "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] border-[var(--shelf-forest)]/20",
     Expiring: "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] border-[var(--shelf-amber)]/20",
     "Low Stock": "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)] border-[var(--shelf-terracotta)]/20",
+    "Not trackable": "bg-[var(--shelf-cream)] text-[var(--shelf-muted)] border-[var(--shelf-border)]",
   };
 
   // Toggle single item selection
@@ -256,6 +269,29 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
     });
   };
 
+  const handleDiscardExpired = () => {
+    setConfirmDialog({
+      title: "Discard expired items",
+      message: "Discard every expired item in this inventory? This cannot be undone.",
+      isDestructive: true,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        const result = await discardExpiredItemsAction();
+        if (result.success) {
+          showToast(
+            result.count
+              ? `${result.count} expired item(s) discarded.`
+              : "No expired items found.",
+            "success",
+          );
+          router.refresh();
+        } else {
+          showToast(result.error || "Failed to discard expired items.", "error");
+        }
+      },
+    });
+  };
+
   // CSV Export
   const handleExportCSV = () => {
     setExportingCSV(true);
@@ -268,7 +304,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
           `"${item.category.replace(/"/g, '""')}"`,
           item.quantity,
           `"${item.unit.replace(/"/g, '""')}"`,
-          new Date(item.expiryDate).toLocaleDateString(),
+          item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : "Expiry not available",
           status,
           new Date(item.createdAt).toLocaleDateString(),
         ];
@@ -305,7 +341,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
             <td>${item.name}</td>
             <td>${item.category}</td>
             <td>${item.quantity} ${item.unit}</td>
-            <td>${new Date(item.expiryDate).toLocaleDateString()}</td>
+            <td>${item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : "Expiry not available"}</td>
             <td>${status}</td>
           </tr>
         `;
@@ -341,15 +377,14 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                 ${rowsHtml}
               </tbody>
             </table>
-            <script>
-              window.print();
-              window.onafterprint = function() { window.close(); };
-            </script>
           </body>
         </html>
       `;
       printWindow.document.write(htmlContent);
       printWindow.document.close();
+      printWindow.addEventListener("afterprint", () => printWindow.close(), { once: true });
+      printWindow.focus();
+      printWindow.print();
       setExportingPDF(false);
     }, 300);
   };
@@ -420,6 +455,14 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
             <Plus size={16} />
             Add Product
           </Link>
+          <button
+            type="button"
+            onClick={handleDiscardExpired}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--shelf-terracotta)]/30 px-4 py-2.5 text-sm font-semibold text-[var(--shelf-terracotta)] transition hover:bg-[var(--shelf-terracotta)]/10"
+          >
+            <Trash2 size={16} />
+            Discard expired
+          </button>
         </div>
       </div>
 
@@ -446,6 +489,14 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1 rounded-xl border border-[var(--shelf-border)]/50 bg-[var(--shelf-cream)]/50 p-1">
+                <button type="button" onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-lg p-2 ${viewMode === "list" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
+                  <List size={16} />
+                </button>
+                <button type="button" onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-lg p-2 ${viewMode === "grid" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
+                  <Grid2X2 size={16} />
+                </button>
+              </div>
               {/* Filter Buttons */}
               <div className="flex flex-wrap gap-1.5 bg-[var(--shelf-cream)]/50 p-1 rounded-xl border border-[var(--shelf-border)]/50">
                 {(["All", "Expired", "Fresh", "Expiring", "Low Stock"] as const).map((filter) => (
@@ -544,7 +595,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
           ) : (
             <>
               {/* Desktop Table View */}
-              <div className="hidden lg:block overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-xs">
+              <div className={`${viewMode === "list" ? "" : "hidden"} lg:block overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-xs`}>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[800px] text-left">
                     <thead className="border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/20">
@@ -595,7 +646,9 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                               </button>
                             </td>
                             <td className="px-6 py-4 text-sm font-bold text-[var(--shelf-dark)]">
-                              {item.name}
+                              <Link href={`${prefix}/inventory/${item.id}`} className="hover:text-[var(--shelf-forest)] hover:underline">
+                                {item.name}
+                              </Link>
                             </td>
                             <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">
                               {item.category}
@@ -639,7 +692,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
               </div>
 
               {/* Mobile Cards Grid View */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:hidden">
+              <div className={`${viewMode === "grid" ? "" : "lg:hidden"} grid gap-4 sm:grid-cols-2`}>
                 {processedInventory.map((item) => {
                   const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
                   const isSelected = selectedIds.includes(item.id);
@@ -660,7 +713,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                             {isSelected ? <CheckSquare size={16} className="text-[var(--shelf-forest)]" /> : <Square size={16} />}
                           </button>
                           <div>
-                            <h4 className="font-bold text-[var(--shelf-dark)] leading-tight">{item.name}</h4>
+                            <Link href={`${prefix}/inventory/${item.id}`} className="font-bold text-[var(--shelf-dark)] leading-tight hover:text-[var(--shelf-forest)] hover:underline">{item.name}</Link>
                             <p className="mt-1 text-xs text-[var(--shelf-muted)]">{item.category}</p>
                           </div>
                         </div>

@@ -19,7 +19,7 @@ export default async function ConsumerRecipesPage() {
   // Map dates to ISO strings for safety/consistency inside client component
   const formattedInventory = inventory.map((item) => ({
     ...item,
-    expiryDate: typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString(),
+    expiryDate: item.expiryDate ? (typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()) : null,
   }));
 
   return (

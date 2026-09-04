@@ -205,7 +205,7 @@ export default function BusinessCsvImport() {
                         </td>
 
                         <td className="px-6 py-4 text-sm">
-                          {row.data.expiryDate.toLocaleDateString()}
+                          {row.data.expiryDate?.toLocaleDateString() ?? "Expiry not available"}
                         </td>
 
                         <td className="px-6 py-4 text-sm text-[var(--shelf-forest)]">

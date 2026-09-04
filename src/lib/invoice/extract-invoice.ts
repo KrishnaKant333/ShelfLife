@@ -31,6 +31,9 @@ For every product return:
 - quantity
 - unit
 - expiryDate
+- bestBeforeDate
+- manufacturingDate
+- shelfLifeDays
 
 Rules:
 
@@ -40,11 +43,12 @@ Rules:
 4. If an expiry date is not explicitly present,
    return null.
 5. Convert explicit expiry dates to YYYY-MM-DD.
-6. Quantity must be numeric.
-7. Keep product names concise.
-8. Infer a reasonable category from the product name
+6. If expiryDate is absent but a reliable manufacturing date and shelf-life duration are visible, return both so the application can derive expiry. Otherwise return null.
+7. Quantity must be numeric.
+8. Keep product names concise.
+9. Infer a reasonable category from the product name
    when the invoice does not explicitly provide one.
-9. Return ONLY JSON.
+10. Return ONLY JSON.
 
 Expected format:
 
@@ -55,7 +59,10 @@ Expected format:
       "category": "Dairy",
       "quantity": 20,
       "unit": "litres",
-      "expiryDate": null
+      "expiryDate": null,
+      "bestBeforeDate": null,
+      "manufacturingDate": null,
+      "shelfLifeDays": null
     }
   ]
 }

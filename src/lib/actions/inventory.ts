@@ -5,6 +5,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { db } from "@/prisma/db";
+import { getInventoryStatus } from "@/lib/inventory-status";
+
+const optionalExpiryDate = z.preprocess(
+  (value) => (value === "" || value == null ? null : value),
+  z.coerce.date().nullable(),
+);
 
 import { redirect } from "next/navigation";
 
@@ -23,7 +29,7 @@ const inventorySchema = z.object({
 
   quantity: z.coerce
     .number()
-    .int("Quantity must be a whole number")
+    .finite("Quantity must be a valid number")
     .positive("Quantity must be greater than 0"),
 
   unit: z
@@ -32,7 +38,7 @@ const inventorySchema = z.object({
     .min(1, "Unit is required")
     .max(30, "Unit is too long"),
 
-  expiryDate: z.coerce.date(),
+  expiryDate: optionalExpiryDate,
 });
 
 async function getCurrentUserSession() {
@@ -86,7 +92,7 @@ export async function createInventoryItem(
     category: result.data.category,
     quantity: result.data.quantity,
     unit: result.data.unit,
-    expiryDate: result.data.expiryDate.toISOString(),
+    expiryDate: result.data.expiryDate?.toISOString() ?? null,
   });
 
   if (session.accountType === "business") {
@@ -142,7 +148,7 @@ export async function updateInventoryItem(
       category: result.data.category,
       quantity: result.data.quantity,
       unit: result.data.unit,
-      expiryDate: result.data.expiryDate.toISOString(),
+      expiryDate: result.data.expiryDate?.toISOString() ?? null,
     });
 
   if (session.accountType === "business") {
@@ -192,7 +198,7 @@ export async function importInventoryAction(
     category: string;
     quantity: number;
     unit: string;
-    expiryDate: Date;
+    expiryDate: Date | null;
   }>
 ) {
   const session = await getCurrentUserSession();
@@ -210,7 +216,7 @@ export async function importInventoryAction(
         category: item.category,
         quantity: item.quantity,
         unit: item.unit,
-        expiryDate: item.expiryDate.toISOString(),
+        expiryDate: item.expiryDate?.toISOString() ?? null,
       })
     )
   );
@@ -272,5 +278,72 @@ export async function bulkDeleteAction(
   } catch (error: any) {
     console.error("Bulk delete failed:", error);
     return { success: false, error: "Failed to delete selected items." };
+  }
+}
+
+export async function discardExpiredItemsAction(): Promise<{
+  success: boolean;
+  count?: number;
+  error?: string;
+}> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const filter = session.accountType === "business"
+      ? { businessId: session.businessId }
+      : { userId: session.userId };
+    const items = await db.orm.public.InventoryItem.where(filter).all();
+    const expiredIds = items
+      .filter((item) =>
+        getInventoryStatus(
+          item.quantity,
+          typeof item.expiryDate === "string"
+            ? item.expiryDate
+            : item.expiryDate
+              ? new Date(item.expiryDate).toISOString()
+              : null,
+          item.unit,
+        ) === "Expired"
+      )
+      .map((item) => item.id);
+
+    await Promise.all(
+      expiredIds.map((id) =>
+        (async () => {
+          const item = items.find((candidate) => candidate.id === id);
+          if (item) {
+            await db.orm.public.InventoryActivity.create({
+              userId: session.userId,
+              businessId: session.accountType === "business" ? session.businessId : null,
+              inventoryItemId: item.id,
+              productName: item.name,
+              action: "discarded_expired",
+              quantity: item.quantity,
+              unit: item.unit,
+            });
+          }
+          await db.orm.public.InventoryItem.where({ id, ...filter }).delete();
+        })(),
+      ),
+    );
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+      revalidatePath("/dashboard/analytics");
+      revalidatePath("/dashboard/recipes");
+    }
+
+    return { success: true, count: expiredIds.length };
+  } catch (error) {
+    console.error("Discard expired items failed:", error);
+    return { success: false, error: "Failed to discard expired items." };
   }
 }

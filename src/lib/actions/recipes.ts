@@ -94,6 +94,7 @@ export async function generateRecipesAction(mode: RecipeMode = "use_soon"): Prom
     // CRITICAL: Filter out expired products
     const now = new Date();
     const safeInventory = inventory.filter(item => {
+      if (!item.expiryDate) return false;
       const expiryDate = new Date(typeof item.expiryDate === "string" ? item.expiryDate : item.expiryDate);
       return expiryDate >= now;
     });
@@ -110,13 +111,13 @@ export async function generateRecipesAction(mode: RecipeMode = "use_soon"): Prom
 
     // Sort inventory by expiry (closest first)
     const sortedInventory = [...safeInventory].sort((a, b) => {
-      const daysA = getDaysUntilExpiry(typeof a.expiryDate === "string" ? a.expiryDate : new Date(a.expiryDate).toISOString());
-      const daysB = getDaysUntilExpiry(typeof b.expiryDate === "string" ? b.expiryDate : new Date(b.expiryDate).toISOString());
+      const daysA = getDaysUntilExpiry(a.expiryDate ? (typeof a.expiryDate === "string" ? a.expiryDate : new Date(a.expiryDate).toISOString()) : null);
+      const daysB = getDaysUntilExpiry(b.expiryDate ? (typeof b.expiryDate === "string" ? b.expiryDate : new Date(b.expiryDate).toISOString()) : null);
       return daysA - daysB;
     });
 
     const inventoryPromptList = sortedInventory.map(item => {
-      const daysLeft = getDaysUntilExpiry(typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString());
+      const daysLeft = getDaysUntilExpiry(item.expiryDate ? (typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()) : null);
       const expiryText = daysLeft === 0 ? "Expires today" : `${daysLeft} days left`;
       return `- ID ${item.id}: "${item.name}" (Qty: ${item.quantity} ${item.unit}, Category: ${item.category}, Expiry: ${expiryText})`;
     }).join("\n");
@@ -266,6 +267,16 @@ export async function consumeIngredientsAction(
         quantityUsed: item.quantityUsed,
         unit: dbItem.unit,
         normalizedQuantityUsed: normalizeQuantity(item.quantityUsed, dbItem.unit).normalizedValue,
+      });
+
+      await db.orm.public.InventoryActivity.create({
+        userId: session.userId,
+        businessId: session.accountType === "business" ? session.businessId : null,
+        inventoryItemId: item.itemId,
+        productName: dbItem.name,
+        action: "consumed",
+        quantity: item.quantityUsed,
+        unit: dbItem.unit,
       });
 
       const newQty = dbItem.quantity - item.quantityUsed;

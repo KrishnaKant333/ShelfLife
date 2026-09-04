@@ -28,9 +28,13 @@ model User {
 
   inventory InventoryItem[]
   consumption InventoryConsumption[]
+  activity InventoryActivity[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime
   passwordHash String?
+  emailVerifiedAt TimestamptzString?
+  emailVerificationTokenHash String?
+  emailVerificationExpiresAt TimestamptzString?
 }
 
 model Business {
@@ -41,6 +45,7 @@ model Business {
   users     User[]
   inventoryItems InventoryItem[]
   consumptionItems InventoryConsumption[]
+  activityItems InventoryActivity[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime
@@ -56,9 +61,10 @@ model InventoryItem {
   business   Business?  @relation(fields: [businessId], references: [id])
   name       String
   category   String
-  quantity   Int
+  imageUrl   String?
+  quantity   Float
   unit       String
-  expiryDate TimestamptzString
+  expiryDate TimestamptzString?
   createdAt  TimestamptzString          @default(now())
   updatedAt  temporal.updatedAtString()
 }
@@ -75,4 +81,18 @@ model InventoryConsumption {
   unit               String
   normalizedQuantityUsed Float?
   consumedAt         TimestamptzString          @default(now())
+}
+
+model InventoryActivity {
+  id              Int                        @id @default(autoincrement())
+  userId          Int
+  user            User                       @relation(fields: [userId], references: [id])
+  businessId      Int?
+  business        Business?                  @relation(fields: [businessId], references: [id])
+  inventoryItemId Int
+  productName     String
+  action          String
+  quantity        Float?
+  unit            String?
+  occurredAt      TimestamptzString          @default(now())
 }
