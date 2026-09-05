@@ -10,9 +10,9 @@ Consumer data is owned by the authenticated user and uses `/dashboard`. Business
 
 Implemented capabilities include inventory CRUD, expiry/status tracking, imports and exports, barcode/label scanning, alerts, analytics, waste management, consumption tracking, recipes, FIFO, Business Inventory Strategy, and theme support.
 
-## Current gaps
+## Current status
 
-The data model currently requires `expiryDate`, there is no expired-item discard/archive workflow, and email verification is absent. Normalization exists for common weight, volume, and count units but requires expansion and stronger handling of unknown/incompatible units. Product detail, image, activity, notification, and collapsed-sidebar features are also pending.
+The ordered P0, P1, and P2 implementation work is complete. Expiry is nullable and trackability-aware; expired discard, unit normalization, email verification, product detail, images, activity history, sorting, notifications, responsive navigation, and theme support are implemented. Remaining work is operational: configure SMTP in each deployment and add broader automated/browser regression coverage.
 
 ## Safety principles
 

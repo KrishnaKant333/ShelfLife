@@ -97,6 +97,19 @@ npx prisma migration status    # Show migration status
 2. Run `npx prisma contract emit` to regenerate the contract.
 3. Query your models — your IDE will autocomplete everything.
 
+## Production deployment
+
+Set `DATABASE_URL` to the production Neon PostgreSQL connection string, then run from the repository root:
+
+```bash
+npx prisma migration check
+npx prisma migration status
+npx prisma db migrate --show
+npx prisma db migrate
+```
+
+The migration command reads the committed `migrations/` graph and applies only pending migrations. Do not run `db init` or `db update` against production for this deployment.
+
 ## Monorepo notes (pnpm workspaces)
 
 If this project lives inside a pnpm workspace, a few things are worth knowing:

@@ -3,14 +3,20 @@
 import { useState, useTransition } from "react";
 import { deleteInventoryItem } from "@/lib/actions/inventory";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ToastProvider, useToast } from "@/components/ui/Toast";
 
 interface DeleteProductButtonProps {
   id: number;
 }
 
 export default function DeleteProductButton({ id }: DeleteProductButtonProps) {
+  return <ToastProvider><DeleteProductButtonInner id={id} /></ToastProvider>;
+}
+
+function DeleteProductButtonInner({ id }: DeleteProductButtonProps) {
   const [pending, startTransition] = useTransition();
   const [showConfirm, setShowConfirm] = useState(false);
+  const { showToast } = useToast();
 
   function handleDelete() {
     setShowConfirm(true);
@@ -19,7 +25,11 @@ export default function DeleteProductButton({ id }: DeleteProductButtonProps) {
   function confirmDelete() {
     setShowConfirm(false);
     startTransition(async () => {
-      await deleteInventoryItem(id);
+      try {
+        await deleteInventoryItem(id);
+      } catch {
+        showToast("Unable to delete this product. Please try again.", "error");
+      }
     });
   }
 

@@ -27,7 +27,8 @@ Checkpoint: run `npm run build` and test both account types and responsive layou
 ## P2 - polish
 
 13. [x] Continue remaining UI/UX polish and consistency work identified by the existing specifications. The ordered feature pass is complete without replacing working business logic or duplicating inventory systems.
+14. [x] Complete final P2 production-readiness audit across protected routes, responsive/theme behavior, async feedback, accessibility, metadata, and ownership boundaries. Added dialog keyboard behavior, destructive-action pending/error states, activity-load errors, theme-safe consumer forms, server-side consumption quantity validation, and baseline social metadata.
 
 Final checkpoint: `npm run build`, targeted lint/type checks, and regression review of all protected features.
 
-Deployment prerequisites: apply the pending migration rooted at `d4341e80715f` and configure SMTP environment variables for email verification.
+Deployment prerequisites: the current Prisma-next migration graph must be applied to the deployment database, and SMTP environment variables must be configured for email verification.

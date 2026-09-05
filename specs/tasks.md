@@ -28,6 +28,7 @@ The previous UI-overhaul checklist is superseded by `Next task.md`. This registe
 | P1.11 | Inventory sorting | Complete; expiry, quantity, name, recently added |
 | P1.12 | Notification center | Complete; top-right computed expiry/low-stock attention view |
 | P2.13 | Remaining UI/UX polish | Complete for this ordered pass |
+| P2.14 | Final production-readiness audit | Complete; async feedback, accessibility, theme consistency, metadata, and server-side quantity validation reviewed |
 
 ## Checkpoint policy
 

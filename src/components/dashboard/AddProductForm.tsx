@@ -36,7 +36,7 @@ export default function AddProductForm() {
             type="text"
             placeholder="e.g. Fresh Milk"
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)]"
           />
         </div>
 
@@ -54,7 +54,7 @@ export default function AddProductForm() {
             type="text"
             placeholder="e.g. Dairy"
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)]"
           />
         </div>
 
@@ -74,7 +74,7 @@ export default function AddProductForm() {
             step="any"
             placeholder="e.g. 2"
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)]"
           />
         </div>
 
@@ -92,7 +92,7 @@ export default function AddProductForm() {
             type="text"
             placeholder="e.g. litres, kg, packets"
             required
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)]"
           />
         </div>
 
@@ -108,13 +108,13 @@ export default function AddProductForm() {
             id="expiryDate"
             name="expiryDate"
             type="date"
-            className="w-full rounded-xl border border-black/10 px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
+            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>
       </div>
 
       {state.error && (
-        <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p role="alert" className="mt-5 rounded-xl bg-[var(--shelf-terracotta)]/10 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
           {state.error}
         </p>
       )}
@@ -122,7 +122,7 @@ export default function AddProductForm() {
       <div className="mt-8 flex justify-end gap-3">
         <Link
           href="/dashboard/inventory"
-          className="rounded-xl border border-black/10 px-5 py-3 text-sm font-medium"
+          className="rounded-xl border border-[var(--shelf-border)] px-5 py-3 text-sm font-medium text-[var(--shelf-dark)]"
         >
           Cancel
         </Link>

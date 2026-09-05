@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { startTransition, useState, useEffect } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { User, Bell, ShieldAlert, LogOut, Zap, Sun, Moon, Monitor } from "lucide-react";
@@ -29,9 +29,11 @@ export default function SettingsView({ user }: SettingsViewProps) {
     const storedLowStock = localStorage.getItem("shelf_lowstock_alerts");
     const storedThreshold = localStorage.getItem("shelf_expiry_threshold");
 
-    if (storedExpiry !== null) setExpiryAlerts(storedExpiry === "true");
-    if (storedLowStock !== null) setLowStockAlerts(storedLowStock === "true");
-    if (storedThreshold !== null) setExpiryThreshold(storedThreshold);
+    startTransition(() => {
+      if (storedExpiry !== null) setExpiryAlerts(storedExpiry === "true");
+      if (storedLowStock !== null) setLowStockAlerts(storedLowStock === "true");
+      if (storedThreshold !== null) setExpiryThreshold(storedThreshold);
+    });
   }, []);
 
   function handleSave(e: React.FormEvent) {
@@ -61,10 +63,10 @@ export default function SettingsView({ user }: SettingsViewProps) {
         {/* Navigation Sidebar inside Settings */}
         <div className="space-y-1">
           <div className="rounded-xl bg-[var(--shelf-surface)] border border-[var(--shelf-border)] p-2">
-            <button className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold bg-[var(--shelf-cream)] text-[var(--shelf-dark)]">
+            <div className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-semibold bg-[var(--shelf-cream)] text-[var(--shelf-dark)]" aria-current="page">
               <User size={18} />
               Profile & Preferences
-            </button>
+            </div>
           </div>
         </div>
 
@@ -122,10 +124,8 @@ export default function SettingsView({ user }: SettingsViewProps) {
                       Active
                     </span>
                   ) : (
-                    <Link href="/#pricing">
-                      <button className="rounded-lg bg-[var(--shelf-forest)] px-3 py-1 text-xs font-semibold text-white hover:opacity-90 transition">
+                    <Link href="/#pricing" className="rounded-lg bg-[var(--shelf-forest)] px-3 py-1 text-xs font-semibold text-white hover:opacity-90 transition">
                         Upgrade
-                      </button>
                     </Link>
                   )}
                 </div>

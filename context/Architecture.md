@@ -17,7 +17,7 @@ Consumer inventory uses the authenticated `userId` with no business scope. Busin
 
 ## Current inventory model
 
-`InventoryItem` currently contains name, category, integer quantity, unit, required expiry date, user/business ownership, and timestamps. `InventoryConsumption` records consumed quantity, unit, optional normalized quantity, ownership, and timestamp. The P0 expiry work must evolve this model without weakening ownership checks.
+`InventoryItem` contains name, category, decimal quantity, unit, nullable expiry date, optional image URL, user/business ownership, and timestamps. `InventoryConsumption` and `InventoryActivity` record owned consumption/discard history, quantities, units, and timestamps. Unknown expiry is explicit and is never treated as safe for recipe generation.
 
 ## Current flows
 
@@ -29,10 +29,12 @@ CSV -> parse -> validate -> preview -> import.
 
 Recipe generation -> fetch owned inventory -> deterministic expiry filtering -> AI -> response validation -> display.
 
-## Required next architectural changes
+## Current architectural state
 
-1. Add a safe discard/archive path for expired items and ensure all affected dashboard/analytics/recipe queries respect it.
-2. Centralize unit parsing and normalization with explicit compatible/incompatible results.
-3. Make expiry nullable/trackability-aware and centralize reliable date derivation.
-4. Add verification state and token delivery/consumption without bypassing existing credentials ownership rules.
-5. Add activity/history and notification data only when the P1 feature reaches its ordered phase.
+1. Expired items can be discarded through an ownership-safe confirmed action; the discard is recorded in activity history.
+2. Unit parsing and normalization return explicit compatible/incompatible results for supported weight, volume, and count units.
+3. Expiry is nullable and reliable date derivation is used by AI, import, label, and inventory flows.
+4. Signup requires email verification through a delivered token; there is no local bypass.
+5. Shared dashboards provide activity history, computed notifications, responsive navigation, and list/grid inventory views.
+
+Further changes should remain focused on maintenance, testing, and deployment configuration rather than new architecture.

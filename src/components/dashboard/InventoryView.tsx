@@ -70,6 +70,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
     onConfirm: () => void;
     isDestructive?: boolean;
   } | null>(null);
+  const [isBulkActionPending, setIsBulkActionPending] = useState(false);
 
   // Consumption Modal states
   const [consumeItem, setConsumeItem] = useState<InventoryItem | null>(null);
@@ -83,26 +84,33 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
   // Recent History states
   const [history, setHistory] = useState<ConsumptionRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
 
   // Fetch recent consumption activity
   const fetchHistory = async () => {
     setLoadingHistory(true);
+    setHistoryError(null);
     try {
       const res = await getRecentConsumptionAction();
       if (res.success && res.history) {
         setHistory(res.history);
+      } else if (!res.success) {
+        setHistoryError(res.error || "Unable to load recent activity.");
       }
-    } catch (err) {
-      console.error("Failed to load activity stream:", err);
+    } catch {
+      setHistoryError("Unable to load recent activity. Please try again.");
     } finally {
       setLoadingHistory(false);
     }
   };
 
   useEffect(() => {
-    fetchHistory();
+    const timer = window.setTimeout(() => {
+      void fetchHistory();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Filter, search, and sort logic
@@ -223,7 +231,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
       message: `Are you sure you want to delete ${selectedIds.length} item(s)?`,
       isDestructive: true,
       onConfirm: async () => {
-        setConfirmDialog(null);
+        setIsBulkActionPending(true);
         try {
           const res = await bulkDeleteAction(selectedIds);
           if (res.success) {
@@ -234,6 +242,9 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
           }
         } catch (err) {
           showToast("Error executing bulk delete.", "error");
+        } finally {
+          setIsBulkActionPending(false);
+          setConfirmDialog(null);
         }
       },
     });
@@ -245,7 +256,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
       title: "Mark as Consumed",
       message: `Mark ${selectedIds.length} item(s) as fully consumed?`,
       onConfirm: async () => {
-        setConfirmDialog(null);
+        setIsBulkActionPending(true);
         try {
           const itemsToConsume = selectedIds.map((id) => {
             const item = initialInventory.find((x) => x.id === id);
@@ -264,6 +275,9 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
           }
         } catch (err) {
           showToast("Error executing bulk consumption.", "error");
+        } finally {
+          setIsBulkActionPending(false);
+          setConfirmDialog(null);
         }
       },
     });
@@ -275,18 +289,25 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
       message: "Discard every expired item in this inventory? This cannot be undone.",
       isDestructive: true,
       onConfirm: async () => {
-        setConfirmDialog(null);
-        const result = await discardExpiredItemsAction();
-        if (result.success) {
-          showToast(
-            result.count
-              ? `${result.count} expired item(s) discarded.`
-              : "No expired items found.",
-            "success",
-          );
-          router.refresh();
-        } else {
-          showToast(result.error || "Failed to discard expired items.", "error");
+        setIsBulkActionPending(true);
+        try {
+          const result = await discardExpiredItemsAction();
+          if (result.success) {
+            showToast(
+              result.count
+                ? `${result.count} expired item(s) discarded.`
+                : "No expired items found.",
+              "success",
+            );
+            router.refresh();
+          } else {
+            showToast(result.error || "Failed to discard expired items.", "error");
+          }
+        } catch {
+          showToast("Error discarding expired items.", "error");
+        } finally {
+          setIsBulkActionPending(false);
+          setConfirmDialog(null);
         }
       },
     });
@@ -331,6 +352,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
         setExportingPDF(false);
+        showToast("Your browser blocked the print window. Allow pop-ups and try again.", "error");
         return;
       }
 
@@ -519,7 +541,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                 <span className="text-[var(--shelf-muted)] uppercase tracking-wide">Sort:</span>
                 <select
                   value={sortBy}
-                  onChange={(e: any) => setSortBy(e.target.value)}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                   className="bg-transparent border-none outline-none pr-1.5 font-bold cursor-pointer"
                 >
                   <option value="expiry-asc">Expiry: Nearest</option>
@@ -604,6 +626,8 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                           <button
                             type="button"
                             onClick={handleToggleSelectAll}
+                            aria-label="Select all visible products"
+                            aria-pressed={processedInventory.length > 0 && processedInventory.every((item) => selectedIds.includes(item.id))}
                             className="cursor-pointer flex items-center text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
                           >
                             {processedInventory.every((item) => selectedIds.includes(item.id)) ? (
@@ -636,6 +660,8 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                               <button
                                 type="button"
                                 onClick={() => handleToggleSelect(item.id)}
+                                aria-label={`Select ${item.name}`}
+                                aria-pressed={isSelected}
                                 className="cursor-pointer flex items-center text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
                               >
                                 {isSelected ? (
@@ -708,6 +734,8 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                           <button
                             type="button"
                             onClick={() => handleToggleSelect(item.id)}
+                            aria-label={`Select ${item.name}`}
+                            aria-pressed={isSelected}
                             className="cursor-pointer mt-0.5 text-[var(--shelf-muted)] bg-transparent border-none"
                           >
                             {isSelected ? <CheckSquare size={16} className="text-[var(--shelf-forest)]" /> : <Square size={16} />}
@@ -776,6 +804,13 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
               <div className="flex items-center gap-2 py-3 text-xs text-[var(--shelf-muted)]">
                 <Loader2 className="animate-spin text-[var(--shelf-forest)] h-4 w-4" />
                 <span>Loading activity stream...</span>
+              </div>
+            ) : historyError ? (
+              <div className="space-y-2 py-2">
+                <p className="text-xs text-[var(--shelf-terracotta)]">{historyError}</p>
+                <button type="button" onClick={fetchHistory} className="text-xs font-semibold text-[var(--shelf-forest)] hover:underline">
+                  Try again
+                </button>
               </div>
             ) : history.length === 0 ? (
               <p className="text-xs text-[var(--shelf-muted)] italic py-2">

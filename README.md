@@ -15,6 +15,7 @@ ShelfLife is a Next.js food-inventory intelligence application for consumers and
 - Expired inventory is filtered before recipe generation and returned recipes are validated.
 - Light, Dark, and System themes with persisted theme selection.
 - Responsive shared dashboard shell and loading/feedback UI in the existing implemented areas.
+- Final P2 audit polish: accessible confirmation dialogs, pending/error feedback for destructive actions, activity-load error states, theme-safe consumer forms, server-side consumption quantity validation, and baseline Open Graph/Twitter metadata.
 
 ## Known gaps at the start of the current roadmap
 
@@ -53,7 +54,20 @@ npm run build
 
 The production build is the required checkpoint after each major phase.
 
-The current contract migration has been applied to the configured database. Email verification requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM` in `.env.local` before signup is enabled. For Gmail, use a Google App Password rather than the normal account password, then restart the dev server.
+The current contract migration is applied to the configured Neon database. Production hosting must configure the variables listed in `.env.example`: `DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`, `GROQ_API_KEY`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM`. For Gmail, use a Google App Password rather than the normal account password. `AUTH_TRUST_HOST=true` is only needed when the hosting platform is behind a reverse proxy and Auth.js reports `UntrustedHost`.
+
+### Production migration runbook
+
+From the repository root, with the production Neon connection supplied through `DATABASE_URL`:
+
+```bash
+npx prisma migration check
+npx prisma migration status
+npx prisma db migrate --show
+npx prisma db migrate
+```
+
+`migration check` validates the committed migration graph offline. `migration status` verifies the database marker and pending path. `db migrate --show` previews the route, and `db migrate` applies pending migrations only. The verified current Neon database reports `Up to date` with `20260904T2310_roadmap_p0_p1_from_applied` applied.
 
 ## Safety and engineering rules
 
@@ -87,5 +101,12 @@ The current contract migration has been applied to the configured database. Emai
 ### P2
 
 13. [x] Continue remaining UI/UX polish and consistency work identified by the existing specs.
+14. [x] Final production-readiness audit across Consumer, Business, auth, inventory, analytics, recipes, waste, settings, import/export, and landing routes.
 
 Features not listed as implemented must remain labelled as incomplete or Coming Soon.
+
+## Final audit status (2026-09-05)
+
+Audited route protection, account-type isolation, ownership checks, responsive layouts, Light/Dark/System theme tokens, async actions, empty/error states, form validation, keyboard semantics, feedback patterns, metadata, links, and placeholder functionality. No native browser `alert`, `confirm`, or `prompt` calls remain in `src`.
+
+Remaining deployment work is configuring SMTP variables and applying the current Prisma-next migration graph. Broader end-to-end/browser coverage remains useful follow-up work; no new product feature is pending from this ordered roadmap.

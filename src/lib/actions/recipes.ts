@@ -258,6 +258,13 @@ export async function consumeIngredientsAction(
         }
       }
 
+      if (!Number.isFinite(item.quantityUsed) || item.quantityUsed <= 0 || item.quantityUsed > dbItem.quantity) {
+        return {
+          success: false,
+          error: `Quantity for ${dbItem.name} must be greater than zero and no more than the available stock.`,
+        };
+      }
+
       // Create consumption record
       await db.orm.public.InventoryConsumption.create({
         userId: session.userId,

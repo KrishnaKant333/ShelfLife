@@ -34,11 +34,15 @@ Last audited: 2026-09-05
 
 - [x] Remaining roadmap UI/UX work completed in this pass without replacing working business logic
 - [x] Final production build and migration graph review
+- [x] Final route audit for Consumer, Business, auth, inventory, analytics, recipes, waste, settings, import/export, and marketing surfaces
+- [x] Shared confirmation keyboard behavior, destructive-action feedback, activity error states, theme-safe consumer forms, server-side consumption validation, and baseline social metadata
 
 ## Deployment follow-up
 
 - [x] Apply Prisma-next migration with `npx prisma db migrate --to b70d5295c1bd`
 - [ ] Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM`
+
+The production build passes. The repository still has pre-existing strict ESLint findings in generated contract types, older `any` casts, and several React lint rules; these do not block the production build and were outside the focused P2 behavior fixes.
 
 Signup is blocked until SMTP is configured. There is no local verification bypass.
 
