@@ -33,10 +33,10 @@ export default function Hero(){
               </Link>
 
               <Link
-                href="/business/dashboard"
+                href="/dashboard"
                 className="inline-flex items-center gap-2 rounded-full border border-[var(--shelf-forest)] bg-[var(--shelf-surface)] px-7 py-3.5 font-semibold text-[var(--shelf-forest)] transition hover:bg-[var(--shelf-cream)]"
               >
-                For Businesses
+                Open Dashboard
                 <ArrowUpRight size={18} />
               </Link>
             </div>
