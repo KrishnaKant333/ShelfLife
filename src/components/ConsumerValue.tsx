@@ -28,9 +28,9 @@ export default function ConsumerValue() {
     },
     {
       icon: Zap,
-      title: "Barcode & Label Scanning",
+      title: "AI Label Scanning",
       description:
-        "Scan products with your phone to instantly add items to your inventory.",
+        "Upload product labels to extract useful inventory details without retyping them.",
     },
   ];
 

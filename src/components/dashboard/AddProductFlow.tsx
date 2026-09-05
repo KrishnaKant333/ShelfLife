@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useActionState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
 import { extractLabelAction } from "@/lib/actions/label-scan";
 import { createInventoryItem, type CreateInventoryState } from "@/lib/actions/inventory";
-import { Camera, QrCode, FileText, Upload, Plus, AlertCircle, Sparkles, RefreshCw } from "lucide-react";
+import { Camera, FileText, Upload, Plus, AlertCircle, Sparkles, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 interface AddProductFlowProps {
@@ -13,7 +12,7 @@ interface AddProductFlowProps {
 }
 
 const initialFormState: CreateInventoryState = {};
-type AddProductTab = "manual" | "barcode" | "label" | "import";
+type AddProductTab = "manual" | "label" | "import";
 
 export default function AddProductFlow({ isBusiness = false }: AddProductFlowProps) {
   const [activeTab, setActiveTab] = useState<AddProductTab>("manual");
@@ -22,28 +21,18 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get("tab");
-      if (tab === "barcode" || tab === "label" || tab === "import" || tab === "manual") {
+      if (tab === "label" || tab === "import" || tab === "manual") {
         window.setTimeout(() => setActiveTab(tab), 0);
       }
     }
   }, []);
   
-  // Manual Form States (these can be pre-filled by scanner lookup)
+  // Manual Form States (these can be pre-filled by label extraction)
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [unit, setUnit] = useState("pieces");
   const [expiryDate, setExpiryDate] = useState("");
-  const [brand, setBrand] = useState("");
-  const [barcode, setBarcode] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-
-  // Barcode scanning states
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanError, setScanError] = useState("");
-  const [lookupLoading, setLookupLoading] = useState(false);
-  const [lookupMessage, setLookupMessage] = useState("");
-  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   // Label scanning states
   const [labelFile, setLabelFile] = useState<File | null>(null);
@@ -55,124 +44,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
     createInventoryItem,
     initialFormState
   );
-
-  // Clean up scanner on unmount or tab change
-  useEffect(() => {
-    return () => {
-      stopScanner();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (activeTab !== "barcode") {
-      stopScanner();
-    }
-  }, [activeTab]);
-
-  async function startScanner() {
-    setIsScanning(true);
-    setScanError("");
-    setLookupMessage("");
-    
-    // Give DOM time to mount reader div
-    setTimeout(async () => {
-      try {
-        const html5QrCode = new Html5Qrcode("barcode-reader");
-        scannerRef.current = html5QrCode;
-
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 280, height: 160 },
-          },
-          (decodedText) => {
-            handleBarcodeScanned(decodedText);
-          },
-          () => {
-            // silent scan failure
-          }
-        );
-      } catch (err) {
-        setScanError("Unable to access camera. Please check camera permissions.");
-        setIsScanning(false);
-      }
-    }, 100);
-  }
-
-  async function stopScanner() {
-    if (scannerRef.current) {
-      try {
-        if (scannerRef.current.isScanning) {
-          await scannerRef.current.stop();
-        }
-      } catch (e) {
-        console.error("Scanner stop error", e);
-      }
-      scannerRef.current = null;
-    }
-    setIsScanning(false);
-  }
-
-  async function handleBarcodeScanned(barcode: string) {
-    stopScanner();
-    setBarcode(barcode);
-    setLookupLoading(true);
-    setLookupMessage(`Barcode detected: ${barcode}. Looking up product...`);
-
-    try {
-      const res = await fetch(`/api/barcode?barcode=${encodeURIComponent(barcode)}`, { cache: "no-store" });
-      const data: unknown = await res.json();
-      if (!data || typeof data !== "object") {
-        throw new Error("Malformed barcode response.");
-      }
-
-      const result = data as {
-        status?: string;
-        error?: string;
-        missingFields?: string[];
-        product?: {
-          barcode?: string;
-          name?: string;
-          brand?: string;
-          category?: string;
-          quantity?: number;
-          unit?: string;
-          imageUrl?: string;
-        };
-      };
-
-      if (result.status === "not_found") {
-        setLookupMessage("Product not found in Open Food Facts. You can complete the form manually.");
-      } else if (result.status === "error" || !res.ok) {
-        setLookupMessage(result.error || "Barcode lookup failed. Please enter the product manually.");
-      } else if (result.product) {
-        const product = result.product;
-        if (product.name) setName(product.name);
-        if (product.brand) setBrand(product.brand);
-        if (product.category) setCategory(product.category);
-        if (typeof product.quantity === "number" && product.quantity > 0) setQuantity(String(product.quantity));
-        if (product.unit) setUnit(product.unit);
-        if (product.imageUrl) setImageUrl(product.imageUrl);
-        if (product.barcode) setBarcode(product.barcode);
-
-        const missingFields = result.missingFields?.join(", ");
-        setLookupMessage(
-          result.status === "incomplete"
-            ? `Product found with limited data. Complete the missing fields${missingFields ? `: ${missingFields}` : ""}.`
-            : "Product found. Review the details before saving.",
-        );
-      } else {
-        setLookupMessage("The barcode response did not contain product data. Please enter it manually.");
-      }
-      setActiveTab("manual");
-    } catch {
-      setLookupMessage("Barcode lookup failed. Please enter the product manually.");
-      setActiveTab("manual");
-    } finally {
-      setLookupLoading(false);
-    }
-  }
 
   async function handleLabelFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -217,7 +88,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
           Add New Product
         </h1>
         <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-          Add single items manually, scan barcodes or labels, or import lists.
+          Add single items manually, scan labels, or import lists.
         </p>
       </div>
 
@@ -234,17 +105,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
           >
             <Plus size={16} />
             Manual Form
-          </button>
-          <button
-            onClick={() => setActiveTab("barcode")}
-            className={`flex items-center gap-2 border-b-2 px-6 py-4 text-sm font-medium transition whitespace-nowrap ${
-              activeTab === "barcode"
-                ? "border-[var(--shelf-forest)] text-[var(--shelf-forest)] bg-[var(--shelf-surface)]"
-                : "border-transparent text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
-            }`}
-          >
-            <QrCode size={16} />
-            Barcode Scan
           </button>
           <button
             onClick={() => setActiveTab("label")}
@@ -272,61 +132,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
 
         {/* Tab Content Box */}
         <div className="p-6 md:p-8">
-          {/* BARCODE SCAN TAB */}
-          {activeTab === "barcode" && (
-            <div className="space-y-6 text-center max-w-md mx-auto py-4">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]">
-                <QrCode size={28} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-[var(--shelf-dark)]">Barcode Product Lookup</h3>
-                <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-                  Scan a food or household product barcode to pull details from the Open Food Facts catalog automatically.
-                </p>
-              </div>
-
-              {isScanning ? (
-                <div className="space-y-4">
-                  <div
-                    id="barcode-reader"
-                    className="overflow-hidden rounded-xl border border-[var(--shelf-border)] bg-black"
-                    style={{ width: "100%", height: "240px" }}
-                  />
-                  <button
-                    type="button"
-                    onClick={stopScanner}
-                    className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-2 text-sm font-medium text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
-                  >
-                    Cancel Scan
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={startScanner}
-                    className="w-full rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 shadow-sm"
-                  >
-                    Open Camera & Scan
-                  </button>
-                  {scanError && (
-                    <p className="text-sm font-medium text-[var(--shelf-terracotta)] flex items-center justify-center gap-1">
-                      <AlertCircle size={15} />
-                      {scanError}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {lookupLoading && (
-                <div className="flex items-center justify-center gap-2 text-sm text-[var(--shelf-forest)] font-medium">
-                  <RefreshCw size={16} className="animate-spin" />
-                  {lookupMessage}
-                </div>
-              )}
-            </div>
-          )}
-
           {/* LABEL SCAN TAB */}
           {activeTab === "label" && (
             <div className="space-y-6 text-center max-w-md mx-auto py-4">
@@ -409,23 +214,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
           {/* MANUAL FORM & PRE-FILLED CONFIRMATION */}
           {activeTab === "manual" && (
             <form action={formAction} className="space-y-6">
-              {lookupMessage && (
-                <div className="rounded-xl bg-[var(--shelf-blue)]/10 border border-[var(--shelf-blue)]/20 px-4 py-3 text-xs text-[var(--shelf-blue)] font-medium">
-                  {lookupMessage}
-                </div>
-              )}
-
-              {(barcode || brand || imageUrl) && (
-                <div className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-4 text-sm text-[var(--shelf-muted)]">
-                  <p className="font-semibold text-[var(--shelf-dark)]">Barcode details</p>
-                  {barcode && <p className="mt-1">Barcode: {barcode}</p>}
-                  {brand && <p className="mt-1">Brand: {brand}</p>}
-                  {imageUrl && (
-                    <img src={imageUrl} alt={`${brand || name || "Product"} package`} className="mt-3 h-20 w-20 rounded-lg object-contain" />
-                  )}
-                </div>
-              )}
-              
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
                   <label htmlFor="name" className="mb-2 block text-sm font-semibold text-[var(--shelf-dark)]">
@@ -507,7 +295,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                   />
                 </div>
 
-                <input type="hidden" name="imageUrl" value={imageUrl} />
               </div>
 
               {state.error && (
@@ -522,8 +309,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                   className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-5 py-3 text-sm font-semibold text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
                 >
                   Cancel
-
-                <input type="hidden" name="imageUrl" value={imageUrl} />
                 </Link>
                 <button
                   type="submit"

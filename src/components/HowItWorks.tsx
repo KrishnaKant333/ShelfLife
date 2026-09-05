@@ -1,12 +1,12 @@
-import { Barcode, Upload, AlertCircle, TrendingDown } from "lucide-react";
+import { Upload, AlertCircle, TrendingDown } from "lucide-react";
 
 export default function HowItWorks() {
   const steps = [
     {
       number: "1",
       title: "Add Your Inventory",
-      description: "Manually add products, scan barcodes, or upload invoices.",
-      icon: Barcode,
+      description: "Manually add products, scan labels, or upload invoices.",
+      icon: Upload,
     },
     {
       number: "2",

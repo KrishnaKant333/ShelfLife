@@ -6,7 +6,7 @@ Last audited: 2026-09-05
 
 - [x] Production build passes before this roadmap (`npm run build`)
 - [x] Consumer and Business authentication and route isolation
-- [x] Inventory CRUD, imports, exports, scanning, alerts, analytics, waste, consumption, recipes, FIFO, pricing definitions
+- [x] Inventory CRUD, imports, exports, label scanning, alerts, analytics, waste, consumption, recipes, FIFO, pricing definitions
 - [x] Recipe safety excludes expired inventory before AI
 - [x] Light/Dark/System theme support exists
 
@@ -35,6 +35,7 @@ Last audited: 2026-09-05
 - [x] Remaining roadmap UI/UX work completed in this pass without replacing working business logic
 - [x] Final production build and migration graph review
 - [x] Final route audit for Consumer, Business, auth, inventory, analytics, recipes, waste, settings, import/export, and marketing surfaces
+- [x] Defer barcode scanning and remove the temporary external barcode lookup integration; manual, label, and bulk entry remain active
 - [x] Shared confirmation keyboard behavior, destructive-action feedback, activity error states, theme-safe consumer forms, server-side consumption validation, and baseline social metadata
 
 ## Deployment follow-up
@@ -48,4 +49,4 @@ Signup is blocked until SMTP is configured. There is no local verification bypas
 
 ## Do not break
 
-Authentication, ownership, Consumer/Business isolation, AI and recipe safety, expiry logic, imports, exports, barcode/label scanning, analytics, waste, FIFO, and pricing behavior.
+Authentication, ownership, Consumer/Business isolation, AI and recipe safety, expiry logic, imports, exports, label scanning, analytics, waste, FIFO, and pricing behavior. Barcode data structures should remain available for future work, but barcode scanning is currently deferred.

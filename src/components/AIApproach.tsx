@@ -15,7 +15,7 @@ export default function AIApproach() {
     {
       icon: Zap,
       title: "OCR & Scanning",
-      description: "Smart label scanning and barcode recognition instantly capture product details without manual data entry.",
+      description: "Smart label scanning captures product details without manual data entry.",
     },
     {
       icon: CheckCircle2,

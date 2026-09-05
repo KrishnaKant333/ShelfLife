@@ -6,7 +6,8 @@ The previous UI-overhaul checklist is superseded by `Next task.md`. This registe
 
 - [x] Auth.js credentials authentication and Consumer/Business routing
 - [x] Ownership checks in consumer/business inventory actions
-- [x] Inventory CRUD, imports, exports, barcode and label scanning
+- [x] Inventory CRUD, imports, exports, and label scanning
+- [ ] Barcode scanning and external barcode lookup (deferred; hidden from Add New Product)
 - [x] Deterministic status classification and recipe expired-item exclusion
 - [x] Consumption, analytics, waste, FIFO, Business Inventory Strategy
 - [x] Light/Dark/System theme support and shared dashboard UI

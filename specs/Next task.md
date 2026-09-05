@@ -32,3 +32,5 @@ Checkpoint: run `npm run build` and test both account types and responsive layou
 Final checkpoint: `npm run build`, targeted lint/type checks, and regression review of all protected features.
 
 Deployment prerequisites: the current Prisma-next migration graph must be applied to the deployment database, and SMTP environment variables must be configured for email verification.
+
+Barcode scanning is intentionally deferred. The Add New Product flow currently exposes only Manual Form, Scan Label (AI), and Bulk Import. Do not reintroduce barcode lookup or add a paid provider until the data-source decision is revisited.

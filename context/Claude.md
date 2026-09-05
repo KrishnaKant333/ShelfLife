@@ -1,6 +1,6 @@
 # ShelfLife Agent Handoff Rules
 
-This is an existing functioning SaaS prototype. Inspect before editing and preserve authentication, Consumer/Business isolation, ownership checks, imports, exports, barcode/label scanning, AI safety, recipe safety, analytics, waste, FIFO, pricing, and current theme behavior.
+This is an existing functioning SaaS prototype. Inspect before editing and preserve authentication, Consumer/Business isolation, ownership checks, imports, exports, label scanning, AI safety, recipe safety, analytics, waste, FIFO, pricing, and current theme behavior. Barcode scanning is deferred and hidden from product entry until a suitable data source is selected.
 
 Work through the roadmap strictly in order. After each major phase, update `context/Progress tracker.md`, the relevant specification, and `README.md`. Run `npm run build` at phase checkpoints.
 

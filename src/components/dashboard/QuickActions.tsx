@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   Plus,
-  ScanBarcode,
   Camera,
   FileText,
   Upload,
@@ -21,13 +20,6 @@ export default function QuickActions({ isBusiness = false }: QuickActionsProps) 
       href: `${prefix}/inventory/new`,
       icon: Plus,
       color: "text-[var(--shelf-forest)] bg-[var(--shelf-cream)]",
-    },
-    {
-      label: "Scan Barcode",
-      description: "Scan product barcode via camera",
-      href: `${prefix}/inventory/new?tab=barcode`,
-      icon: ScanBarcode,
-      color: "text-[var(--shelf-blue)] bg-[var(--shelf-blue)]/10",
     },
     {
       label: "Scan Label",

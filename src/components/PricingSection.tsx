@@ -117,7 +117,7 @@ export default function PricingSection() {
                 plan.id === "consumer_free"
                   ? [
                       "Inventory management",
-                      "Barcode & label scanning",
+                      "AI label scanning",
                       "CSV import",
                       "Expiry tracking",
                       "AI recipes",
@@ -166,7 +166,7 @@ export default function PricingSection() {
                 plan.id === "business_starter"
                   ? [
                       "Inventory management",
-                      "Barcode & label scanning",
+                      "AI label scanning",
                       "CSV import",
                       "FIFO prioritization",
                       "Expiry alerts",

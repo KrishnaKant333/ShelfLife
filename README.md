@@ -7,11 +7,12 @@ ShelfLife is a Next.js food-inventory intelligence application for consumers and
 - Consumer and Business authentication with isolated dashboard routes.
 - Auth.js credentials sessions and server-side ownership checks.
 - Inventory CRUD, search, filtering, sorting, bulk delete, consumption recording, CSV/PDF export.
-- Manual, barcode, label, CSV, and invoice inventory entry flows.
+- Manual, label, CSV, and invoice inventory entry flows.
 - Deterministic Expired, Expiring, Fresh, and Low Stock status logic.
 - Weight, volume, and count normalization for supported units.
 - Alerts, analytics, waste insights, FIFO and Business Inventory Strategy.
 - Groq-powered invoice/label extraction, ShelfLife Brief, and consumer recipe modes.
+- Barcode scanning is currently deferred and hidden from the Add New Product flow; existing inventory data structures remain unchanged for future reintroduction.
 - Expired inventory is filtered before recipe generation and returned recipes are validated.
 - Light, Dark, and System themes with persisted theme selection.
 - Responsive shared dashboard shell and loading/feedback UI in the existing implemented areas.

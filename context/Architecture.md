@@ -23,7 +23,7 @@ Consumer inventory uses the authenticated `userId` with no business scope. Busin
 
 Manual entry -> server validation -> ownership check -> database.
 
-Barcode/label/invoice -> extraction or lookup -> preview/review -> validation -> save.
+Label/invoice -> extraction -> preview/review -> validation -> save. Barcode scanning and external barcode lookup are deferred; no barcode provider is active in the current entry flow.
 
 CSV -> parse -> validate -> preview -> import.
 

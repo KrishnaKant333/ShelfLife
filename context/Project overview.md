@@ -8,7 +8,7 @@ ShelfLife helps households and food businesses know what inventory they have, wh
 
 Consumer data is owned by the authenticated user and uses `/dashboard`. Business data is owned by the authenticated user and authenticated business and uses `/business/dashboard`. Shared UI is preferred where behavior is identical.
 
-Implemented capabilities include inventory CRUD, expiry/status tracking, imports and exports, barcode/label scanning, alerts, analytics, waste management, consumption tracking, recipes, FIFO, Business Inventory Strategy, and theme support.
+Implemented capabilities include inventory CRUD, expiry/status tracking, imports and exports, label scanning, alerts, analytics, waste management, consumption tracking, recipes, FIFO, Business Inventory Strategy, and theme support. Barcode scanning is currently deferred and hidden from product entry; existing inventory structures are preserved for future reintroduction.
 
 ## Current status
 
