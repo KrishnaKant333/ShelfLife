@@ -71,8 +71,8 @@ export default function CsvImport() {
   return (
     <div className="space-y-6">
       {/* Upload Box */}
-      <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-8 shadow-sm">
-        <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-10 text-center hover:border-[var(--shelf-sage)] transition duration-200">
+      <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-sm md:p-8">
+        <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-6 text-center transition duration-200 hover:border-[var(--shelf-sage)] md:p-10">
           <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
             Upload your CSV File
           </h2>
@@ -100,13 +100,13 @@ export default function CsvImport() {
 
       {/* Error & Success Messages */}
       {error && (
-        <div className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
+        <div role="alert" aria-live="polite" className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
+        <div role="status" aria-live="polite" className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
           {success}
         </div>
       )}
@@ -130,7 +130,7 @@ export default function CsvImport() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[700px] text-left">
               <thead className="border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30">
                 <tr>
@@ -165,7 +165,28 @@ export default function CsvImport() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between border-t border-[var(--shelf-border)] p-6 bg-[var(--shelf-cream)]/30">
+          <div className="space-y-3 p-4 md:hidden">
+            {rows.map((row) => (
+              <div key={row.row} className="rounded-xl border border-[var(--shelf-border)] p-3">
+                {row.data ? (
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-[var(--shelf-dark)]">{row.data.name}</p>
+                        <p className="mt-1 text-xs text-[var(--shelf-muted)]">Row {row.row} · {row.data.category}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-[var(--shelf-forest)]/10 px-2 py-1 text-[10px] font-semibold text-[var(--shelf-forest)]">Valid</span>
+                    </div>
+                    <p className="text-xs text-[var(--shelf-muted)]">{row.data.quantity} {row.data.unit} · {row.data.expiryDate?.toLocaleDateString() ?? "Expiry not available"}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm font-medium text-[var(--shelf-terracotta)]">Row {row.row}: {row.error}</p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-4 sm:flex-row sm:items-center sm:justify-between md:p-6">
             <p className="text-sm text-[var(--shelf-muted)]">
               {invalidRows.length > 0 ? "Invalid rows will be skipped during import." : "All rows are ready to import."}
             </p>

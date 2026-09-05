@@ -27,7 +27,7 @@ function PricingCard({
 }: PricingCardProps) {
   return (
     <article
-      className={`relative flex flex-col justify-between rounded-2xl border p-8 md:p-10 transition ${recommended
+      className={`relative flex min-w-[86vw] snap-start flex-col justify-between rounded-2xl border p-6 transition sm:min-w-0 md:p-10 ${recommended
           ? "border-[var(--sl-color-action)] bg-[var(--sl-color-action-soft)] shadow-[var(--sl-shadow-lg)] ring-2 ring-[var(--sl-color-action)]/20"
           : "border-[var(--sl-color-border)] bg-[var(--sl-color-surface)]"
         }`}
@@ -54,13 +54,13 @@ function PricingCard({
 
         <div className="my-8 h-px bg-[var(--sl-color-border)]" />
 
-        <ul className="space-y-3">
+        <ul className="grid grid-cols-2 gap-x-3 gap-y-2 md:block md:space-y-3">
           {features.map((feature) => (
             <li
               key={feature}
-              className="flex items-start gap-3 text-sm text-[var(--sl-color-text)]"
+                className="flex items-start gap-2 text-sm text-[var(--sl-color-text)] md:gap-3"
             >
-              <Check className="mt-0.5 h-5 w-5 shrink-0 text-[var(--sl-color-success)]" />
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--sl-color-success)] md:h-5 md:w-5" />
               <span>{feature}</span>
             </li>
           ))}
@@ -108,7 +108,7 @@ export default function PricingSection() {
             For Individuals
           </h3>
 
-          <div className="grid gap-6 md:grid-cols-2 max-w-2xl">
+          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:max-w-2xl md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 md:pb-0">
             {consumerPlans.map((plan) => {
               const displayFeatures =
                 plan.id === "consumer_free"
@@ -157,7 +157,7 @@ export default function PricingSection() {
             For Businesses
           </h3>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0 md:pb-0">
             {businessPlans.map((plan) => {
               const displayFeatures =
                 plan.id === "business_starter"

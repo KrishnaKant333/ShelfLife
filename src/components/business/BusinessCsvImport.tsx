@@ -91,7 +91,7 @@ export default function BusinessCsvImport() {
     <div className="space-y-6">
 
       {/* Upload */}
-      <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-10 text-center">
+      <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-6 text-center md:p-10">
         <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
           Upload your CSV
         </h2>
@@ -115,14 +115,14 @@ export default function BusinessCsvImport() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
+        <div role="alert" aria-live="polite" className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
           {error}
         </div>
       )}
 
       {/* Success */}
       {success && (
-        <div className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
+        <div role="status" aria-live="polite" className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
           {success}
         </div>
       )}
@@ -149,7 +149,7 @@ export default function BusinessCsvImport() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[700px] text-left">
               <thead className="border-b border-[var(--shelf-border)]">
                 <tr>
@@ -226,9 +226,30 @@ export default function BusinessCsvImport() {
             </table>
           </div>
 
+          <div className="space-y-3 p-4 md:hidden">
+            {rows.map((row) => (
+              <div key={row.row} className="rounded-xl border border-[var(--shelf-border)] p-3">
+                {row.data ? (
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-[var(--shelf-dark)]">{row.data.name}</p>
+                        <p className="mt-1 text-xs text-[var(--shelf-muted)]">Row {row.row} · {row.data.category}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-[var(--shelf-forest)]/10 px-2 py-1 text-[10px] font-semibold text-[var(--shelf-forest)]">Valid</span>
+                    </div>
+                    <p className="text-xs text-[var(--shelf-muted)]">{row.data.quantity} {row.data.unit} · {row.data.expiryDate?.toLocaleDateString() ?? "Expiry not available"}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm font-medium text-[var(--shelf-terracotta)]">Row {row.row}: {row.error}</p>
+                )}
+              </div>
+            ))}
+          </div>
+
           {/* Import button */}
           {validRows.length > 0 && (
-            <div className="flex items-center justify-between border-t border-[var(--shelf-border)] p-6">
+            <div className="flex flex-col gap-3 border-t border-[var(--shelf-border)] p-4 sm:flex-row sm:items-center sm:justify-between md:p-6">
               <p className="text-sm text-[var(--shelf-muted)]">
                 {invalidRows.length > 0
                   ? "Invalid rows will not be imported."

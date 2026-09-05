@@ -23,7 +23,7 @@ export default async function BusinessStrategyPage() {
   }));
 
   return (
-    <main className="p-6 md:p-8 lg:p-10">
+    <main className="p-4 sm:p-6 md:p-8 lg:p-10">
       <StrategyView inventory={formattedInventory} />
     </main>
   );

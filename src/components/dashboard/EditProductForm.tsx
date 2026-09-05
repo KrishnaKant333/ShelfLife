@@ -37,9 +37,9 @@ export default function EditProductForm({
   return (
     <form
       action={formAction}
-      className="rounded-2xl bg-[var(--shelf-surface)] p-6 shadow-2xl"
+      className="rounded-2xl bg-[var(--shelf-surface)] p-4 shadow-2xl md:p-6"
     >
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-6">
         <div>
           <label
             htmlFor="name"
@@ -53,7 +53,7 @@ export default function EditProductForm({
             name="name"
             type="text"
             defaultValue={product.name}
-            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition focus:border-[var(--shelf-forest)]"
+            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
           />
         </div>
 
@@ -71,7 +71,7 @@ export default function EditProductForm({
             type="text"
             defaultValue={product.category}
             required
-            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition focus:border-[var(--shelf-forest)]"
+            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
           />
         </div>
 
@@ -89,9 +89,10 @@ export default function EditProductForm({
             type="number"
             min="1"
             step="any"
+            inputMode="decimal"
             defaultValue={product.quantity}
             required
-            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition focus:border-[var(--shelf-forest)]"
+            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
           />
         </div>
 
@@ -109,7 +110,7 @@ export default function EditProductForm({
             type="text"
             defaultValue={product.unit}
             required
-            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition focus:border-[var(--shelf-forest)]"
+            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
           />
         </div>
 
@@ -126,21 +127,21 @@ export default function EditProductForm({
             name="expiryDate"
             type="date"
             defaultValue={product.expiryDate?.slice(0, 10) ?? ""}
-            className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition focus:border-[var(--shelf-forest)]"
+            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
           />
         </div>
       </div>
 
       {state.error && (
-        <p role="alert" className="mt-5 rounded-xl bg-[var(--shelf-terracotta)]/10 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
+        <p role="alert" aria-live="polite" className="mt-5 rounded-xl bg-[var(--shelf-terracotta)]/10 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
           {state.error}
         </p>
       )}
 
-      <div className="mt-8 flex justify-end gap-3">
+      <div className="sticky bottom-3 z-10 -mx-1 mt-6 flex justify-end gap-3 border-t border-[var(--shelf-border)] bg-[var(--shelf-surface)]/95 px-1 pt-4 backdrop-blur-sm md:static md:mx-0 md:mt-8 md:border-0 md:bg-transparent md:px-0 md:pt-0 md:backdrop-blur-none">
         <Link
           href="/dashboard/inventory"
-          className="rounded-xl border border-[var(--shelf-border)] px-5 py-3 text-sm font-medium text-[var(--shelf-dark)]"
+          className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] px-5 py-3 text-sm font-medium text-[var(--shelf-dark)]"
         >
           Cancel
         </Link>
@@ -148,7 +149,7 @@ export default function EditProductForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          className="sl-focus-ring rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
         >
           {pending ? "Saving..." : "Save Changes"}
         </button>

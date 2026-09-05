@@ -21,7 +21,7 @@ export default function BusinessSignupForm() {
   return (
     <form action={formAction} className="space-y-5">
       <div>
-        <label htmlFor="name" className="mb-2 block text-sm font-medium text-[var(--shelf-dark)]">
+        <label htmlFor="name" className="mb-2 block text-sm font-medium text-[var(--sl-color-text)]">
           Your name
         </label>
 
@@ -32,12 +32,12 @@ export default function BusinessSignupForm() {
           autoComplete="name"
           required
           placeholder="Your name"
-          className="w-full rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3.5 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)] focus:ring-4 focus:ring-[var(--shelf-forest)]/10"
+          className="sl-focus-ring w-full rounded-2xl border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-4 py-3.5 text-[var(--sl-color-text)] outline-none transition placeholder:text-[var(--sl-color-text-muted)]"
         />
       </div>
 
       <div>
-        <label htmlFor="businessName" className="mb-2 block text-sm font-medium text-[var(--shelf-dark)]">
+        <label htmlFor="businessName" className="mb-2 block text-sm font-medium text-[var(--sl-color-text)]">
           Business name
         </label>
 
@@ -48,12 +48,12 @@ export default function BusinessSignupForm() {
           autoComplete="organization"
           required
           placeholder="Your business name"
-          className="w-full rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3.5 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)] focus:ring-4 focus:ring-[var(--shelf-forest)]/10"
+          className="sl-focus-ring w-full rounded-2xl border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-4 py-3.5 text-[var(--sl-color-text)] outline-none transition placeholder:text-[var(--sl-color-text-muted)]"
         />
       </div>
 
       <div>
-        <label htmlFor="industry" className="mb-2 block text-sm font-medium text-[var(--shelf-dark)]">
+        <label htmlFor="industry" className="mb-2 block text-sm font-medium text-[var(--sl-color-text)]">
           Industry
         </label>
 
@@ -63,12 +63,12 @@ export default function BusinessSignupForm() {
           type="text"
           required
           placeholder="e.g. Grocery, Retail, Restaurant"
-          className="w-full rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3.5 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)] focus:ring-4 focus:ring-[var(--shelf-forest)]/10"
+          className="sl-focus-ring w-full rounded-2xl border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-4 py-3.5 text-[var(--sl-color-text)] outline-none transition placeholder:text-[var(--sl-color-text-muted)]"
         />
       </div>
 
       <div>
-        <label htmlFor="email" className="mb-2 block text-sm font-medium text-[var(--shelf-dark)]">
+        <label htmlFor="email" className="mb-2 block text-sm font-medium text-[var(--sl-color-text)]">
           Business email
         </label>
 
@@ -79,12 +79,12 @@ export default function BusinessSignupForm() {
           autoComplete="email"
           required
           placeholder="you@business.com"
-          className="w-full rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3.5 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)] focus:ring-4 focus:ring-[var(--shelf-forest)]/10"
+          className="sl-focus-ring w-full rounded-2xl border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-4 py-3.5 text-[var(--sl-color-text)] outline-none transition placeholder:text-[var(--sl-color-text-muted)]"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-2 block text-sm font-medium text-[var(--shelf-dark)]">
+        <label htmlFor="password" className="mb-2 block text-sm font-medium text-[var(--sl-color-text)]">
           Password
         </label>
 
@@ -97,13 +97,13 @@ export default function BusinessSignupForm() {
             minLength={8}
             required
             placeholder="At least 8 characters"
-            className="w-full rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3.5 pr-12 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)] focus:ring-4 focus:ring-[var(--shelf-forest)]/10"
+            className="sl-focus-ring w-full rounded-2xl border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-4 py-3.5 pr-12 text-[var(--sl-color-text)] outline-none transition placeholder:text-[var(--sl-color-text-muted)]"
           />
           <button
             type="button"
             aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword((value) => !value)}
-            className="absolute inset-y-0 right-3 flex items-center text-[var(--shelf-muted)] transition hover:text-[var(--shelf-dark)]"
+            className="sl-focus-ring absolute inset-y-1 right-2 flex w-11 items-center justify-center rounded-xl text-[var(--sl-color-text-muted)] transition hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)]"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -111,7 +111,7 @@ export default function BusinessSignupForm() {
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-[var(--shelf-dark)]">
+        <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-[var(--sl-color-text)]">
           Confirm password
         </label>
 
@@ -124,13 +124,13 @@ export default function BusinessSignupForm() {
             minLength={8}
             required
             placeholder="Repeat your password"
-            className="w-full rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3.5 pr-12 text-[var(--shelf-dark)] outline-none transition placeholder:text-[var(--shelf-muted)] focus:border-[var(--shelf-forest)] focus:ring-4 focus:ring-[var(--shelf-forest)]/10"
+            className="sl-focus-ring w-full rounded-2xl border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-4 py-3.5 pr-12 text-[var(--sl-color-text)] outline-none transition placeholder:text-[var(--sl-color-text-muted)]"
           />
           <button
             type="button"
             aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
             onClick={() => setShowConfirmPassword((value) => !value)}
-            className="absolute inset-y-0 right-3 flex items-center text-[var(--shelf-muted)] transition hover:text-[var(--shelf-dark)]"
+            className="sl-focus-ring absolute inset-y-1 right-2 flex w-11 items-center justify-center rounded-xl text-[var(--sl-color-text-muted)] transition hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)]"
           >
             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -140,7 +140,8 @@ export default function BusinessSignupForm() {
       {state?.error && (
         <p
           role="alert"
-          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          aria-live="polite"
+          className="rounded-2xl border border-[var(--sl-color-danger)]/20 bg-[var(--sl-color-danger)]/10 px-4 py-3 text-sm text-[var(--sl-color-danger)]"
         >
           {state.error}
         </p>
@@ -149,16 +150,16 @@ export default function BusinessSignupForm() {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-2xl bg-[var(--shelf-forest)] px-4 py-3.5 font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        className="sl-focus-ring w-full rounded-2xl bg-[var(--sl-color-action)] px-4 py-3.5 font-semibold text-[var(--sl-color-on-action)] transition hover:bg-[var(--sl-color-action-hover)] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Creating business..." : "Create Business Account"}
       </button>
 
-      <p className="text-center text-sm text-[var(--shelf-muted)]">
+      <p className="text-center text-sm text-[var(--sl-color-text-muted)]">
         Already have an account?{" "}
         <Link
           href="/business/login"
-          className="font-semibold text-[var(--shelf-dark)] underline underline-offset-4"
+          className="font-semibold text-[var(--sl-color-text)] underline underline-offset-4"
         >
           Log in
         </Link>

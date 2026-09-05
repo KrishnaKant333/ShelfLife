@@ -78,13 +78,13 @@ export default function BusinessValue() {
             </div>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-1">
             {features.filter((feature) => feature.title !== "Inventory Strategy").map((feature) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={feature.title}
-                  className="rounded-[var(--sl-radius-lg)] border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] p-6 transition hover:-translate-y-1 hover:shadow-[var(--sl-shadow-md)]"
+                  className="min-w-[82vw] snap-start rounded-[var(--sl-radius-lg)] border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] p-6 transition hover:-translate-y-1 hover:shadow-[var(--sl-shadow-md)] sm:min-w-0"
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)]">
                     <Icon className="h-5 w-5" />

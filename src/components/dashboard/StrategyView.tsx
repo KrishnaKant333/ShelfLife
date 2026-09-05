@@ -27,6 +27,14 @@ interface StrategyViewProps {
   inventory: BusinessInventoryItem[];
 }
 
+function getPriority(daysLeft: number) {
+  if (daysLeft < 0) return { label: "EXPIRED", className: "bg-red-50 text-[var(--shelf-terracotta)] border-red-200" };
+  if (daysLeft <= 3) return { label: "CRITICAL", className: "bg-red-50 text-[var(--shelf-terracotta)] border-red-200" };
+  if (daysLeft <= 7) return { label: "HIGH", className: "bg-amber-50 text-[var(--shelf-amber)] border-amber-200" };
+  if (daysLeft <= 14) return { label: "MEDIUM", className: "bg-blue-50 text-blue-700 border-blue-200" };
+  return { label: "Normal", className: "bg-green-50 text-green-700 border-green-200" };
+}
+
 export default function StrategyView({ inventory }: StrategyViewProps) {
   // Sort items strictly by closest expiry for FIFO view
   const fifoQueue = [...inventory]
@@ -244,7 +252,7 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
         </div>
 
         <div className="mt-6 overflow-hidden rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)]">
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[700px] text-left">
               <thead className="border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/35 text-xs font-bold uppercase tracking-wider text-[var(--shelf-muted)]">
                 <tr>
@@ -264,22 +272,7 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
                   </tr>
                 ) : (
                   fifoQueue.map((item) => {
-                    let priority = "Normal";
-                    let badgeColor = "bg-green-50 text-green-700 border-green-200";
-
-                    if (item.daysLeft < 0) {
-                      priority = "EXPIRED";
-                      badgeColor = "bg-red-50 text-[var(--shelf-terracotta)] border-red-200";
-                    } else if (item.daysLeft <= 3) {
-                      priority = "CRITICAL";
-                      badgeColor = "bg-red-50 text-[var(--shelf-terracotta)] border-red-200";
-                    } else if (item.daysLeft <= 7) {
-                      priority = "HIGH";
-                      badgeColor = "bg-amber-50 text-[var(--shelf-amber)] border-amber-200";
-                    } else if (item.daysLeft <= 14) {
-                      priority = "MEDIUM";
-                      badgeColor = "bg-blue-50 text-blue-700 border-blue-200";
-                    }
+                    const priority = getPriority(item.daysLeft);
 
                     return (
                       <tr key={item.id} className="hover:bg-[var(--shelf-cream)]/20 transition">
@@ -296,8 +289,8 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
                           {formatExpiry(item.expiryDate)}
                         </td>
                         <td className="px-5 py-4">
-                          <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${badgeColor}`}>
-                            {priority}
+                          <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${priority.className}`}>
+                            {priority.label}
                           </span>
                         </td>
                       </tr>
@@ -306,6 +299,30 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
                 )}
               </tbody>
             </table>
+          </div>
+
+          <div className="space-y-2 p-3 md:hidden">
+            {fifoQueue.length === 0 ? (
+              <p className="px-2 py-6 text-center text-sm text-[var(--shelf-muted)]">No products currently in inventory.</p>
+            ) : (
+              fifoQueue.map((item) => {
+                const priority = getPriority(item.daysLeft);
+                return (
+                  <div key={item.id} className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-[var(--shelf-dark)]">{item.name}</p>
+                        <p className="mt-1 text-xs text-[var(--shelf-muted)]">{item.category} · {item.quantity} {item.unit}</p>
+                      </div>
+                      <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${priority.className}`}>
+                        {priority.label}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-[var(--shelf-muted)]">Expiry: <span className="font-semibold text-[var(--shelf-dark)]">{formatExpiry(item.expiryDate)}</span></p>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </section>

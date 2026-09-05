@@ -11,7 +11,7 @@ export default function InventoryOverview({
   inventory,
 }: InventoryOverviewProps) {
   return (
-    <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
+    <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-sm md:p-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
@@ -28,7 +28,7 @@ export default function InventoryOverview({
         </div>
       </div>
 
-      <div className="mt-6 max-h-80 space-y-3 overflow-y-auto pr-2">
+      <div className="mt-4 max-h-80 space-y-2 overflow-y-auto pr-1 md:mt-6 md:space-y-3 md:pr-2">
         {inventory.map((item) => {
           const status = getInventoryStatus(
             item.quantity,
@@ -52,7 +52,7 @@ export default function InventoryOverview({
           return (
             <div
               key={item.name}
-              className="flex items-center justify-between gap-4 rounded-xl bg-[var(--shelf-cream)] px-4 py-3"
+              className="flex items-center justify-between gap-3 rounded-xl bg-[var(--shelf-cream)] px-3 py-2.5 md:gap-4 md:px-4 md:py-3"
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-[var(--shelf-dark)]">

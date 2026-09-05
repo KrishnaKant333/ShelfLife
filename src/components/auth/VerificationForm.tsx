@@ -38,8 +38,8 @@ export default function VerificationForm({
   }, [accountType, token]);
 
   if (error) {
-    return <p role="alert" className="mt-6 rounded-xl bg-[var(--shelf-terracotta)]/10 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">{error}</p>;
+    return <p role="alert" aria-live="assertive" className="mt-6 rounded-xl bg-[var(--sl-color-danger)]/10 px-4 py-3 text-sm text-[var(--sl-color-danger)]">{error}</p>;
   }
 
-  return <p className="mt-6 text-sm text-[var(--shelf-muted)]">Verifying your email and signing you in...</p>;
+  return <p role="status" aria-live="polite" className="mt-6 text-sm text-[var(--sl-color-text-muted)]">Verifying your email and signing you in...</p>;
 }

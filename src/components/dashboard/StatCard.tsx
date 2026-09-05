@@ -14,14 +14,14 @@ export default function StatCard({
   icon: Icon,
 }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm">
+    <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-sm md:p-5">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-[var(--shelf-muted)]">
             {label}
           </p>
 
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-[var(--shelf-dark)]">
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--shelf-dark)] md:mt-3 md:text-3xl">
             {value}
           </p>
 

@@ -49,8 +49,8 @@ export default async function BusinessDashboardPage() {
   }));
 
   return (
-    <main className="p-6 md:p-8 lg:p-10">
-      <div className="mx-auto max-w-7xl space-y-8">
+    <main className="p-4 sm:p-6 md:p-8 lg:p-10">
+      <div className="mx-auto max-w-7xl space-y-6 md:space-y-8">
         <div>
           <p className="text-sm font-semibold text-[var(--shelf-forest)]">
             Business Dashboard

@@ -55,8 +55,8 @@ Barcode scanning and external barcode lookup remain deferred and hidden. The Add
 
 ## Current status
 
-Stages 0, 1, 2, and 3 are complete. Stage 0 findings are recorded in `specs/UI redesign stage 0 audit report.md`; Stage 1 implementation and the token contract are recorded in `specs/UI redesign stage 1 report.md`; Stage 2 shell work is recorded in `specs/UI redesign stage 2 report.md`; Stage 3 marketing completion is recorded in `specs/UI redesign stage 3 report.md`.
+Stages 0 through 7 are complete. Stage 0 findings are recorded in `specs/UI redesign stage 0 audit report.md`; Stage 1 implementation and the token contract are recorded in `specs/UI redesign stage 1 report.md`; Stage 2 shell work is recorded in `specs/UI redesign stage 2 report.md`; Stage 3 marketing completion is recorded in `specs/UI redesign stage 3 report.md`; Stage 4 auth and onboarding details are recorded in `specs/UI redesign stage 4 - auth onboarding.md` and the completion report in `specs/UI redesign stage 4 report.md`; Stage 5 consumer application completion is recorded in `specs/UI redesign stage 5 report.md`; Stage 6 business application completion is recorded in `specs/UI redesign stage 6 report.md`; Stage 7 product entry completion is recorded in `specs/UI redesign stage 7 report.md`.
 
 ## Recommended starting point
 
-Start with Stage 3. Use the Stage 1 semantic tokens and the Stage 2 public shell to redesign the marketing experience before changing authenticated feature pages.
+Stage 7 is complete. Use the validated product-entry forms, camera capture, import reviews, and edit workflows as the baseline for Stage 8 analytics, charts, and data visualization.

@@ -52,8 +52,8 @@ export default async function EditProductPage({
   }
 
   return (
-    <main className="mx-auto max-w-4xl">
-      <div className="mb-3 mt-8">
+    <main className="mx-auto max-w-4xl px-4 sm:px-6 md:px-0">
+      <div className="mb-3 mt-6 md:mt-8">
         <Link
           href="/dashboard/inventory"
           className="text-sm font-medium text-[var(--shelf-forest)]"

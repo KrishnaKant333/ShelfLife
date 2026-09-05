@@ -43,11 +43,11 @@ export default function HowItWorks() {
 
         <div className="relative mx-auto max-w-6xl">
           <div className="pointer-events-none absolute left-[8%] right-[8%] top-8 hidden h-px bg-[var(--sl-color-border-strong)] md:block" />
-          <div className="grid gap-6 md:grid-cols-4 md:gap-0">
-            {steps.map((step, idx) => {
+          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-4 md:gap-0 md:overflow-visible md:px-0 md:pb-0">
+            {steps.map((step) => {
               const Icon = step.icon;
               return (
-                <div key={idx} className="relative flex flex-col items-start md:items-center md:px-5">
+                <div key={step.number} className="relative flex min-w-[82vw] snap-start flex-col items-start px-1 sm:min-w-[60vw] md:min-w-0 md:items-center md:px-5">
                   <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-[var(--sl-radius-pill)] border border-[var(--sl-color-border-strong)] bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)] shadow-[var(--sl-shadow-sm)]">
                     <Icon className="h-7 w-7" />
                   </div>

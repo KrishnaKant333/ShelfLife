@@ -1,5 +1,11 @@
 # Stage 5 - Consumer Application
 
+Status: Complete.
+
+## Current checkpoint
+
+The consumer overview has started with a mobile density pass: page padding and vertical rhythm are tighter on small screens, KPI cards use a smaller mobile footprint, and Quick Actions now fit four complete actions into a compact two-column mobile grid. Desktop sizing and larger breakpoint layouts remain intact. Inventory calculations, insight generation, and navigation actions remain unchanged. Next work should continue through the overview attention hierarchy before moving into inventory list/grid and product detail surfaces.
+
 ## 1. Objective
 Redesign the consumer dashboard as a calm, information-dense personal inventory workspace.
 

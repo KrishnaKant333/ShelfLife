@@ -53,7 +53,7 @@ export default function QuickActions({ isBusiness = false }: QuickActionsProps) 
         Add or import inventory items using intelligent scan tools.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {actions.map((action) => {
           const Icon = action.icon;
 
@@ -61,20 +61,20 @@ export default function QuickActions({ isBusiness = false }: QuickActionsProps) 
             <Link
               key={action.label}
               href={action.href}
-              className="group flex flex-col justify-between rounded-xl border border-[var(--shelf-border)] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[var(--shelf-sage)] hover:shadow-sm"
+              className="group flex min-h-32 flex-col justify-between rounded-xl border border-[var(--shelf-border)] p-3 transition duration-200 hover:-translate-y-0.5 hover:border-[var(--shelf-sage)] hover:shadow-sm sm:min-h-0 sm:p-4"
             >
               <div>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color}`}>
-                  <Icon size={20} />
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${action.color} sm:h-10 sm:w-10`}>
+                  <Icon size={18} />
                 </div>
-                <h4 className="mt-4 text-sm font-semibold text-[var(--shelf-dark)] group-hover:text-[var(--shelf-forest)]">
+                <h4 className="mt-3 text-sm font-semibold text-[var(--shelf-dark)] group-hover:text-[var(--shelf-forest)] sm:mt-4">
                   {action.label}
                 </h4>
-                <p className="mt-1 text-xs text-[var(--shelf-muted)] leading-relaxed">
+                <p className="mt-1 text-[11px] leading-5 text-[var(--shelf-muted)] sm:text-xs">
                   {action.description}
                 </p>
               </div>
-              <div className="mt-4 text-xs font-semibold text-[var(--shelf-forest)] group-hover:underline">
+              <div className="mt-3 text-[11px] font-semibold text-[var(--shelf-forest)] group-hover:underline sm:mt-4 sm:text-xs">
                 Launch →
               </div>
             </Link>

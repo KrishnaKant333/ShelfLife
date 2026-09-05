@@ -1,5 +1,11 @@
 # Stage 6 - Business Application
 
+Status: Complete.
+
+## Current checkpoint
+
+The business dashboard overview now uses the shared mobile-density treatment: tighter small-screen page padding and vertical rhythm, while preserving business account guards, operational inventory data, and shared KPI/widget primitives. FIFO strategy now provides focused mobile priority cards alongside the desktop comparison table. Business route gutters are consistent across inventory, strategy, analytics, waste, settings, and dashboard entry points.
+
 ## 1. Objective
 Give business users a professional operations console distinct from, but related to, the consumer product.
 

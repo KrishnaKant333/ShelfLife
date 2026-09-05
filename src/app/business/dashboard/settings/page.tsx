@@ -14,7 +14,7 @@ export default async function BusinessSettingsPage() {
   }
 
   return (
-    <main className="p-6 md:p-8 lg:p-10">
+    <main className="p-4 sm:p-6 md:p-8 lg:p-10">
       <SettingsView user={{
         ...session.user,
         plan: session.user.plan as any

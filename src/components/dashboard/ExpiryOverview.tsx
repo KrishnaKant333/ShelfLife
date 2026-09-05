@@ -23,7 +23,7 @@ export default function ExpiryOverview({
   );
 
   return (
-    <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
+    <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-sm md:p-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
@@ -40,11 +40,11 @@ export default function ExpiryOverview({
         </div>
       </div>
 
-      <div className="mt-6 divide-y divide-[var(--shelf-border)]">
+      <div className="mt-4 divide-y divide-[var(--shelf-border)] md:mt-6">
         {expiringItems.map((item) => (
           <div
             key={item.name}
-            className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+            className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0 md:items-center md:gap-4 md:py-4"
           >
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-[var(--shelf-dark)]">

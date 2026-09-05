@@ -3,7 +3,7 @@ import CsvImport from "@/components/dashboard/CsvImport";
 
 export default function BusinessInventoryImportPage() {
   return (
-    <main className="mx-auto max-w-5xl p-6 md:p-8">
+    <main className="mx-auto max-w-5xl p-4 sm:p-6 md:p-8">
       <div className="mb-8">
         <Link
           href="/business/dashboard/inventory"

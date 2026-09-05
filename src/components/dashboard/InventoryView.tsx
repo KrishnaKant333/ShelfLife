@@ -617,7 +617,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
           ) : (
             <>
               {/* Desktop Table View */}
-              <div className={`${viewMode === "list" ? "block" : "hidden"} overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-xs`}>
+              <div className={`${viewMode === "list" ? "hidden md:block" : "hidden"} overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-xs`}>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[800px] text-left">
                     <thead className="border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/20">
@@ -718,7 +718,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
               </div>
 
               {/* Mobile Cards Grid View */}
-              <div className={`${viewMode === "grid" ? "grid" : "hidden"} gap-4 sm:grid-cols-2`}>
+              <div className={`grid gap-4 sm:grid-cols-2 ${viewMode === "grid" ? "md:grid" : "md:hidden"}`}>
                 {processedInventory.map((item) => {
                   const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
                   const isSelected = selectedIds.includes(item.id);

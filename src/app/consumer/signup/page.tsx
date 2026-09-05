@@ -5,10 +5,10 @@ import ConsumerSignupForm from "@/components/auth/ConsumerSignupForm";
 
 export default function ConsumerSignupPage() {
   return (
-    <main className="min-h-screen bg-[var(--shelf-cream)]/30 px-6 py-12 md:py-16">
-      <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--shelf-border)] bg-[var(--background)] shadow-[0_20px_50px_rgba(12,40,26,0.08)]">
+    <main className="min-h-screen bg-[var(--sl-color-canvas)] px-6 py-12 md:py-16">
+      <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--sl-color-border)] bg-[var(--sl-color-surface-raised)] shadow-[var(--sl-shadow-lg)]">
         <div className="grid min-h-[760px] lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="auth-contrast-panel flex flex-col justify-between p-8 md:p-12">
+          <section className="auth-contrast-panel order-2 flex flex-col justify-between p-8 md:p-12 lg:order-1">
             <div>
               <Link href="/" className="inline-block">
                 <Image src="/logo/shelflife.png" alt="ShelfLife" width={150} height={150} className="h-12 w-auto object-contain" priority />
@@ -34,15 +34,15 @@ export default function ConsumerSignupPage() {
             </div>
           </section>
 
-          <section className="flex items-center justify-center p-6 md:p-10">
+          <section className="order-1 flex items-center justify-center bg-[var(--sl-color-surface)] p-6 md:p-10 lg:order-2">
             <div className="w-full max-w-md">
-              <Link href="/get-started" className="text-sm font-medium text-[var(--shelf-muted)] transition hover:text-[var(--shelf-dark)]">
+              <Link href="/get-started" className="text-sm font-medium text-[var(--sl-color-text-muted)] transition hover:text-[var(--sl-color-text)]">
                 ← Choose another account type
               </Link>
 
               <div className="mt-8">
-                <h2 className="text-3xl font-bold tracking-tight text-[var(--shelf-dark)]">Create your account</h2>
-                <p className="mt-2 text-sm leading-6 text-[var(--shelf-muted)]">
+                <h2 className="text-3xl font-bold tracking-tight text-[var(--sl-color-text)]">Create your account</h2>
+                <p className="mt-2 text-sm leading-6 text-[var(--sl-color-text-muted)]">
                   Keep track of what you have, what is expiring, and what you can use next.
                 </p>
               </div>
@@ -51,9 +51,9 @@ export default function ConsumerSignupPage() {
                 <ConsumerSignupForm />
               </div>
 
-              <div className="mt-8 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 text-center text-sm text-[var(--shelf-muted)]">
+              <div className="mt-8 rounded-2xl border border-[var(--sl-color-border)] bg-[var(--sl-color-surface-raised)] p-4 text-center text-sm text-[var(--sl-color-text-muted)]">
                 Running a business?{" "}
-                <Link href="/business/signup" className="font-semibold text-[var(--shelf-dark)] underline underline-offset-4">
+                <Link href="/business/signup" className="font-semibold text-[var(--sl-color-text)] underline underline-offset-4">
                   Create a business account
                 </Link>
               </div>

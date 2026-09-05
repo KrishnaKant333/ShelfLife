@@ -57,6 +57,17 @@ Signup is blocked until SMTP is configured. There is no local verification bypas
 - [x] Complete Stage 3 landing page and marketing experience
 - [x] Start Stage 3 with the hero, Consumer/Business value bands, and pricing interaction foundation
 - [x] Final Stage 3 polish: business-card surface alignment, How It Works connector/icon refinement, and pricing background separation
+- [x] Complete Stage 4 auth and onboarding polish: account-type selection, login/signup panels, verification states, and semantic contrast/accessibility fixes
+- [x] Stage 4 follow-up: mobile-first form order, live-region feedback, and 44px password visibility controls
+- [x] Stage 4 mobile density extension: horizontal snap rails for pricing, process, value, and account-choice cards
+- [x] Start Stage 5 consumer application: tighten mobile overview spacing and KPI density without changing inventory logic
+- [x] Stage 5 consumer overview follow-up: compact Quick Actions into a two-column mobile grid
+- [x] Complete Stage 5 consumer application: mobile inventory cards, alerts, notifications, settings, product detail, and edit-entry polish
+- [x] Start Stage 6 business application: tighten business overview mobile spacing with shared dashboard primitives
+- [x] Complete Stage 6 business application: business route density, mobile FIFO priority cards, and operational surface polish
+- [x] Start Stage 7 product entry: mobile Add Product flow and consumer CSV review cards
+- [x] Stage 7 camera capture: native camera action alongside label image upload with shared editable Groq extraction
+- [x] Complete Stage 7 product entry: invoice review cards, edit-form parity, and mobile save/accessibility polish
 
 ## Do not break
 

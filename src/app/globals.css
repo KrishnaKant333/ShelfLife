@@ -133,18 +133,19 @@
 }
 
 .auth-contrast-panel {
-  --auth-panel-text: #173222;
-  --auth-panel-muted: #31583d;
-  --auth-panel-soft: rgb(255 255 255 / 0.5);
-  background: linear-gradient(145deg, #8fc59a 0%, #b9dcb9 58%, #e4f0df 100%);
+  --auth-panel-text: #f2f7f1;
+  --auth-panel-muted: #dfeee0;
+  --auth-panel-soft: rgb(255 255 255 / 0.08);
+  background: linear-gradient(135deg, #10271a 0%, #163d2b 42%, #1d4d38 100%);
   color: var(--auth-panel-text);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 
 .dark .auth-contrast-panel {
   --auth-panel-text: #f1f7ed;
-  --auth-panel-muted: #c5ddc7;
+  --auth-panel-muted: #d4e3d2;
   --auth-panel-soft: rgb(255 255 255 / 0.08);
-  background: linear-gradient(145deg, #102016 0%, #1a3826 58%, #254633 100%);
+  background: linear-gradient(135deg, #0d1d18 0%, #163b2b 42%, #214931 100%);
 }
 
 .auth-contrast-panel .auth-panel-muted {

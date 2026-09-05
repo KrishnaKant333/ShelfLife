@@ -71,7 +71,7 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-4 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm hover:border-[var(--shelf-sage)] transition duration-200"
+                className="flex flex-col items-start gap-4 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-sm transition duration-200 hover:border-[var(--shelf-sage)] sm:flex-row sm:items-center sm:p-5"
               >
                 <div
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
@@ -96,7 +96,7 @@ export default function AlertsView({ inventory, isBusiness = false }: AlertsView
                   </p>
                 </div>
 
-                <div className="flex flex-col items-end gap-2">
+                <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:flex-col sm:items-end sm:justify-start">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
                       isExpired || isLowStock

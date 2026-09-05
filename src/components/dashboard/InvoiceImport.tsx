@@ -128,8 +128,8 @@ export default function InvoiceImport() {
   return (
     <div className="space-y-6">
       {/* Upload Panel */}
-      <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-8 shadow-sm">
-        <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-10 text-center hover:border-[var(--shelf-sage)] transition duration-200">
+      <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-sm md:p-8">
+        <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-6 text-center transition duration-200 hover:border-[var(--shelf-sage)] md:p-10">
           <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
             Upload an Invoice Image
           </h2>
@@ -175,13 +175,13 @@ export default function InvoiceImport() {
 
       {/* Messages */}
       {error && (
-        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div role="alert" aria-live="polite" className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+        <div role="status" aria-live="polite" className="rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
           {success}
         </div>
       )}
@@ -231,7 +231,7 @@ export default function InvoiceImport() {
             )}
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[900px] text-left">
               <thead className="border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30">
                 <tr>
@@ -300,6 +300,40 @@ export default function InvoiceImport() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="space-y-4 p-4 md:hidden">
+            {items.map((item, index) => (
+              <div key={`${item.name}-${index}`} className="space-y-3 rounded-xl border border-[var(--shelf-border)] p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--shelf-muted)]">Product {index + 1}</p>
+                  <button type="button" onClick={() => removeItem(index)} className="text-xs font-semibold text-red-600">Remove</button>
+                </div>
+                <label className="block text-xs font-semibold text-[var(--shelf-dark)]">
+                  Product name
+                  <input value={item.name} onChange={(event) => updateItem(index, "name", event.target.value)} className="sl-focus-ring mt-1 w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2.5 text-sm" />
+                </label>
+                <label className="block text-xs font-semibold text-[var(--shelf-dark)]">
+                  Category
+                  <input value={item.category} onChange={(event) => updateItem(index, "category", event.target.value)} className="sl-focus-ring mt-1 w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2.5 text-sm" />
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block text-xs font-semibold text-[var(--shelf-dark)]">
+                    Quantity
+                    <input type="number" min="1" inputMode="decimal" value={item.quantity} onChange={(event) => updateItem(index, "quantity", event.target.value)} className="sl-focus-ring mt-1 w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2.5 text-sm" />
+                  </label>
+                  <label className="block text-xs font-semibold text-[var(--shelf-dark)]">
+                    Unit
+                    <input value={item.unit} onChange={(event) => updateItem(index, "unit", event.target.value)} className="sl-focus-ring mt-1 w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2.5 text-sm" />
+                  </label>
+                </div>
+                <label className="block text-xs font-semibold text-[var(--shelf-dark)]">
+                  Expiry date
+                  <input type="date" value={item.expiryDate ?? ""} onChange={(event) => updateItem(index, "expiryDate", event.target.value)} className="sl-focus-ring mt-1 w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2.5 text-sm" />
+                </label>
+                {!item.expiryDate && <p className="text-xs font-medium text-amber-600">Expiry is not available from the invoice.</p>}
+              </div>
+            ))}
           </div>
 
           <div className="flex flex-col gap-4 border-t border-[var(--shelf-border)] p-6 bg-[var(--shelf-cream)]/30 sm:flex-row sm:items-center sm:justify-between">
