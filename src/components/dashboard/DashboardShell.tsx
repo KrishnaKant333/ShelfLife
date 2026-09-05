@@ -31,6 +31,7 @@ export default function DashboardShell({ children, user, inventory = [] }: Dashb
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileDrawerRef = useRef<HTMLDivElement>(null);
   const prefix = user.accountType === "business" ? "/business/dashboard" : "/dashboard";
   const alertCount = inventory.reduce((count, item) => {
     const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
@@ -40,13 +41,38 @@ export default function DashboardShell({ children, user, inventory = [] }: Dashb
   useEffect(() => {
     if (!mobileMenuOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setMobileMenuOpen(false);
     }
 
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [mobileMenuOpen]);
+
+  function handleMobileDrawerKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Tab") return;
+
+    const focusable = mobileDrawerRef.current?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+    );
+    if (!focusable?.length) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   useEffect(() => {
     if (!mobileMenuOpen) mobileMenuButtonRef.current?.focus();
@@ -85,7 +111,11 @@ export default function DashboardShell({ children, user, inventory = [] }: Dashb
       {/* Mobile Overlay Sidebar Drawer */}
       {mobileMenuOpen && (
         <div id="dashboard-mobile-navigation" className="fixed inset-0 z-50 flex bg-black/40 backdrop-blur-xs transition-opacity duration-200 lg:hidden" role="dialog" aria-modal="true" aria-label="Dashboard navigation">
-          <div className="h-full w-72 max-w-[86vw] transform transition-transform duration-300 animate-slide-in">
+          <div
+            ref={mobileDrawerRef}
+            onKeyDown={handleMobileDrawerKeyDown}
+            className="h-full w-72 max-w-[86vw] transform transition-transform duration-300 animate-slide-in"
+          >
             <Sidebar user={user} onCloseMobile={() => setMobileMenuOpen(false)} inventory={inventory} />
           </div>
           <button type="button" aria-label="Close dashboard navigation" className="flex-1 cursor-default" onClick={() => setMobileMenuOpen(false)} />

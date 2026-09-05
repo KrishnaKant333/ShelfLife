@@ -25,6 +25,7 @@ export function ConfirmDialog({
   isPending = false,
 }: ConfirmDialogProps) {
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     cancelButtonRef.current?.focus();
@@ -37,9 +38,30 @@ export function ConfirmDialog({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isPending, onCancel]);
 
+  function handleDialogKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Tab") return;
+
+    const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+    );
+    if (!focusable?.length) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
       <div
+        ref={dialogRef}
+        onKeyDown={handleDialogKeyDown}
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"

@@ -26,7 +26,7 @@ export default function WasteReduction() {
   ];
 
   return (
-    <section id="waste-impact" className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-6 py-20 md:py-28">
+    <section id="waste-impact" className="sl-scroll-reveal border-b border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-16 lg:grid-cols-2 items-center">
           <div>

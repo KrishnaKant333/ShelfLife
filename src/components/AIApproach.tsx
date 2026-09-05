@@ -25,7 +25,7 @@ export default function AIApproach() {
   ];
 
   return (
-    <section className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-surface-inset)] px-6 py-20 md:py-28">
+    <section className="sl-scroll-reveal border-b border-[var(--sl-color-border)] bg-[var(--sl-color-surface-inset)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>

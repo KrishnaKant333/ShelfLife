@@ -1,5 +1,13 @@
 # Stage 12 - Performance and Final Visual QA
 
+Status: Complete.
+
+## Current checkpoint
+
+Stage 12 is active after Stage 11 sign-off. The production build is green; remaining work is final route smoke testing, responsive/theme visual QA, performance measurement, dependency review, and release documentation. No new feature work should be introduced.
+
+The local final QA pass is complete. Production build and diff hygiene pass; residual repository lint findings and external device-lab/browser-matrix checks are recorded in `specs/UI redesign stage 12 report.md`.
+
 ## 1. Objective
 Verify that the premium redesign is production-ready, fast, accurate, and consistent without feature regressions.
 

@@ -51,7 +51,7 @@ export default function Hero() {
               ))}
             </div>
           </div>
-          <div className="relative min-h-[420px] lg:min-h-[600px]">
+          <div className="sl-enter sl-enter-delay-3 relative min-h-[420px] lg:min-h-[600px]">
             <InventoryHeroVisual />
           </div>
         </div>

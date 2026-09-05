@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function FinalCTA() {
   return (
-    <section className="bg-[var(--sl-color-action)] px-6 py-20 md:py-28">
+    <section className="sl-scroll-reveal bg-[var(--sl-color-action)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[var(--sl-color-on-action)]/70">Make the next decision clearer</p>

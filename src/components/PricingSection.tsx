@@ -85,7 +85,7 @@ export default function PricingSection() {
   const businessPlans = getPlansByAccountType("business");
 
   return (
-    <section id="pricing" className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-20 md:py-28">
+    <section id="pricing" className="sl-scroll-reveal border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center mb-16">

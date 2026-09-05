@@ -35,9 +35,9 @@ export default function BusinessValue() {
   ];
 
   return (
-    <section id="business" className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-20 md:py-28">
+    <section id="business" className="sl-scroll-reveal border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="sl-enter mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
             <p className="sl-eyebrow">
               For Food Businesses
@@ -53,7 +53,7 @@ export default function BusinessValue() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[var(--sl-radius-xl)] border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] p-8 md:p-12">
+          <div className="sl-enter sl-enter-delay-1 rounded-[var(--sl-radius-xl)] border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] p-8 md:p-12">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)]">
               <TrendingUp className="h-6 w-6" />
             </div>
@@ -78,7 +78,7 @@ export default function BusinessValue() {
             </div>
           </div>
 
-          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-1">
+          <div className="sl-enter sl-enter-delay-2 -mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-1">
             {features.filter((feature) => feature.title !== "Inventory Strategy").map((feature) => {
               const Icon = feature.icon;
               return (

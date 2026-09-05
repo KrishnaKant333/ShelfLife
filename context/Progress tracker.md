@@ -76,6 +76,16 @@ Signup is blocked until SMTP is configured. There is no local verification bypas
 - [x] Stage 9 transparency checkpoint: AI advisory labeling, live status/error announcements, recipe mode semantics, and waste dialog labeling
 - [x] Complete Stage 9 AI, recipes, insights, and waste: safe recipe dialogs, consumption labels, mobile action flows, and waste feedback
 - [x] Start Stage 10 advanced motion, scroll storytelling, and selective 3D
+- [x] Stage 10 motion checkpoint: reduced-motion-safe staggered reveals for hero and core marketing bands; 3D deferred pending a concrete product-value case
+- [x] Stage 10 atmosphere checkpoint: fixed pointer-transparent top/bottom fog edges on marketing surfaces with reduced mobile intensity
+- [x] Stage 10 global atmosphere extension: fixed top/bottom fog edges across marketing, auth, and dashboard scroll surfaces
+- [x] Complete Stage 10 motion and scroll: progressive view-timeline reveals, static fallbacks, reduced-motion handling, and global fog treatment
+- [x] Start Stage 11 mobile polish and accessibility
+- [x] Stage 11 accessibility checkpoint: mobile drawer scroll lock and confirmation-dialog keyboard focus containment
+- [x] Complete Stage 11 mobile accessibility polish and cross-cutting interaction safeguards
+- [x] Start Stage 12 performance and final visual QA
+- [x] Complete Stage 12 production build, diff hygiene, documentation, and final visual QA sign-off
+- [x] Start Stage 12 performance and final visual QA
 
 ## Do not break
 

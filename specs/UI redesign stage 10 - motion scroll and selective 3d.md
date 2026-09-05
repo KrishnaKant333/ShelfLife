@@ -1,10 +1,18 @@
 # Stage 10 - Advanced Motion, Scroll Storytelling, and Selective 3D
 
-Status: In progress.
+Status: Complete.
 
 ## Current checkpoint
 
 Stage 10 is active after completion of the AI, recipe, insight, and waste experience pass. Motion work must remain selective, responsive, reduced-motion safe, and subordinate to task clarity; any 3D use requires clear product value and performance evidence.
+
+## Current checkpoint
+
+The marketing hero and core Consumer, Business, and How It Works bands now use short staggered reveals from the existing CSS motion system. The static layout and content remain available, mobile behavior stays unchanged, and the global `prefers-reduced-motion` override removes the nonessential animation. No 3D dependency is being added at this checkpoint because the existing layered product UI already communicates the product promise without WebGL cost.
+
+The shared root body now provides a fixed top and bottom viewport-edge fog treatment on every scrollable route, including marketing, auth, and authenticated workspaces. It is implemented as pointer-transparent CSS gradients below navigation/dialog layers, does not change document flow, uses light/dark canvas tokens, and is reduced in height and opacity on handheld widths.
+
+The remaining marketing bands now use progressive CSS view-timeline reveals where supported, with fully visible static fallback content and explicit reduced-motion overrides. Stage 10 does not add 3D because no concrete comprehension benefit or performance case was established for this product.
 
 ## 1. Objective
 Add only high-value motion and optional 3D where it improves understanding or brand distinctiveness.

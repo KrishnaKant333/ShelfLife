@@ -29,9 +29,9 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-20 md:py-28">
+    <section id="how-it-works" className="sl-scroll-reveal border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-2xl text-center mb-16">
+        <div className="sl-enter mx-auto mb-16 max-w-2xl text-center">
           <p className="sl-eyebrow">A simpler operating rhythm</p>
           <h2 className="mt-4 text-4xl font-semibold text-[var(--sl-color-text)] md:text-5xl">
             How ShelfLife Works
@@ -43,7 +43,7 @@ export default function HowItWorks() {
 
         <div className="relative mx-auto max-w-6xl">
           <div className="pointer-events-none absolute left-[8%] right-[8%] top-8 hidden h-px bg-[var(--sl-color-border-strong)] md:block" />
-          <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-4 md:gap-0 md:overflow-visible md:px-0 md:pb-0">
+          <div className="sl-enter sl-enter-delay-1 -mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-4 md:gap-0 md:overflow-visible md:px-0 md:pb-0">
             {steps.map((step) => {
               const Icon = step.icon;
               return (

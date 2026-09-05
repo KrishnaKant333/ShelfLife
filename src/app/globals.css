@@ -241,6 +241,48 @@ a {
     var(--shelf-cream);
 }
 
+/* Fixed viewport-edge fog keeps every scrollable surface atmospheric without
+  changing document flow or intercepting interaction. */
+.scroll-fog::before,
+.scroll-fog::after {
+  position: fixed;
+  z-index: 40;
+  left: 0;
+  right: 0;
+  height: clamp(3.5rem, 10vh, 7rem);
+  pointer-events: none;
+  content: "";
+  opacity: 0.88;
+}
+
+.scroll-fog::before {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--sl-color-canvas) 0%,
+    color-mix(in srgb, var(--sl-color-canvas) 82%, transparent) 38%,
+    transparent 100%
+  );
+}
+
+.scroll-fog::after {
+  bottom: 0;
+  background: linear-gradient(
+    to top,
+    var(--sl-color-canvas) 0%,
+    color-mix(in srgb, var(--sl-color-canvas) 82%, transparent) 38%,
+    transparent 100%
+  );
+}
+
+@media (max-width: 640px) {
+  .scroll-fog::before,
+  .scroll-fog::after {
+    height: 4.5rem;
+    opacity: 0.76;
+  }
+}
+
 .dark .shelf-background {
   background:
     radial-gradient(
@@ -357,6 +399,28 @@ a {
   animation: sl-fade-up var(--sl-duration-slow) var(--sl-ease-emphasis) both;
 }
 
+.sl-enter-delay-1 {
+  animation-delay: 80ms;
+}
+
+.sl-enter-delay-2 {
+  animation-delay: 160ms;
+}
+
+.sl-enter-delay-3 {
+  animation-delay: 240ms;
+}
+
+/* Scroll reveals are progressive enhancement: without view-timeline support,
+   these elements remain fully visible in their normal static layout. */
+@supports (animation-timeline: view()) {
+  .sl-scroll-reveal {
+    animation: sl-fade-up linear both;
+    animation-range: entry 0% cover 24%;
+    animation-timeline: view();
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -365,5 +429,11 @@ a {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .sl-scroll-reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

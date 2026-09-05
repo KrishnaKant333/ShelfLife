@@ -1,5 +1,17 @@
 # Stage 11 - Mobile Polish and Accessibility
 
+Status: Complete.
+
+## Current checkpoint
+
+Stage 11 is active after the completed motion and scroll pass. Begin with cross-route mobile QA, focus order, touch targets, reduced-motion behavior, fog-layer interaction checks, and long-content verification across marketing, auth, consumer, and business surfaces.
+
+## Current checkpoint
+
+The shared mobile dashboard drawer now locks background scrolling while open and restores the previous body overflow state on close. The shared confirmation dialog now contains Tab focus, preserves Escape cancellation and initial focus, and keeps pending destructive actions disabled. Both changes preserve route and business behavior.
+
+Stage 11 is complete for the implementation pass. Device-lab, screen-reader, throttled-network, browser-matrix, and final performance measurements are intentionally handed to Stage 12 rather than being represented as completed here.
+
 ## 1. Objective
 Run a dedicated handheld and inclusive-use pass across the entire redesigned product.
 
