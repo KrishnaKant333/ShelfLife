@@ -24,13 +24,14 @@ export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   if (!mounted) {
     // Render a placeholder of the same size to avoid layout shift
     return (
-      <div className="h-9 w-9 rounded-full border border-[var(--shelf-border)]" />
+      <div className="h-11 w-11 rounded-[var(--sl-radius-md)] border border-[var(--sl-color-border)]" />
     );
   }
 
@@ -50,7 +51,7 @@ export default function ThemeToggle() {
       onClick={cycleTheme}
       aria-label={label}
       title={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--shelf-border)] text-[var(--shelf-muted)] transition hover:bg-[var(--shelf-cream)] hover:text-[var(--shelf-dark)]"
+      className="sl-focus-ring flex h-11 w-11 items-center justify-center rounded-[var(--sl-radius-md)] border border-[var(--sl-color-border)] text-[var(--sl-color-text-muted)] transition hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)]"
     >
       <Icon size={16} strokeWidth={1.8} />
     </button>

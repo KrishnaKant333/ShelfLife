@@ -35,41 +35,41 @@ export default function ConsumerValue() {
   ];
 
   return (
-    <section id="consumer" className="px-6 py-16 md:py-24">
+    <section id="consumer" className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--shelf-forest)]">
+            <p className="sl-eyebrow">
               For Your Kitchen
             </p>
-            <h2 className="mt-4 text-4xl font-bold tracking-tight text-[var(--shelf-dark)]">
+            <h2 className="mt-4 max-w-2xl text-4xl font-semibold text-[var(--sl-color-text)] md:text-5xl">
               Food inventory for everyday life
             </h2>
           </div>
 
-          <p className="max-w-md text-base leading-7 text-[var(--shelf-muted)]">
-            Know what's in your fridge, eat what you have, and waste less without overthinking it.
+          <p className="max-w-md text-base leading-7 text-[var(--sl-color-text-muted)]">
+            Know what&apos;s in your fridge, eat what you have, and waste less without overthinking it.
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <div className="rounded-[2rem] border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-8 md:p-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--shelf-cream)] text-[var(--shelf-forest)]">
+        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="rounded-[var(--sl-radius-xl)] border border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] p-8 md:p-12">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)]">
               <Utensils className="h-6 w-6" />
             </div>
-            <p className="mt-6 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--shelf-forest)]">
+            <p className="mt-6 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--sl-color-action)]">
               Smart pantry management
             </p>
-            <h3 className="mt-3 text-3xl font-bold text-[var(--shelf-dark)]">
+            <h3 className="mt-3 max-w-xl text-3xl font-semibold text-[var(--sl-color-text)] md:text-4xl">
               AI recipe suggestions built around what you already have
             </h3>
-            <p className="mt-4 max-w-lg text-base leading-7 text-[var(--shelf-muted)]">
-              Get personalized ideas based on what's expiring soon, reduce duplicate purchases, and turn your inventory into useful meals instead of waste.
+            <p className="mt-4 max-w-lg text-base leading-7 text-[var(--sl-color-text-muted)]">
+              Get personalized ideas based on what&apos;s expiring soon, reduce duplicate purchases, and turn your inventory into useful meals instead of waste.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3 text-sm text-[var(--shelf-dark)]">
-              <span className="rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3 py-1.5">Expiry-led recipes</span>
-              <span className="rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3 py-1.5">Smart reminders</span>
-              <span className="rounded-full border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3 py-1.5">Pantry visibility</span>
+            <div className="mt-8 flex flex-wrap gap-3 text-sm text-[var(--sl-color-text)]">
+              <span className="rounded-full border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-3 py-1.5">Expiry-led recipes</span>
+              <span className="rounded-full border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-3 py-1.5">Smart reminders</span>
+              <span className="rounded-full border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] px-3 py-1.5">Pantry visibility</span>
             </div>
           </div>
 
@@ -79,13 +79,13 @@ export default function ConsumerValue() {
               return (
                 <div
                   key={feature.title}
-                  className="rounded-[1.5rem] border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6"
+                  className="rounded-[var(--sl-radius-lg)] border border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] p-6 transition hover:-translate-y-1 hover:shadow-[var(--sl-shadow-md)]"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--shelf-cream)] text-[var(--shelf-forest)]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)]">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-4 text-lg font-bold text-[var(--shelf-dark)]">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--shelf-muted)]">
+                  <h3 className="mt-4 text-lg font-semibold text-[var(--sl-color-text)]">{feature.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--sl-color-text-muted)]">
                     {feature.description}
                   </p>
                 </div>
@@ -97,7 +97,7 @@ export default function ConsumerValue() {
         <div className="mt-10 text-center">
           <Link
             href="/get-started"
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--shelf-forest)] px-7 py-3.5 font-semibold text-white transition hover:opacity-90"
+            className="sl-focus-ring inline-flex min-h-12 items-center gap-2 rounded-[var(--sl-radius-pill)] bg-[var(--sl-color-action)] px-7 py-3.5 font-semibold text-[var(--sl-color-on-action)] transition hover:bg-[var(--sl-color-action-hover)]"
           >
             Start Free for Consumers
           </Link>

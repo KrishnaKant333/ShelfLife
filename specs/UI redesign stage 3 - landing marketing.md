@@ -1,5 +1,7 @@
 # Stage 3 - Landing Page and Marketing Experience
 
+Status: Complete. See `specs/UI redesign stage 3 report.md`.
+
 ## 1. Objective
 Make the landing page the visual benchmark for ShelfLife while keeping its claims accurate.
 

@@ -38,29 +38,29 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {toasts.length > 0 && (
         <div
           aria-live="polite"
-          className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2"
+          className="fixed bottom-4 right-4 z-[100] flex max-w-[calc(100vw-2rem)] flex-col gap-2 sm:max-w-sm"
         >
           {toasts.map((toast) => (
             <div
               key={toast.id}
               role="alert"
-              className={`flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg text-sm font-medium max-w-sm transition-all ${
+              className={`flex items-start gap-3 rounded-[var(--sl-radius-md)] border px-4 py-3 text-sm font-medium shadow-[var(--sl-shadow-lg)] transition-all ${
                 toast.type === "success"
-                  ? "bg-[var(--shelf-surface)] border-[var(--shelf-forest)]/30 text-[var(--shelf-dark)]"
-                  : "bg-[var(--shelf-surface)] border-[var(--shelf-terracotta)]/30 text-[var(--shelf-dark)]"
+                  ? "bg-[var(--sl-color-surface-raised)] border-[var(--sl-color-success)]/40 text-[var(--sl-color-text)]"
+                  : "bg-[var(--sl-color-surface-raised)] border-[var(--sl-color-danger)]/40 text-[var(--sl-color-text)]"
               }`}
             >
               {toast.type === "success" ? (
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--shelf-forest)] mt-0.5" />
+                  <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--sl-color-success)] mt-0.5" />
               ) : (
-                <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--shelf-terracotta)] mt-0.5" />
+                  <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--sl-color-danger)] mt-0.5" />
               )}
               <span className="flex-1">{toast.message}</span>
               <button
                 type="button"
                 onClick={() => dismiss(toast.id)}
                 aria-label="Dismiss notification"
-                className="shrink-0 text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)] transition"
+                className="sl-focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--sl-radius-sm)] text-[var(--sl-color-text-muted)] hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)] transition"
               >
                 <X size={16} />
               </button>

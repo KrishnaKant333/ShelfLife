@@ -53,6 +53,10 @@ Barcode scanning and external barcode lookup remain deferred and hidden. The Add
 - The previous P2 polish completion is a baseline, not a redesign plan.
 - These UI redesign specifications supersede any future request to make ad hoc page-level visual changes without first identifying the relevant stage.
 
+## Current status
+
+Stages 0, 1, 2, and 3 are complete. Stage 0 findings are recorded in `specs/UI redesign stage 0 audit report.md`; Stage 1 implementation and the token contract are recorded in `specs/UI redesign stage 1 report.md`; Stage 2 shell work is recorded in `specs/UI redesign stage 2 report.md`; Stage 3 marketing completion is recorded in `specs/UI redesign stage 3 report.md`.
+
 ## Recommended starting point
 
-Start with Stage 0. Produce an evidence-backed route/component audit, token inventory, content inventory, and visual QA matrix before changing any UI.
+Start with Stage 3. Use the Stage 1 semantic tokens and the Stage 2 public shell to redesign the marketing experience before changing authenticated feature pages.

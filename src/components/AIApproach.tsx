@@ -25,25 +25,25 @@ export default function AIApproach() {
   ];
 
   return (
-    <section className="px-6 py-16 md:py-24 bg-[var(--shelf-cream)]/40">
+    <section className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-surface-inset)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--shelf-forest)]">
+            <p className="sl-eyebrow">
               AI + safety
             </p>
-            <h2 className="mt-4 text-4xl font-bold tracking-tight text-[var(--shelf-dark)]">
+            <h2 className="mt-4 text-4xl font-semibold text-[var(--sl-color-text)] md:text-5xl">
               Intelligent. Trustworthy. Verified.
             </h2>
-            <p className="mt-4 max-w-xl text-lg leading-8 text-[var(--shelf-muted)]">
+            <p className="mt-4 max-w-xl text-lg leading-8 text-[var(--sl-color-text-muted)]">
               ShelfLife combines deterministic inventory logic with AI to give you both safety and intelligence.
             </p>
 
-            <div className="mt-8 rounded-[1.75rem] border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 md:p-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--shelf-forest)]">
+            <div className="mt-8 rounded-[var(--sl-radius-xl)] border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] p-6 md:p-8">
+              <p className="sl-eyebrow">
                 Your data stays safe
               </p>
-              <p className="mt-3 text-base leading-7 text-[var(--shelf-muted)]">
+              <p className="mt-3 text-base leading-7 text-[var(--sl-color-text-muted)]">
                 Every expired product detection, every inventory alert, and every waste calculation is verified by application logic. AI enhances, but never overrides, food safety.
               </p>
             </div>
@@ -55,13 +55,13 @@ export default function AIApproach() {
               return (
                 <div
                   key={item.title}
-                  className="rounded-[1.5rem] border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6"
+                  className="rounded-[var(--sl-radius-lg)] border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] p-6 transition hover:-translate-y-1 hover:shadow-[var(--sl-shadow-md)]"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--shelf-cream)] text-[var(--shelf-forest)]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)]">
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mt-4 text-lg font-bold text-[var(--shelf-dark)]">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--shelf-muted)]">{item.description}</p>
+                  <h3 className="mt-4 text-lg font-semibold text-[var(--sl-color-text)]">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--sl-color-text-muted)]">{item.description}</p>
                 </div>
               );
             })}

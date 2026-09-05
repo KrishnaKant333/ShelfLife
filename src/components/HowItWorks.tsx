@@ -1,4 +1,4 @@
-import { Upload, AlertCircle, TrendingDown } from "lucide-react";
+import { Upload, AlertCircle, TrendingDown, Sparkles } from "lucide-react";
 
 export default function HowItWorks() {
   const steps = [
@@ -12,7 +12,7 @@ export default function HowItWorks() {
       number: "2",
       title: "ShelfLife Understands It",
       description: "AI processes labels, extracts data, and organizes your stock.",
-      icon: Upload,
+      icon: Sparkles,
     },
     {
       number: "3",
@@ -29,34 +29,39 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="px-6 py-16 md:py-24">
+    <section id="how-it-works" className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center mb-16">
-          <h2 className="text-4xl font-bold tracking-tight text-[var(--shelf-dark)]">
+          <p className="sl-eyebrow">A simpler operating rhythm</p>
+          <h2 className="mt-4 text-4xl font-semibold text-[var(--sl-color-text)] md:text-5xl">
             How ShelfLife Works
           </h2>
-          <p className="mt-4 text-lg text-[var(--shelf-muted)]">
+          <p className="mt-4 text-lg text-[var(--sl-color-text-muted)]">
             Simple, intelligent, and automated from start to finish.
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-4">
-          {steps.map((step, idx) => {
-            const Icon = step.icon;
-            return (
-              <div key={idx} className="flex flex-col items-start">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--shelf-cream)] mb-4">
-                  <Icon className="h-8 w-8 text-[var(--shelf-forest)]" />
+        <div className="relative mx-auto max-w-6xl">
+          <div className="pointer-events-none absolute left-[8%] right-[8%] top-8 hidden h-px bg-[var(--sl-color-border-strong)] md:block" />
+          <div className="grid gap-6 md:grid-cols-4 md:gap-0">
+            {steps.map((step, idx) => {
+              const Icon = step.icon;
+              return (
+                <div key={idx} className="relative flex flex-col items-start md:items-center md:px-5">
+                  <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-[var(--sl-radius-pill)] border border-[var(--sl-color-border-strong)] bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)] shadow-[var(--sl-shadow-sm)]">
+                    <Icon className="h-7 w-7" />
+                  </div>
+                  <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-[var(--sl-color-action)] md:text-center">Step {step.number}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-[var(--sl-color-text)] md:text-center">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--sl-color-text-muted)] md:text-center">
+                    {step.description}
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-[var(--shelf-dark)]">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-                  {step.description}
-                </p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

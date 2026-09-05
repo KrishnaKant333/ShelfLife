@@ -15,6 +15,8 @@ import {
   Trash2,
   Utensils,
   TrendingUp,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import { getInventoryStatus } from "@/lib/inventory-status";
 
@@ -101,7 +103,7 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
   ];
 
   return (
-    <aside className={`flex h-full flex-col border-r border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm transition-[width] duration-200 ${collapsed ? "w-20" : "w-64"}`}>
+    <aside className={`flex h-full flex-col border-r border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] p-4 shadow-[var(--sl-shadow-sm)] transition-[width] duration-200 ${collapsed ? "w-20" : "w-64"}`}>
       {/* Header / Logo */}
       <div className="mb-8 flex items-center justify-between">
         <div className={collapsed ? "hidden" : ""}>
@@ -124,7 +126,9 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
         {onCloseMobile && (
           <button
             onClick={onCloseMobile}
-            className="rounded-lg p-1.5 text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)] hover:text-[var(--shelf-dark)] lg:hidden"
+            autoFocus
+            aria-label="Close navigation"
+            className="sl-focus-ring flex h-11 w-11 items-center justify-center rounded-[var(--sl-radius-md)] text-[var(--sl-color-text-muted)] hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)] lg:hidden"
           >
             <X size={18} />
           </button>
@@ -134,9 +138,9 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
             type="button"
             onClick={onToggleCollapsed}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="rounded-lg p-1.5 text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)] hover:text-[var(--shelf-dark)]"
+            className="sl-focus-ring flex h-11 w-11 items-center justify-center rounded-[var(--sl-radius-md)] text-[var(--sl-color-text-muted)] hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)]"
           >
-            {collapsed ? "»" : "«"}
+            {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
           </button>
         )}
       </div>
@@ -156,9 +160,10 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
               key={item.href}
               href={item.href}
               onClick={onCloseMobile}
+              aria-current={isActive ? "page" : undefined}
               className={`flex items-center justify-between gap-3 rounded-xl py-3 text-sm font-semibold transition duration-150 ${collapsed ? "justify-center px-3" : "px-4"} ${isActive
-                  ? "bg-[var(--shelf-cream)] text-[var(--shelf-forest)] border-l-4 border-[var(--shelf-forest)] pl-3"
-                  : "text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)]/50 hover:text-[var(--shelf-dark)]"
+                  ? "border-l-4 border-[var(--sl-color-action)] bg-[var(--sl-color-action-soft)] pl-3 text-[var(--sl-color-action)]"
+                  : "text-[var(--sl-color-text-muted)] hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)]"
                 }`}
             >
               <span className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`} title={collapsed ? item.label : undefined}>
@@ -180,9 +185,10 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
         <Link
           href={`${prefix}/settings`}
           onClick={onCloseMobile}
-          className={`flex items-center gap-3 rounded-xl py-3 text-sm font-semibold transition duration-150 ${collapsed ? "justify-center px-3" : "px-4"} ${pathname === `${prefix}/settings`
-              ? "bg-[var(--shelf-cream)] text-[var(--shelf-forest)]"
-              : "text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)]/50 hover:text-[var(--shelf-dark)]"
+            aria-current={pathname === `${prefix}/settings` ? "page" : undefined}
+            className={`sl-focus-ring flex min-h-11 items-center gap-3 rounded-[var(--sl-radius-md)] py-3 text-sm font-semibold transition duration-150 ${collapsed ? "justify-center px-3" : "px-4"} ${pathname === `${prefix}/settings`
+              ? "bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)]"
+              : "text-[var(--sl-color-text-muted)] hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)]"
             }`}
         >
           <Settings size={18} className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
@@ -191,7 +197,7 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
 
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className={`flex w-full items-center gap-3 rounded-xl py-3 text-sm font-semibold text-[var(--shelf-terracotta)] hover:bg-[var(--shelf-terracotta)]/10 transition duration-150 text-left ${collapsed ? "justify-center px-3" : "px-4"}`}
+          className={`sl-focus-ring flex min-h-11 w-full items-center gap-3 rounded-[var(--sl-radius-md)] py-3 text-left text-sm font-semibold text-[var(--sl-color-danger)] transition duration-150 hover:bg-[var(--sl-color-danger)]/10 ${collapsed ? "justify-center px-3" : "px-4"}`}
         >
           <LogOut size={18} className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
           <span className={collapsed ? "hidden" : ""}>Sign out</span>

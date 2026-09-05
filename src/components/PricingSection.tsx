@@ -26,60 +26,57 @@ function PricingCard({
   ctaHref,
 }: PricingCardProps) {
   return (
-    <div
-      className={`relative flex flex-col justify-between rounded-2xl border p-8 md:p-10 transition ${
-        recommended
-          ? "border-[var(--shelf-forest)] bg-[var(--shelf-cream)]/60 shadow-lg ring-2 ring-[var(--shelf-forest)]/20"
-          : "border-[var(--shelf-border)] bg-[var(--shelf-surface)]"
-      }`}
+    <article
+      className={`relative flex flex-col justify-between rounded-2xl border p-8 md:p-10 transition ${recommended
+          ? "border-[var(--sl-color-action)] bg-[var(--sl-color-action-soft)] shadow-[var(--sl-shadow-lg)] ring-2 ring-[var(--sl-color-action)]/20"
+          : "border-[var(--sl-color-border)] bg-[var(--sl-color-surface)]"
+        }`}
     >
       {recommended && (
-        <div className="absolute -top-4 left-6 inline-block bg-[var(--shelf-forest)] px-3 py-1 rounded-full text-xs font-bold text-white">
+        <div className="absolute -top-4 left-6 inline-block rounded-[var(--sl-radius-pill)] bg-[var(--sl-color-action)] px-3 py-1 text-xs font-bold text-[var(--sl-color-on-action)]">
           Recommended
         </div>
       )}
 
       <div>
-        <h3 className="text-xl font-bold text-[var(--shelf-dark)]">{name}</h3>
+        <h3 className="text-xl font-semibold text-[var(--sl-color-text)]">{name}</h3>
 
         <div className="mt-4 flex items-end gap-2">
-          <span className="text-4xl font-bold text-[var(--shelf-dark)]">
+          <span className="text-4xl font-semibold text-[var(--sl-color-text)]">
             ₹{price}
           </span>
           {price > 0 && (
-            <span className="text-sm text-[var(--shelf-muted)]">/month</span>
+            <span className="text-sm text-[var(--sl-color-text-muted)]">/month</span>
           )}
         </div>
 
-        <p className="mt-4 text-sm text-[var(--shelf-muted)]">{description}</p>
+        <p className="mt-4 text-sm text-[var(--sl-color-text-muted)]">{description}</p>
 
-        <div className="my-8 h-px bg-[var(--shelf-border)]" />
+        <div className="my-8 h-px bg-[var(--sl-color-border)]" />
 
         <ul className="space-y-3">
           {features.map((feature) => (
             <li
               key={feature}
-              className="flex items-start gap-3 text-sm text-[var(--shelf-dark)]"
+              className="flex items-start gap-3 text-sm text-[var(--sl-color-text)]"
             >
-              <Check className="h-5 w-5 shrink-0 text-[var(--shelf-forest)] mt-0.5" />
+              <Check className="mt-0.5 h-5 w-5 shrink-0 text-[var(--sl-color-success)]" />
               <span>{feature}</span>
             </li>
           ))}
         </ul>
       </div>
 
-      <Link href={ctaHref} className="block mt-8">
-        <button
-          className={`w-full rounded-xl px-6 py-3 font-semibold transition ${
-            recommended
-              ? "bg-[var(--shelf-forest)] text-white hover:opacity-90"
-              : "border border-[var(--shelf-border)] text-[var(--shelf-dark)] hover:bg-[var(--shelf-cream)]"
+      <Link
+        href={ctaHref}
+        className={`sl-focus-ring mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-[var(--sl-radius-md)] px-6 py-3 font-semibold transition ${recommended
+            ? "bg-[var(--sl-color-action)] text-[var(--sl-color-on-action)] hover:bg-[var(--sl-color-action-hover)]"
+            : "border border-[var(--sl-color-border-strong)] text-[var(--sl-color-text)] hover:bg-[var(--sl-color-surface-inset)]"
           }`}
-        >
-          {cta}
-        </button>
+      >
+        {cta}
       </Link>
-    </div>
+    </article>
   );
 }
 
@@ -88,26 +85,26 @@ export default function PricingSection() {
   const businessPlans = getPlansByAccountType("business");
 
   return (
-    <section id="pricing" className="px-6 py-16 md:py-24">
+    <section id="pricing" className="border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-20 md:py-28">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center mb-16">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--shelf-forest)]">
+          <p className="sl-eyebrow">
             Pricing
           </p>
 
-          <h2 className="mt-4 text-4xl font-bold tracking-tight text-[var(--shelf-dark)] md:text-5xl">
+          <h2 className="mt-4 text-4xl font-semibold text-[var(--sl-color-text)] md:text-5xl">
             Start free. Upgrade when you need more.
           </h2>
 
-          <p className="mt-6 text-lg text-[var(--shelf-muted)]">
+          <p className="mt-6 text-lg text-[var(--sl-color-text-muted)]">
             Choose a plan that fits your needs. No credit card required to get started.
           </p>
         </div>
 
         {/* Consumer Plans */}
         <div className="mb-20">
-          <h3 className="mb-8 text-2xl font-bold text-[var(--shelf-dark)]">
+          <h3 className="mb-8 text-2xl font-semibold text-[var(--sl-color-text)]">
             For Individuals
           </h3>
 
@@ -116,25 +113,25 @@ export default function PricingSection() {
               const displayFeatures =
                 plan.id === "consumer_free"
                   ? [
-                      "Inventory management",
-                      "AI label scanning",
-                      "CSV import",
-                      "Expiry tracking",
-                      "AI recipes",
-                      "Waste insights",
-                      "Analytics",
-                      "CSV & PDF export",
-                    ]
+                    "Inventory management",
+                    "AI label scanning",
+                    "CSV import",
+                    "Expiry tracking",
+                    "AI recipes",
+                    "Waste insights",
+                    "Analytics",
+                    "CSV & PDF export",
+                  ]
                   : [
-                      "Everything in Free",
-                      "Advanced AI recipes",
-                      "Weekly meal planning",
-                      "Historical analytics",
-                      "Consumption trends",
-                      "XLSX export",
-                      "Extended history",
-                      "Priority support",
-                    ];
+                    "Everything in Free",
+                    "Advanced AI recipes",
+                    "Weekly meal planning",
+                    "Historical analytics",
+                    "Consumption trends",
+                    "XLSX export",
+                    "Extended history",
+                    "Priority support",
+                  ];
 
               return (
                 <PricingCard
@@ -156,7 +153,7 @@ export default function PricingSection() {
 
         {/* Business Plans */}
         <div>
-          <h3 className="mb-8 text-2xl font-bold text-[var(--shelf-dark)]">
+          <h3 className="mb-8 text-2xl font-semibold text-[var(--sl-color-text)]">
             For Businesses
           </h3>
 
@@ -165,17 +162,17 @@ export default function PricingSection() {
               const displayFeatures =
                 plan.id === "business_starter"
                   ? [
-                      "Inventory management",
-                      "AI label scanning",
-                      "CSV import",
-                      "FIFO prioritization",
-                      "Expiry alerts",
-                      "Analytics",
-                      "Waste insights",
-                      "CSV & PDF export",
-                    ]
+                    "Inventory management",
+                    "AI label scanning",
+                    "CSV import",
+                    "FIFO prioritization",
+                    "Expiry alerts",
+                    "Analytics",
+                    "Waste insights",
+                    "CSV & PDF export",
+                  ]
                   : plan.id === "business_pro"
-                  ? [
+                    ? [
                       "Everything in Starter",
                       "Advanced inventory strategy",
                       "Advanced analytics",
@@ -185,7 +182,7 @@ export default function PricingSection() {
                       "XLSX export",
                       "Priority support",
                     ]
-                  : [
+                    : [
                       "Everything in Pro",
                       "Multiple locations",
                       "Centralized dashboard",
@@ -217,11 +214,11 @@ export default function PricingSection() {
 
         {/* Coming Soon Note */}
         <div className="mt-12 rounded-xl border border-[var(--shelf-info-border)] bg-[var(--shelf-info-bg)] p-6 text-center text-sm text-[var(--shelf-info-text)]">
-        <p className="font-semibold">Premium subscriptions are coming soon</p>
-        <p className="mt-1 text-[var(--shelf-info-text)]">
-          Free plans include full access to core features. Premium plans will unlock advanced analytics, AI features and team collaboration.
-        </p>
-      </div>
+          <p className="font-semibold">Premium subscriptions are coming soon</p>
+          <p className="mt-1 text-[var(--shelf-info-text)]">
+            Free plans include full access to core features. Premium plans will unlock advanced analytics, AI features and team collaboration.
+          </p>
+        </div>
       </div>
     </section>
   );

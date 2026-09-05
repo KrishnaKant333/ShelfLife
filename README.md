@@ -108,7 +108,7 @@ Features not listed as implemented must remain labelled as incomplete or Coming 
 
 ## UI redesign plan
 
-The next phase is planning-only: a staged visual and UX redesign from functional MVP polish toward a premium SaaS product. No redesign implementation is included in the current baseline. See [specs/UI redesign roadmap.md](specs/UI%20redesign%20roadmap.md) and the Stage 0-12 specifications for the dependency order.
+The next phase is a staged visual and UX redesign from functional MVP polish toward a premium SaaS product. Stages 0, 1, 2, and 3 are complete: the audit, semantic design-system foundation, shared responsive shell, and the marketing experience are documented in Specs. The final Stage 3 polish also resolved the remaining business-card background mismatch, the How It Works connector/icon rhythm, and the pricing background separation. See [specs/UI redesign roadmap.md](specs/UI%20redesign%20roadmap.md) and the Stage 0-12 specifications for the dependency order.
 
 The redesign prioritizes a reusable design system, intentional light/dark themes, expressive marketing, restrained productivity dashboards, mobile-first task flows, accessible motion, and performance. It does not change business logic or architecture, and barcode scanning remains deferred/hidden.
 

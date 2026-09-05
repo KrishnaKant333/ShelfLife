@@ -1,5 +1,7 @@
 # Stage 0 - UI Audit and Design Foundation
 
+Status: Complete as an audit artifact. See `specs/UI redesign stage 0 audit report.md`.
+
 ## 1. Objective
 Create the factual baseline for the redesign without changing application code.
 

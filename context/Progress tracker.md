@@ -50,7 +50,13 @@ Signup is blocked until SMTP is configured. There is no local verification bypas
 ## Next planning phase
 
 - [x] Define the planning-only UI redesign roadmap and Stages 0-12 specifications
-- [ ] Implement redesign stages in order, beginning with Stage 0 audit and design foundation
+- [x] Complete Stage 0 UI audit and design foundation report
+- [x] Complete Stage 1 design system, typography, theme tokens, primitives, and shared feedback foundation
+- [x] Fix dark-theme contrast for legacy filled action buttons across existing screens
+- [x] Complete Stage 2 layout, navigation, and responsive foundation
+- [x] Complete Stage 3 landing page and marketing experience
+- [x] Start Stage 3 with the hero, Consumer/Business value bands, and pricing interaction foundation
+- [x] Final Stage 3 polish: business-card surface alignment, How It Works connector/icon refinement, and pricing background separation
 
 ## Do not break
 

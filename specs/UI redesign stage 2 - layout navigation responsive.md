@@ -1,5 +1,7 @@
 # Stage 2 - Core Layout, Navigation, and Responsive Foundation
 
+Status: Complete. See `specs/UI redesign stage 2 report.md`.
+
 ## 1. Objective
 Establish a stable responsive shell for public, auth, consumer, and business experiences.
 

@@ -1,5 +1,7 @@
 # Stage 1 - Design System, Typography, and Theme
 
+Status: Complete. See `specs/UI redesign stage 1 report.md`.
+
 ## 1. Objective
 Create the reusable visual language that makes ShelfLife distinctive, premium, calm, and consistent.
 

@@ -8,25 +8,25 @@ export default function ConsumerLoginPage() {
     <main className="min-h-screen bg-[var(--shelf-cream)]/30 px-6 py-12 md:py-16">
       <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--shelf-border)] bg-[var(--background)] shadow-[0_20px_50px_rgba(12,40,26,0.08)]">
         <div className="grid min-h-[760px] lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="flex flex-col justify-between bg-gradient-to-br from-[var(--shelf-forest)] via-[var(--shelf-green)] to-[var(--shelf-dark)] p-8 text-white md:p-12">
+          <section className="auth-contrast-panel flex flex-col justify-between p-8 md:p-12">
             <div>
               <Link href="/" className="inline-block">
                 <Image src="/logo/shelflife.png" alt="ShelfLife" width={150} height={150} className="h-12 w-auto object-contain" priority />
               </Link>
-              <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100/80">
+              <p className="auth-panel-muted mt-8 text-sm font-semibold uppercase tracking-[0.2em]">
                 Consumer login
               </p>
               <h1 className="mt-5 text-4xl font-bold tracking-tight md:text-5xl">
                 Welcome back to your kitchen dashboard.
               </h1>
-              <p className="mt-5 max-w-md text-base leading-7 text-emerald-50/85">
+              <p className="auth-panel-muted mt-5 max-w-md text-base leading-7">
                 Continue tracking inventory, spotting expiry dates early, and making the most of what you already have.
               </p>
             </div>
 
-            <div className="mt-10 rounded-[1.5rem] border border-white/15 bg-white/5 p-5 backdrop-blur-sm">
-              <p className="text-sm font-medium text-emerald-50/80">Your essentials</p>
-              <ul className="mt-4 space-y-3 text-sm text-emerald-50">
+            <div className="auth-panel-border auth-panel-soft mt-10 rounded-[1.5rem] border p-5 backdrop-blur-sm">
+              <p className="auth-panel-muted text-sm font-medium">Your essentials</p>
+              <ul className="auth-panel-muted mt-4 space-y-3 text-sm">
                 <li>• Track pantry and fridge stock</li>
                 <li>• Plan meals from ingredients you have</li>
                 <li>• Reduce waste with smarter decisions</li>
