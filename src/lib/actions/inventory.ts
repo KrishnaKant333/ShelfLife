@@ -39,6 +39,13 @@ const inventorySchema = z.object({
     .max(30, "Unit is too long"),
 
   expiryDate: optionalExpiryDate,
+  imageUrl: z
+    .string()
+    .trim()
+    .url("Image URL must be valid.")
+    .max(500, "Image URL is too long.")
+    .optional()
+    .or(z.literal("")),
 });
 
 async function getCurrentUserSession() {
@@ -93,6 +100,7 @@ export async function createInventoryItem(
     quantity: result.data.quantity,
     unit: result.data.unit,
     expiryDate: result.data.expiryDate?.toISOString() ?? null,
+    imageUrl: result.data.imageUrl || null,
   });
 
   if (session.accountType === "business") {
@@ -275,7 +283,7 @@ export async function bulkDeleteAction(
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Bulk delete failed:", error);
     return { success: false, error: "Failed to delete selected items." };
   }

@@ -13,16 +13,17 @@ interface AddProductFlowProps {
 }
 
 const initialFormState: CreateInventoryState = {};
+type AddProductTab = "manual" | "barcode" | "label" | "import";
 
 export default function AddProductFlow({ isBusiness = false }: AddProductFlowProps) {
-  const [activeTab, setActiveTab] = useState<"manual" | "barcode" | "label" | "import">("manual");
+  const [activeTab, setActiveTab] = useState<AddProductTab>("manual");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get("tab");
       if (tab === "barcode" || tab === "label" || tab === "import" || tab === "manual") {
-        setActiveTab(tab as any);
+        window.setTimeout(() => setActiveTab(tab), 0);
       }
     }
   }, []);
@@ -33,6 +34,9 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
   const [quantity, setQuantity] = useState("1");
   const [unit, setUnit] = useState("pieces");
   const [expiryDate, setExpiryDate] = useState("");
+  const [brand, setBrand] = useState("");
+  const [barcode, setBarcode] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   // Barcode scanning states
   const [isScanning, setIsScanning] = useState(false);
@@ -112,39 +116,58 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
 
   async function handleBarcodeScanned(barcode: string) {
     stopScanner();
+    setBarcode(barcode);
     setLookupLoading(true);
     setLookupMessage(`Barcode detected: ${barcode}. Looking up product...`);
 
     try {
-      const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
-      if (!res.ok) throw new Error("Network error");
-      const data = await res.json();
-
-      if (data.status === 1 && data.product) {
-        const prod = data.product;
-        setName(prod.product_name || prod.product_name_en || "");
-        
-        let inferredCat = "Pantry";
-        if (prod.categories_tags && prod.categories_tags.length > 0) {
-          const rawCat = prod.categories_tags[0];
-          inferredCat = rawCat.replace("en:", "").split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-        } else if (prod.categories) {
-          inferredCat = prod.categories.split(",")[0];
-        }
-        setCategory(inferredCat);
-        
-        if (prod.quantity) {
-          setUnit(prod.quantity);
-        }
-
-        setLookupMessage("✓ Product found! Review details in the Manual tab.");
-        setActiveTab("manual");
-      } else {
-        setLookupMessage("⚠ Product not found in Open Food Facts database. You can still enter it manually.");
-        setActiveTab("manual");
+      const res = await fetch(`/api/barcode?barcode=${encodeURIComponent(barcode)}`, { cache: "no-store" });
+      const data: unknown = await res.json();
+      if (!data || typeof data !== "object") {
+        throw new Error("Malformed barcode response.");
       }
+
+      const result = data as {
+        status?: string;
+        error?: string;
+        missingFields?: string[];
+        product?: {
+          barcode?: string;
+          name?: string;
+          brand?: string;
+          category?: string;
+          quantity?: number;
+          unit?: string;
+          imageUrl?: string;
+        };
+      };
+
+      if (result.status === "not_found") {
+        setLookupMessage("Product not found in Open Food Facts. You can complete the form manually.");
+      } else if (result.status === "error" || !res.ok) {
+        setLookupMessage(result.error || "Barcode lookup failed. Please enter the product manually.");
+      } else if (result.product) {
+        const product = result.product;
+        if (product.name) setName(product.name);
+        if (product.brand) setBrand(product.brand);
+        if (product.category) setCategory(product.category);
+        if (typeof product.quantity === "number" && product.quantity > 0) setQuantity(String(product.quantity));
+        if (product.unit) setUnit(product.unit);
+        if (product.imageUrl) setImageUrl(product.imageUrl);
+        if (product.barcode) setBarcode(product.barcode);
+
+        const missingFields = result.missingFields?.join(", ");
+        setLookupMessage(
+          result.status === "incomplete"
+            ? `Product found with limited data. Complete the missing fields${missingFields ? `: ${missingFields}` : ""}.`
+            : "Product found. Review the details before saving.",
+        );
+      } else {
+        setLookupMessage("The barcode response did not contain product data. Please enter it manually.");
+      }
+      setActiveTab("manual");
     } catch {
-      setLookupMessage("⚠ Network lookup failed. Please enter details manually.");
+      setLookupMessage("Barcode lookup failed. Please enter the product manually.");
       setActiveTab("manual");
     } finally {
       setLookupLoading(false);
@@ -391,6 +414,17 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                   {lookupMessage}
                 </div>
               )}
+
+              {(barcode || brand || imageUrl) && (
+                <div className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-4 text-sm text-[var(--shelf-muted)]">
+                  <p className="font-semibold text-[var(--shelf-dark)]">Barcode details</p>
+                  {barcode && <p className="mt-1">Barcode: {barcode}</p>}
+                  {brand && <p className="mt-1">Brand: {brand}</p>}
+                  {imageUrl && (
+                    <img src={imageUrl} alt={`${brand || name || "Product"} package`} className="mt-3 h-20 w-20 rounded-lg object-contain" />
+                  )}
+                </div>
+              )}
               
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
@@ -434,7 +468,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                     name="quantity"
                     type="number"
                     min="1"
-                    step="1"
+                    step="any"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     placeholder="e.g. 5"
@@ -472,6 +506,8 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                     className="w-full rounded-xl border border-[var(--shelf-border)] bg-transparent px-4 py-3 text-sm outline-none transition focus:border-[var(--shelf-forest)] font-mono"
                   />
                 </div>
+
+                <input type="hidden" name="imageUrl" value={imageUrl} />
               </div>
 
               {state.error && (
@@ -486,6 +522,8 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                   className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-5 py-3 text-sm font-semibold text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
                 >
                   Cancel
+
+                <input type="hidden" name="imageUrl" value={imageUrl} />
                 </Link>
                 <button
                   type="submit"
