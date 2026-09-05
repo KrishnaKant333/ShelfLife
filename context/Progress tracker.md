@@ -86,6 +86,9 @@ Signup is blocked until SMTP is configured. There is no local verification bypas
 - [x] Start Stage 12 performance and final visual QA
 - [x] Complete Stage 12 production build, diff hygiene, documentation, and final visual QA sign-off
 - [x] Start Stage 12 performance and final visual QA
+- [x] Post-roadmap follow-up: investigate and fix Scan Label upload/camera production failures
+- [x] Post-roadmap follow-up: add richer but controlled gradient atmosphere and keep scroll motion adjustable
+- [x] Post-roadmap follow-up: align Server Action upload limits, normalize label MIME types, harden camera readiness, add varied gradients, and make scroll reveals opt-in
 
 ## Do not break
 

@@ -12,7 +12,7 @@ The marketing hero and core Consumer, Business, and How It Works bands now use s
 
 The shared root body now provides a fixed top and bottom viewport-edge fog treatment on every scrollable route, including marketing, auth, and authenticated workspaces. It is implemented as pointer-transparent CSS gradients below navigation/dialog layers, does not change document flow, uses light/dark canvas tokens, and is reduced in height and opacity on handheld widths.
 
-The remaining marketing bands now use progressive CSS view-timeline reveals where supported, with fully visible static fallback content and explicit reduced-motion overrides. Stage 10 does not add 3D because no concrete comprehension benefit or performance case was established for this product.
+The remaining marketing bands retain progressive CSS view-timeline reveals as an opt-in enhancement through `.sl-scroll-motion`, with fully visible static content by default and explicit reduced-motion overrides. The default experience therefore remains calm and adjustable without removing the capability. Stage 10 does not add 3D because no concrete comprehension benefit or performance case was established for this product.
 
 ## 1. Objective
 Add only high-value motion and optional 3D where it improves understanding or brand distinctiveness.

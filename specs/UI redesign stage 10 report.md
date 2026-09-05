@@ -25,3 +25,7 @@ Date: 2026-09-06
 - No scroll-jacking, WebGL, Three.js, GSAP, or Framer Motion dependency was added.
 - No 3D effect was added to forms, tables, dashboards, or ordinary productivity interactions.
 - Performance instrumentation beyond build-level validation remains part of the final Stage 12 QA pass.
+
+## Follow-up note
+
+The edge-fog and scroll-reveal layers remain intentionally adjustable. The post-roadmap visual pass adds varied layered gradients, and scroll-timeline reveals are now opt-in through the `.sl-scroll-motion` class so the default experience stays calm while the enhancement remains available for later tuning.

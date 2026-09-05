@@ -35,7 +35,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
   const [expiryDate, setExpiryDate] = useState("");
 
   // Label scanning states
-  const [labelFile, setLabelFile] = useState<File | null>(null);
   const [labelLoading, setLabelLoading] = useState(false);
   const [labelError, setLabelError] = useState("");
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -50,7 +49,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
   );
 
   async function handleLabelFile(file: File) {
-    setLabelFile(file);
     setLabelError("");
     setLabelLoading(true);
 
@@ -72,7 +70,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
       setLabelError(err instanceof Error ? err.message : "Label scan failed.");
     } finally {
       setLabelLoading(false);
-      setLabelFile(null);
     }
   }
 
@@ -104,10 +101,16 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
       }
     };
 
+    const handleLoadedMetadata = () => {
+      void startPlayback();
+    };
+
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
     void startPlayback();
 
     return () => {
       cancelled = true;
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
       video.pause();
       if (video.srcObject === stream) video.srcObject = null;
     };
@@ -138,7 +141,19 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
 
   async function captureCameraFrame() {
     const video = videoRef.current;
-    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+    if (!video) {
+      setCameraError("The camera preview is unavailable. Try again or use Upload image.");
+      return;
+    }
+
+    try {
+      await video.play();
+    } catch {
+      setCameraError("The camera preview could not start. Check browser camera permission and try again.");
+      return;
+    }
+
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) {
       setCameraError("The camera is still starting. Try again in a moment.");
       return;
     }
@@ -268,7 +283,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                       autoPlay
                       muted
                       playsInline
-                      onCanPlay={() => void videoRef.current?.play()}
                       aria-label="Live camera preview"
                       className="aspect-[4/3] w-full rounded-xl bg-black object-cover"
                     />

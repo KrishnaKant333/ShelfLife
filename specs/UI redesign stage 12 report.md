@@ -22,3 +22,9 @@ Date: 2026-09-06
 ## Release boundary
 
 No late feature additions were made. Authentication, ownership, inventory calculations, AI safety, expiry rules, imports, exports, barcode deferral, and route contracts remain unchanged.
+
+## Post-roadmap follow-up opened
+
+Production follow-up now tracks two Scan Label (AI) failures reported after sign-off: unexpected Server Action responses during image upload and a React #441 failure during live camera capture. A controlled gradient-atmosphere adjustment and reversible scroll-motion tuning are also requested. These items are deliberately tracked separately from the completed Stage 12 QA record.
+
+Follow-up implementation is now complete: the Server Action size contract and image MIME handling are aligned, Groq failures are normalized, camera capture waits for a current playable frame, gradients are varied but controlled, and scroll-timeline enhancement is opt-in through `.sl-scroll-motion`.

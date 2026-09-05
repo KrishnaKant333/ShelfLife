@@ -5,7 +5,7 @@ import { z } from "zod";
 import { deriveExpiryDate } from "@/lib/expiry";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/jpeg", "image/png"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const labelExtractionSchema = z.object({
   name: z.string().nullable(),
@@ -27,8 +27,10 @@ export async function extractLabelAction(formData: FormData): Promise<LabelExtra
     throw new Error("Please upload a label image.");
   }
 
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    throw new Error("Only JPG and PNG images are supported for label scanning.");
+  const fileType = file.type || getImageTypeFromName(file.name);
+
+  if (!ALLOWED_TYPES.includes(fileType)) {
+    throw new Error("Only JPG, PNG, and WebP images are supported for label scanning.");
   }
 
   if (file.size > MAX_FILE_SIZE) {
@@ -38,9 +40,11 @@ export async function extractLabelAction(formData: FormData): Promise<LabelExtra
   const buffer = Buffer.from(await file.arrayBuffer());
   const base64 = buffer.toString("base64");
 
-  const response = await groq.chat.completions.create({
-    model: "qwen/qwen3.6-27b",
-    messages: [
+  let response;
+  try {
+    response = await groq.chat.completions.create({
+      model: "qwen/qwen3.6-27b",
+      messages: [
       {
         role: "system",
         content: `
@@ -82,17 +86,21 @@ Expected JSON format:
           {
             type: "image_url",
             image_url: {
-              url: `data:${file.type};base64,${base64}`,
+              url: `data:${fileType};base64,${base64}`,
             },
           },
         ],
       },
-    ],
-    response_format: {
-      type: "json_object",
-    },
-    temperature: 0,
-  });
+      ],
+      response_format: {
+        type: "json_object",
+      },
+      temperature: 0,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "The label scanning service is unavailable.";
+    throw new Error(`Label scanning failed: ${message}`);
+  }
 
   const content = response.choices[0]?.message?.content;
 
@@ -110,4 +118,12 @@ Expected JSON format:
   } catch (err) {
     throw new Error("Failed to parse extracted product details: " + (err instanceof Error ? err.message : String(err)));
   }
+}
+
+function getImageTypeFromName(name: string) {
+  const extension = name.toLowerCase().split(".").pop();
+  if (extension === "png") return "image/png";
+  if (extension === "webp") return "image/webp";
+  if (extension === "jpg" || extension === "jpeg") return "image/jpeg";
+  return "";
 }

@@ -229,16 +229,41 @@ a {
   isolation: isolate;
   background:
     radial-gradient(
-      circle at 15% 20%,
-      rgba(144, 169, 85, 0.12),
-      transparent 82%
+      ellipse at 12% 8%,
+      color-mix(in srgb, var(--sl-color-action-soft) 82%, transparent),
+      transparent 42%
     ),
     radial-gradient(
-      circle at 85% 70%,
-      rgba(49, 87, 44, 0.08),
-      transparent 30%
+      ellipse at 88% 22%,
+      color-mix(in srgb, var(--sl-color-info) 8%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      118deg,
+      color-mix(in srgb, var(--sl-color-action-soft) 24%, transparent),
+      transparent 32%,
+      color-mix(in srgb, var(--sl-color-warning) 5%, transparent) 68%,
+      transparent
     ),
     var(--shelf-cream);
+}
+
+.shelf-background > section:nth-of-type(3n + 1) {
+  background-image: linear-gradient(
+    132deg,
+    color-mix(in srgb, var(--sl-color-action-soft) 16%, transparent),
+    transparent 46%
+  );
+  background-blend-mode: soft-light;
+}
+
+.shelf-background > section:nth-of-type(3n + 2) {
+  background-image: linear-gradient(
+    224deg,
+    color-mix(in srgb, var(--sl-color-info) 7%, transparent),
+    transparent 52%
+  );
+  background-blend-mode: soft-light;
 }
 
 /* Fixed viewport-edge fog keeps every scrollable surface atmospheric without
@@ -286,14 +311,21 @@ a {
 .dark .shelf-background {
   background:
     radial-gradient(
-      circle at 15% 20%,
-      rgba(109, 191, 103, 0.06),
-      transparent 28%
+      ellipse at 12% 8%,
+      color-mix(in srgb, var(--sl-color-action-soft) 78%, transparent),
+      transparent 42%
     ),
     radial-gradient(
-      circle at 85% 70%,
-      rgba(109, 191, 103, 0.04),
-      transparent 30%
+      ellipse at 88% 22%,
+      color-mix(in srgb, var(--sl-color-info) 7%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      118deg,
+      color-mix(in srgb, var(--sl-color-action-soft) 22%, transparent),
+      transparent 32%,
+      color-mix(in srgb, var(--sl-color-warning) 4%, transparent) 68%,
+      transparent
     ),
     var(--shelf-cream);
 }
@@ -414,7 +446,7 @@ a {
 /* Scroll reveals are progressive enhancement: without view-timeline support,
    these elements remain fully visible in their normal static layout. */
 @supports (animation-timeline: view()) {
-  .sl-scroll-reveal {
+  .sl-scroll-motion .sl-scroll-reveal {
     animation: sl-fade-up linear both;
     animation-range: entry 0% cover 24%;
     animation-timeline: view();

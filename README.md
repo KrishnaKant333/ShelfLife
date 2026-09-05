@@ -112,6 +112,10 @@ The staged UI redesign through Stage 12 is complete. Stage 11 completed mobile d
 
 The redesign prioritizes a reusable design system, intentional light/dark themes, expressive marketing, restrained productivity dashboards, mobile-first task flows, accessible motion, and performance. It does not change business logic or architecture, and barcode scanning remains deferred/hidden.
 
+## Post-roadmap follow-up (2026-09-06)
+
+The maintenance pass fixed two Scan Label (AI) production paths and one visual adjustment: Server Action uploads now support the configured 20MB image ceiling with MIME normalization and stable Groq failure messages; live camera capture now centralizes stream attachment/playback and waits for a current frame before capture; public backgrounds now use varied layered gradients, while scroll-timeline reveals remain adjustable through an opt-in class. Existing extraction, expiry-safety, route, and inventory contracts remain unchanged.
+
 ## Final audit status (2026-09-05)
 
 Audited route protection, account-type isolation, ownership checks, responsive layouts, Light/Dark/System theme tokens, async actions, empty/error states, form validation, keyboard semantics, feedback patterns, metadata, links, and placeholder functionality. No native browser `alert`, `confirm`, or `prompt` calls remain in `src`.
