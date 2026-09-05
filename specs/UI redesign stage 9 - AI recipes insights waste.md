@@ -1,5 +1,11 @@
 # Stage 9 - AI, Recipes, Insights, and Waste Experiences
 
+Status: Complete.
+
+## Current checkpoint
+
+Stage 9 is complete after the Stage 8 visualization pass. The deterministic analytics layer now provides the baseline for transparent AI, recipe safety, waste actions, and strategy recommendations. AI output is labeled as advisory based on current inventory, loading/failure/generated states are announced, recipe mode selection is semantic, recipe and waste dialogs are mobile-safe and accessible, and safety/consumption boundaries remain unchanged.
+
 ## 1. Objective
 Make AI-assisted and waste-reduction workflows feel useful, safe, transparent, and calm rather than gimmicky.
 

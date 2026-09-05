@@ -133,7 +133,7 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
           Inventory Strategy
         </h1>
         <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-          Real-time strategic analysis of stock levels, category expiry densities, and FIFO prioritization.
+          Current operational snapshot of stock levels, category expiry density, and FIFO prioritization.
         </p>
       </div>
 
@@ -190,7 +190,7 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
               Category Expiry Risk
             </h3>
             <p className="mt-1 text-xs text-[var(--shelf-muted)]">
-              Proportion of stock in each category expiring within 7 days.
+              Proportion of current stock in each category expiring within 7 days.
             </p>
 
             <div className="mt-6 space-y-4">
@@ -207,7 +207,7 @@ export default function StrategyView({ inventory }: StrategyViewProps) {
                         {exp.expiringQty} / {exp.totalQty} expiring
                       </span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                    <div role="progressbar" aria-label={`${exp.category}: ${exp.expiringQty} of ${exp.totalQty} units expiring`} aria-valuemin={0} aria-valuemax={exp.totalQty || 1} aria-valuenow={exp.expiringQty} className="h-2 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
                       <div
                         className={`h-full rounded-full ${
                           exp.riskRatio > 50

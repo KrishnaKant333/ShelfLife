@@ -113,7 +113,7 @@ function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
+    <div className="mx-auto max-w-5xl space-y-6 md:space-y-8">
       {/* Page Header */}
       <div>
         <p className="text-sm font-semibold text-[var(--shelf-forest)]">
@@ -123,7 +123,7 @@ function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
           Waste & Shelf Insights
         </h1>
         <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-          Track expiry risks, manage upcoming stock warnings, and prioritize items needing immediate consumption.
+          Current snapshot of expiry risk, stock warnings, and items needing immediate consumption.
         </p>
       </div>
 
@@ -140,7 +140,7 @@ function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
             </p>
 
             <div className="mt-6 flex flex-col items-center justify-center">
-              <div className="relative flex items-center justify-center h-32 w-32 rounded-full border-8 border-[var(--shelf-cream)]">
+              <div role="img" aria-label={`Waste risk score: ${riskScore} out of 100, ${riskLevel}`} className="relative flex items-center justify-center h-32 w-32 rounded-full border-8 border-[var(--shelf-cream)]">
                 {/* Visual indicator of score */}
                 <span className="text-4xl font-extrabold text-[var(--shelf-dark)]">
                   {riskScore}
@@ -148,6 +148,10 @@ function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
                 <span className="absolute bottom-4 text-[10px] font-bold text-[var(--shelf-muted)]">
                   / 100
                 </span>
+              </div>
+
+              <div role="progressbar" aria-label={`Waste risk: ${riskScore} percent`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={riskScore} className="mt-4 h-2 w-full max-w-48 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                <div className={`h-full rounded-full ${riskBarColor}`} style={{ width: `${riskScore}%` }} />
               </div>
 
               <span className={`mt-6 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${riskColor}`}>
@@ -309,14 +313,15 @@ function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
       {/* Consume Modal */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative flex flex-col w-full max-w-sm bg-[var(--shelf-surface)] rounded-2xl shadow-xl border border-[var(--shelf-border)] overflow-hidden">
+          <div role="dialog" aria-modal="true" aria-labelledby="use-product-title" className="relative flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-xl">
             <div className="p-5 border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40">
-              <h3 className="text-lg font-bold text-[var(--shelf-dark)]">Use Product</h3>
+              <h3 id="use-product-title" className="text-lg font-bold text-[var(--shelf-dark)]">Use Product</h3>
               <p className="text-xs text-[var(--shelf-muted)] mt-0.5">
                 Mark {selectedItem.name} as used or consumed.
               </p>
               <button
                 onClick={() => setSelectedItem(null)}
+                aria-label="Close use product dialog"
                 className="absolute top-5 right-5 text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
               >
                 <X size={18} />
@@ -333,6 +338,8 @@ function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
                     type="number"
                     min={1}
                     max={selectedItem.quantity}
+                    inputMode="numeric"
+                    aria-label={`Quantity of ${selectedItem.name} to consume`}
                     value={useQuantity}
                     onChange={(e) => {
                       const val = Math.min(
@@ -341,7 +348,7 @@ function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
                       );
                       setUseQuantity(val);
                     }}
-                    className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-2.5 font-bold text-center text-sm outline-none focus:border-[var(--shelf-forest)]"
+                    className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-2.5 text-center text-sm font-bold outline-none"
                   />
                   <span className="text-sm font-semibold text-[var(--shelf-dark)]">
                     / {selectedItem.quantity} {selectedItem.unit}
@@ -350,17 +357,17 @@ function WasteViewInner({ inventory, isBusiness = false }: WasteViewProps) {
               </div>
             </div>
 
-            <div className="p-4 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 flex justify-end gap-3">
+            <div className="flex flex-col-reverse gap-3 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-4 sm:flex-row sm:justify-end">
               <button
                 onClick={() => setSelectedItem(null)}
-                className="rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)]"
+                className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmUse}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--shelf-forest)] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                className="sl-focus-ring inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--shelf-forest)] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
               >
                 Confirm Use
               </button>

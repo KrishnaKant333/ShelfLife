@@ -1,5 +1,11 @@
 # Stage 8 - Analytics, Charts, and Data Visualization
 
+Status: In progress.
+
+## Current checkpoint
+
+Stage 8 has started after the Stage 7 camera preview fix and production build verification. The existing deterministic analytics, strategy, and waste surfaces are the implementation anchors. The first analytics slice now labels the view as a current snapshot, exposes progress values through ARIA, adds plain-language expiry summaries, tightens mobile chart panels, and links to account-correct alert routes without changing formulas or adding historical claims.
+
 ## 1. Objective
 Turn current deterministic analytics into legible, trustworthy visual explanations without fabricating historical data.
 

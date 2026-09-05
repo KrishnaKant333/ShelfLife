@@ -4,7 +4,7 @@ Status: Complete.
 
 ## Current checkpoint
 
-The shared Add Product flow now has compact mobile field spacing, keyboard-friendly numeric entry, focus treatment, live server errors, and a sticky mobile save/cancel row. Scan Label (AI) offers a real in-page camera preview and capture action alongside existing-image upload, feeding the same editable Groq extraction result. Consumer and business CSV and invoice review use focused editable mobile cards while retaining desktop tables, with responsive upload spacing and live parse/import feedback. Edit forms share the same mobile action and accessibility treatment.
+The shared Add Product flow now has compact mobile field spacing, keyboard-friendly numeric entry, focus treatment, live server errors, and a sticky mobile save/cancel row. Scan Label (AI) offers a real in-page camera preview and capture action alongside existing-image upload, feeding the same editable Groq extraction result; preview startup explicitly attaches and plays the acquired stream and reports permission/playback failures. Consumer and business CSV and invoice review use focused editable mobile cards while retaining desktop tables, with responsive upload spacing and live parse/import feedback. Edit forms share the same mobile action and accessibility treatment.
 
 ## 1. Objective
 Make product entry fast, low-friction, and reliable on handheld devices without reintroducing barcode scanning.

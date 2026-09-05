@@ -157,7 +157,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-[var(--shelf-terracotta)]/20 bg-[var(--shelf-terracotta)]/10 p-4 text-sm text-[var(--shelf-terracotta)] flex items-start gap-3">
+        <div role="alert" aria-live="assertive" className="rounded-xl border border-[var(--shelf-terracotta)]/20 bg-[var(--shelf-terracotta)]/10 p-4 text-sm text-[var(--shelf-terracotta)] flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--shelf-terracotta)] mt-0.5" />
           <div>
             <h4 className="font-semibold text-[var(--shelf-terracotta)]">Recipe Generation Failed</h4>
@@ -192,6 +192,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
                 <button
                   key={mode.value}
                   onClick={() => setRecipeMode(mode.value)}
+                  aria-pressed={recipeMode === mode.value}
                   className={`text-left rounded-xl border-2 p-4 transition ${
                     recipeMode === mode.value
                       ? "border-[var(--shelf-forest)] bg-[var(--shelf-cream)]/60 shadow-sm"
@@ -233,7 +234,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
         </div>
       ) : loading ? (
         /* Loading state */
-        <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-4">
+        <div role="status" aria-live="polite" className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-4">
           <Loader2 className="h-10 w-10 animate-spin text-[var(--shelf-forest)]" />
           <h3 className="text-lg font-bold text-[var(--shelf-dark)]">Finding recipes...</h3>
           <p className="text-sm text-[var(--shelf-muted)] max-w-xs">
@@ -268,7 +269,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
             </button>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div aria-label="Generated recipe results" className="grid gap-6 md:grid-cols-2">
             {recipes.map((recipe) => (
               <div
                 key={recipe.name}
@@ -348,7 +349,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
       {/* Recipe Detail Modal */}
       {selectedRecipe && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative flex flex-col w-full max-w-2xl max-h-[85vh] bg-[var(--shelf-surface)] rounded-2xl shadow-xl overflow-hidden border border-[var(--shelf-border)]">
+          <div role="dialog" aria-modal="true" aria-labelledby="recipe-detail-title" className="relative flex w-full max-w-2xl flex-col max-h-[85vh] overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-xl">
             
             {/* Modal Header */}
             <div className="p-6 border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40 pr-12">
@@ -356,7 +357,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
                 <Clock size={14} />
                 <span>{selectedRecipe.estimatedPrepTime} min preparation</span>
               </div>
-              <h2 className="mt-1 text-2xl font-bold text-[var(--shelf-dark)]">
+              <h2 id="recipe-detail-title" className="mt-1 text-2xl font-bold text-[var(--shelf-dark)]">
                 {selectedRecipe.name}
               </h2>
               <p className="mt-2 text-sm text-[var(--shelf-muted)]">
@@ -365,6 +366,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
               
               <button
                 onClick={handleCloseRecipe}
+                aria-label="Close recipe details"
                 className="absolute top-6 right-6 text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)] rounded-lg p-1.5 hover:bg-[var(--shelf-cream)]"
               >
                 <X size={20} />
@@ -417,6 +419,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
                           {ing.itemId ? (
                             <input
                               type="checkbox"
+                              aria-label={`Use ${ing.name} from inventory`}
                               checked={!!consumeSelected[ing.itemId]}
                               onChange={(e) => {
                                 setConsumeSelected({
@@ -475,7 +478,9 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
                                     [ing.itemId!]: val,
                                   });
                                 }}
-                                className="w-12 rounded-lg border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/20 py-1 text-center text-xs font-bold focus:outline-none focus:border-[var(--shelf-forest)]"
+                                inputMode="numeric"
+                                aria-label={`Quantity of ${ing.name} to use`}
+                                className="sl-focus-ring w-12 rounded-lg border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/20 py-1 text-center text-xs font-bold"
                               />
                               <span className="text-xs text-[var(--shelf-muted)]">{matchedItem.unit}</span>
                             </div>
@@ -504,10 +509,10 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 flex justify-between gap-3">
+            <div className="flex flex-col-reverse gap-3 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-4 sm:flex-row sm:justify-between">
               <button
                 onClick={handleCloseRecipe}
-                className="rounded-xl border border-[var(--shelf-border)] px-5 py-2.5 text-sm font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] transition"
+                className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] px-5 py-2.5 text-sm font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] transition"
               >
                 Close
               </button>
@@ -515,7 +520,7 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
               <button
                 onClick={handleMarkConsumed}
                 disabled={consuming}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition shadow-xs"
+                className="sl-focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition shadow-xs"
               >
                 {consuming && <Loader2 className="h-4.5 w-4.5 animate-spin" />}
                 Mark ingredients as used

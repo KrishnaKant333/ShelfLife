@@ -83,15 +83,33 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
   }
 
   useEffect(() => {
-    if (cameraOpen && cameraStreamRef.current && videoRef.current) {
-      videoRef.current.srcObject = cameraStreamRef.current;
-    }
+    if (!cameraOpen || !cameraStreamRef.current || !videoRef.current) return;
+
+    const video = videoRef.current;
+    const stream = cameraStreamRef.current;
+    let cancelled = false;
+
+    video.srcObject = stream;
+    video.muted = true;
+    video.playsInline = true;
+
+    const startPlayback = async () => {
+      try {
+        await video.play();
+        if (!cancelled) setCameraError("");
+      } catch {
+        if (!cancelled) {
+          setCameraError("The camera preview could not start. Check browser camera permission and try again.");
+        }
+      }
+    };
+
+    void startPlayback();
 
     return () => {
-      if (!cameraOpen) {
-        cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
-        cameraStreamRef.current = null;
-      }
+      cancelled = true;
+      video.pause();
+      if (video.srcObject === stream) video.srcObject = null;
     };
   }, [cameraOpen]);
 
@@ -250,6 +268,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                       autoPlay
                       muted
                       playsInline
+                      onCanPlay={() => void videoRef.current?.play()}
                       aria-label="Live camera preview"
                       className="aspect-[4/3] w-full rounded-xl bg-black object-cover"
                     />

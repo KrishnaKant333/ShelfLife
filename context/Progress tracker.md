@@ -68,6 +68,14 @@ Signup is blocked until SMTP is configured. There is no local verification bypas
 - [x] Start Stage 7 product entry: mobile Add Product flow and consumer CSV review cards
 - [x] Stage 7 camera capture: native camera action alongside label image upload with shared editable Groq extraction
 - [x] Complete Stage 7 product entry: invoice review cards, edit-form parity, and mobile save/accessibility polish
+- [x] Stage 7 camera playback fix: explicit stream attachment, playback start, canplay retry, and stale-source cleanup
+- [x] Start Stage 8 analytics and data visualization: preserve deterministic formulas while preparing responsive chart improvements
+- [x] Stage 8 analytics checkpoint: snapshot scope, accessible progress values, plain-language risk summary, and route-safe alert action
+- [x] Complete Stage 8 analytics: accessible snapshot visualizations, strategy exposure semantics, waste-risk progress, and responsive chart panels
+- [x] Start Stage 9 AI, recipes, insights, and waste experiences
+- [x] Stage 9 transparency checkpoint: AI advisory labeling, live status/error announcements, recipe mode semantics, and waste dialog labeling
+- [x] Complete Stage 9 AI, recipes, insights, and waste: safe recipe dialogs, consumption labels, mobile action flows, and waste feedback
+- [x] Start Stage 10 advanced motion, scroll storytelling, and selective 3D
 
 ## Do not break
 

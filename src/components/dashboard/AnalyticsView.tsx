@@ -10,6 +10,7 @@ import {
   Package2,
   PieChart,
 } from "lucide-react";
+import Link from "next/link";
 
 type InventoryItem = {
   id: number;
@@ -22,9 +23,10 @@ type InventoryItem = {
 
 interface AnalyticsViewProps {
   inventory: InventoryItem[];
+  isBusiness?: boolean;
 }
 
-export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
+export default function AnalyticsView({ inventory, isBusiness = false }: AnalyticsViewProps) {
   const totalItems = inventory.length;
 
   // 1. Expiry Distribution Calculations
@@ -107,7 +109,10 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
           Inventory Intelligence
         </h1>
         <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-          Operational metrics and expiration analysis calculated directly from database records.
+          Current inventory snapshot calculated directly from database records. This view does not represent historical trends.
+        </p>
+        <p className="mt-3 text-xs font-semibold text-[var(--shelf-blue)]">
+          {totalItems === 0 ? "No inventory is currently tracked." : `${totalItems} tracked products across ${categoryDistribution.length} categories.`}
         </p>
       </div>
 
@@ -160,9 +165,9 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
       <div className="grid gap-6 md:grid-cols-2">
         
         {/* Chart 1: Expiry Distribution */}
-        <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm flex flex-col justify-between">
+        <section aria-labelledby="expiry-distribution-title" className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm flex flex-col justify-between md:p-6">
           <div>
-            <h3 className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider flex items-center gap-1.5">
+            <h3 id="expiry-distribution-title" className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider flex items-center gap-1.5">
               <Calendar size={16} className="text-[var(--shelf-blue)]" />
               Expiry Distribution
             </h3>
@@ -177,7 +182,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                   <span className="text-[var(--shelf-dark)]">Expired</span>
                   <span className="text-[var(--shelf-muted)]">{expired} items ({pct(expired)}%)</span>
                 </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                <div role="progressbar" aria-label={`Expired products: ${expired} of ${totalItems}`} aria-valuemin={0} aria-valuemax={totalItems || 1} aria-valuenow={expired} className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
                   <div className="h-full rounded-full bg-[var(--shelf-terracotta)]" style={{ width: `${pct(expired)}%` }} />
                 </div>
               </div>
@@ -188,7 +193,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                   <span className="text-[var(--shelf-dark)]">0–3 Days (Critical)</span>
                   <span className="text-[var(--shelf-muted)]">{critical} items ({pct(critical)}%)</span>
                 </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                <div role="progressbar" aria-label={`Critical products: ${critical} of ${totalItems}`} aria-valuemin={0} aria-valuemax={totalItems || 1} aria-valuenow={critical} className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
                   <div className="h-full rounded-full bg-[var(--shelf-amber)]" style={{ width: `${pct(critical)}%` }} />
                 </div>
               </div>
@@ -199,7 +204,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                   <span className="text-[var(--shelf-dark)]">4–7 Days (Warning)</span>
                   <span className="text-[var(--shelf-muted)]">{warning} items ({pct(warning)}%)</span>
                 </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                <div role="progressbar" aria-label={`Warning products: ${warning} of ${totalItems}`} aria-valuemin={0} aria-valuemax={totalItems || 1} aria-valuenow={warning} className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
                   <div className="h-full rounded-full bg-[var(--shelf-amber)]/60" style={{ width: `${pct(warning)}%` }} />
                 </div>
               </div>
@@ -210,7 +215,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                   <span className="text-[var(--shelf-dark)]">8–30 Days (Medium)</span>
                   <span className="text-[var(--shelf-muted)]">{short} items ({pct(short)}%)</span>
                 </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                <div role="progressbar" aria-label={`Medium shelf-life products: ${short} of ${totalItems}`} aria-valuemin={0} aria-valuemax={totalItems || 1} aria-valuenow={short} className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
                   <div className="h-full rounded-full bg-[var(--shelf-blue)]" style={{ width: `${pct(short)}%` }} />
                 </div>
               </div>
@@ -221,18 +226,22 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                   <span className="text-[var(--shelf-dark)]">30+ Days (Fresh)</span>
                   <span className="text-[var(--shelf-muted)]">{long} items ({pct(long)}%)</span>
                 </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                <div role="progressbar" aria-label={`Fresh products: ${long} of ${totalItems}`} aria-valuemin={0} aria-valuemax={totalItems || 1} aria-valuenow={long} className="h-2.5 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
                   <div className="h-full rounded-full bg-[var(--shelf-sage)]" style={{ width: `${pct(long)}%` }} />
                 </div>
               </div>
             </div>
+            <p className="mt-4 text-xs leading-5 text-[var(--shelf-muted)]">
+              {expired + critical > 0 ? `${expired + critical} products need immediate attention.` : "No products are expired or critically close to expiry."}
+            </p>
           </div>
+          <Link href={isBusiness ? "/business/dashboard/alerts" : "/dashboard/alerts"} className="mt-4 inline-flex text-xs font-semibold text-[var(--shelf-forest)] hover:underline">Review inventory alerts</Link>
         </section>
 
         {/* Chart 2: Category Distribution */}
-        <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm flex flex-col justify-between">
+        <section aria-labelledby="category-distribution-title" className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm flex flex-col justify-between md:p-6">
           <div>
-            <h3 className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider flex items-center gap-1.5">
+            <h3 id="category-distribution-title" className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider flex items-center gap-1.5">
               <PieChart size={16} className="text-[var(--shelf-blue)]" />
               Category distribution
             </h3>
@@ -250,7 +259,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                       <span className="text-[var(--shelf-dark)] truncate">{item.category}</span>
                       <span className="text-[var(--shelf-muted)]">{item.count} items ({item.percentage}%)</span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                    <div role="progressbar" aria-label={`${item.category}: ${item.count} products`} aria-valuemin={0} aria-valuemax={totalItems || 1} aria-valuenow={item.count} className="h-2 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
                       <div className="h-full rounded-full bg-[var(--shelf-forest)]" style={{ width: `${item.percentage}%` }} />
                     </div>
                   </div>
@@ -261,9 +270,9 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
         </section>
 
         {/* Chart 3: Quantity by Category */}
-        <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm flex flex-col justify-between">
+        <section aria-labelledby="quantity-category-title" className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--sl-color-surface)] p-5 shadow-sm flex flex-col justify-between md:p-6">
           <div>
-            <h3 className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider flex items-center gap-1.5">
+            <h3 id="quantity-category-title" className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider flex items-center gap-1.5">
               <BarChart3 size={16} className="text-[var(--shelf-blue)]" />
               Quantity by Category
             </h3>
@@ -281,7 +290,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
                       <span className="text-[var(--shelf-dark)] truncate">{item.category}</span>
                       <span className="text-[var(--shelf-muted)]">{item.quantity} units ({item.percentage}%)</span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
+                    <div role="progressbar" aria-label={`${item.category}: ${item.quantity} units`} aria-valuemin={0} aria-valuemax={totalQuantity || 1} aria-valuenow={item.quantity} className="h-2 overflow-hidden rounded-full bg-[var(--shelf-cream)]">
                       <div className="h-full rounded-full bg-[var(--shelf-sage)]" style={{ width: `${item.percentage}%` }} />
                     </div>
                   </div>
@@ -292,9 +301,9 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
         </section>
 
         {/* Chart 4: Inventory Health */}
-        <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm flex flex-col justify-between">
+        <section aria-labelledby="health-score-title" className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-sm flex flex-col justify-between md:p-6">
           <div>
-            <h3 className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider flex items-center gap-1.5">
+            <h3 id="health-score-title" className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider flex items-center gap-1.5">
               <Activity size={16} className="text-[var(--shelf-blue)]" />
               Inventory Health Score
             </h3>
@@ -303,7 +312,7 @@ export default function AnalyticsView({ inventory }: AnalyticsViewProps) {
             </p>
 
             <div className="mt-6 flex flex-col items-center justify-center py-4">
-              <div className="relative flex items-center justify-center h-28 w-28 rounded-full border-8 border-[var(--shelf-cream)]">
+              <div role="img" aria-label={`Inventory health score: ${healthScore} percent`} className="relative flex items-center justify-center h-28 w-28 rounded-full border-8 border-[var(--shelf-cream)]">
                 <span className="text-3xl font-black text-[var(--shelf-dark)]">
                   {healthScore}%
                 </span>

@@ -8,6 +8,7 @@ Date: 2026-09-05
 - Added a native `Capture with camera` action to the Scan Label (AI) tab for consumer and business product entry.
 - Kept `Upload image` as a separate action for an existing gallery/file image.
 - Replaced the browser-only capture hint with a real in-page `getUserMedia` camera preview, rear-camera preference, canvas JPEG capture, camera permission/error handling, and cleanup on close/unmount.
+- Hardened preview startup by explicitly attaching the stream, calling `video.play()` after acquisition, retrying on `canplay`, and clearing stale media sources on close so the camera does not remain as a black frame.
 - Both camera and upload actions use the existing Groq label extraction handler and populate the same editable manual form; no extraction, expiry-safety, or save logic changed.
 - Added accessible focus treatment, touch-sized controls, extraction error live-region feedback, and explanatory copy that confirms extracted values remain editable.
 - Preserved the existing three product-entry options: Manual Form, Scan Label (AI), and Bulk Import.

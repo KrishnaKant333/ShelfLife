@@ -1,5 +1,11 @@
 # Stage 10 - Advanced Motion, Scroll Storytelling, and Selective 3D
 
+Status: In progress.
+
+## Current checkpoint
+
+Stage 10 is active after completion of the AI, recipe, insight, and waste experience pass. Motion work must remain selective, responsive, reduced-motion safe, and subordinate to task clarity; any 3D use requires clear product value and performance evidence.
+
 ## 1. Objective
 Add only high-value motion and optional 3D where it improves understanding or brand distinctiveness.
 

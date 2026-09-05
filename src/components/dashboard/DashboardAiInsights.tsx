@@ -71,9 +71,9 @@ export default function DashboardAiInsights({ cacheKey, inventory = [] }: Dashbo
   const recipeUrl = "/dashboard/recipes";
 
   return (
-    <section className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
+    <section aria-labelledby={`${cacheKey}-ai-brief-title`} className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-base font-bold text-[var(--shelf-dark)] flex items-center gap-1.5">
+        <h3 id={`${cacheKey}-ai-brief-title`} className="text-base font-bold text-[var(--shelf-dark)] flex items-center gap-1.5">
           <Sparkles className="h-4.5 w-4.5 text-[var(--shelf-forest)] animate-pulse" />
           {dashboardLabel}
         </h3>
@@ -109,12 +109,12 @@ export default function DashboardAiInsights({ cacheKey, inventory = [] }: Dashbo
       {/* AI Insight Text */}
       <div className="mt-4">
         {loading ? (
-          <div className="flex items-center gap-2 text-xs text-[var(--shelf-muted)] py-3">
+          <div role="status" aria-live="polite" className="flex items-center gap-2 text-xs text-[var(--shelf-muted)] py-3">
             <Loader2 className="h-4.5 w-4.5 animate-spin text-[var(--shelf-forest)]" />
             <span>Analyzing stock levels and preparing insights...</span>
           </div>
         ) : error ? (
-          <div className="text-xs text-[var(--shelf-muted)] flex flex-col items-start gap-2">
+          <div role="alert" aria-live="polite" className="text-xs text-[var(--shelf-muted)] flex flex-col items-start gap-2">
             <p>Advisory updates are temporarily offline.</p>
             <button
               onClick={() => fetchInsights(true)}
@@ -125,7 +125,8 @@ export default function DashboardAiInsights({ cacheKey, inventory = [] }: Dashbo
           </div>
         ) : (
           <>
-            <div className="rounded-xl bg-[var(--shelf-cream)]/40 border border-[var(--shelf-border)]/50 p-3 text-sm text-[var(--shelf-dark)] leading-relaxed italic">
+            <div aria-label="AI-generated advisory, based on current inventory" className="rounded-xl bg-[var(--shelf-cream)]/40 border border-[var(--shelf-border)]/50 p-3 text-sm text-[var(--shelf-dark)] leading-relaxed italic">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider not-italic text-[var(--shelf-muted)]">AI advisory · current inventory</p>
               &ldquo;{insight || (cacheKey === "business" ? "No active inventory concerns." : "Your inventory is looking fresh!")}&rdquo;
             </div>
 
