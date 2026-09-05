@@ -7,7 +7,7 @@ This is the authoritative ordered task list. Inspect the implementation before e
 1. [x] Discard all expired items. Added an ownership-safe confirmed action to the shared inventory view and revalidated affected dashboards/recipes.
 2. [x] Complete quantity/unit normalization. Added aliases, decimal quantities, compatible conversions, and explicit incompatible-unit behavior across validation and sorting.
 3. [x] Handle ambiguous/missing expiry in AI, import, and label flows. Added evidence-based derivation and `Expiry not available` / `Not trackable` handling.
-4. [x] Add email verification. Added persisted state, secure expiring tokens, SMTP delivery, verification route, and login enforcement. Deployment requires SMTP environment variables.
+4. [x] Add strict email verification. Signup sends a real email and shows a standby pending page; only clicking the emailed token creates the Auth.js session and redirects automatically to the correct dashboard. Signup is blocked when SMTP is unavailable.
 
 Checkpoint: run `npm run build`, exercise consumer and business paths, and fix regressions.
 
@@ -20,7 +20,7 @@ Checkpoint: run `npm run build`, exercise consumer and business paths, and fix r
 9. [x] Inventory history/activity tracking for consumption and discard.
 10. [x] Product consumption/discard history records with quantities.
 11. [x] Inventory sorting by expiry, quantity, name, and recently added alongside existing search/filter.
-12. [x] Notification center for expiry, low-stock, and waste-related attention.
+12. [x] Top-right notification center for expiry, low-stock, and waste-related attention.
 
 Checkpoint: run `npm run build` and test both account types and responsive layouts.
 

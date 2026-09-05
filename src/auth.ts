@@ -2,14 +2,19 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { createHash } from "node:crypto";
 
 import { db } from "@/prisma/db";
 
 const credentialsSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().email().optional(),
+  password: z.string().min(1).optional(),
+  verificationToken: z.string().optional(),
   accountType: z.enum(["consumer", "business"]),
-});
+}).refine(
+  (value) => Boolean(value.verificationToken || (value.email && value.password)),
+  { message: "Credentials are incomplete." },
+);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -17,6 +22,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: {},
         password: {},
+        verificationToken: {},
         accountType: {},
       },
 
@@ -27,19 +33,48 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const { email, password, accountType } = result.data;
+        const { email, password, verificationToken, accountType } = result.data;
+
+        if (verificationToken) {
+          const tokenHash = createHash("sha256").update(verificationToken).digest("hex");
+          const user = await db.orm.public.User.first({
+            emailVerificationTokenHash: tokenHash,
+          });
+
+          if (
+            !user ||
+            !user.emailVerificationExpiresAt ||
+            new Date(user.emailVerificationExpiresAt).getTime() < Date.now() ||
+            user.accountType !== accountType
+          ) {
+            return null;
+          }
+
+          await db.orm.public.User.where({ id: user.id }).update({
+            emailVerifiedAt: new Date().toISOString(),
+            emailVerificationTokenHash: null,
+            emailVerificationExpiresAt: null,
+          });
+
+          return {
+            id: String(user.id),
+            name: user.name,
+            email: user.email,
+            accountType: user.accountType,
+            businessId: user.businessId ? String(user.businessId) : undefined,
+            plan: user.plan,
+          };
+        }
 
         const user = await db.orm.public.User.first({
-          email: email.toLowerCase(),
+          email: email!.toLowerCase(),
         });
 
         if (!user || !user.passwordHash) {
           return null;
         }
 
-        // Existing accounts predate verification and have no token to complete.
-        // Only block accounts that were explicitly issued an unverified token.
-        if (!user.emailVerifiedAt && user.emailVerificationTokenHash) {
+        if (!user.emailVerifiedAt) {
           return null;
         }
 
@@ -48,7 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const passwordValid = await bcrypt.compare(
-          password,
+          password!,
           user.passwordHash,
         );
 

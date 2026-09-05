@@ -3,7 +3,10 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Menu } from "lucide-react";
+import { Bell } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { getInventoryStatus } from "@/lib/inventory-status";
 
 type InventoryItem = {
   id: number;
@@ -27,6 +30,11 @@ interface DashboardShellProps {
 export default function DashboardShell({ children, user, inventory = [] }: DashboardShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const prefix = user.accountType === "business" ? "/business/dashboard" : "/dashboard";
+  const alertCount = inventory.reduce((count, item) => {
+    const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
+    return status === "Expired" || status === "Expiring" || status === "Low Stock" ? count + 1 : count;
+  }, 0);
 
   return (
     <div className="min-h-screen bg-[var(--shelf-cream)] flex flex-col lg:flex-row">
@@ -40,12 +48,19 @@ export default function DashboardShell({ children, user, inventory = [] }: Dashb
           className="h-8 w-auto object-contain"
           priority
         />
-        <button
-          onClick={() => setMobileMenuOpen(true)}
-          className="rounded-lg p-1.5 text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)] hover:text-[var(--shelf-dark)]"
-        >
-          <Menu size={22} />
-        </button>
+        <div className="flex items-center gap-2">
+          <Link href={`${prefix}/notifications`} aria-label="Notifications" className="relative rounded-lg p-1.5 text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)] hover:text-[var(--shelf-dark)]">
+            <Bell size={20} />
+            {alertCount > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--shelf-terracotta)] px-1 text-[9px] font-bold text-white">{alertCount > 9 ? "9+" : alertCount}</span>}
+          </Link>
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open dashboard menu"
+            className="rounded-lg p-1.5 text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)] hover:text-[var(--shelf-dark)]"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
       </header>
 
       {/* Mobile Overlay Sidebar Drawer */}
@@ -67,7 +82,13 @@ export default function DashboardShell({ children, user, inventory = [] }: Dashb
 
       {/* Main Page Content Body */}
       <main className="min-w-0 flex-1 lg:pl-0">
-        <div className="py-4 md:py-6">
+        <div className="relative py-4 md:py-6">
+          <div className="absolute right-6 top-2 hidden lg:block">
+            <Link href={`${prefix}/notifications`} aria-label="Notifications" className="relative inline-flex rounded-lg p-2 text-[var(--shelf-muted)] hover:bg-[var(--shelf-surface)] hover:text-[var(--shelf-dark)]">
+              <Bell size={20} />
+              {alertCount > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--shelf-terracotta)] px-1 text-[9px] font-bold text-white">{alertCount > 9 ? "9+" : alertCount}</span>}
+            </Link>
+          </div>
           {children}
         </div>
       </main>

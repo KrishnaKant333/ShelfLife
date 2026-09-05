@@ -70,12 +70,6 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
       count: alertCount,
     },
     {
-      label: "Notifications",
-      href: `${prefix}/notifications`,
-      icon: Bell,
-      count: alertCount,
-    },
-    {
       label: "Analytics",
       href: `${prefix}/analytics`,
       icon: BarChart3,
@@ -162,13 +156,13 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
               key={item.href}
               href={item.href}
               onClick={onCloseMobile}
-              className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition duration-150 ${isActive
+              className={`flex items-center justify-between gap-3 rounded-xl py-3 text-sm font-semibold transition duration-150 ${collapsed ? "justify-center px-3" : "px-4"} ${isActive
                   ? "bg-[var(--shelf-cream)] text-[var(--shelf-forest)] border-l-4 border-[var(--shelf-forest)] pl-3"
                   : "text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)]/50 hover:text-[var(--shelf-dark)]"
                 }`}
             >
               <span className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`} title={collapsed ? item.label : undefined}>
-                <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
+                <Icon size={18} className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
                 <span className={collapsed ? "hidden" : ""}>{item.label}</span>
               </span>
               {item.count > 0 && !collapsed && (
@@ -186,20 +180,20 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
         <Link
           href={`${prefix}/settings`}
           onClick={onCloseMobile}
-          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition duration-150 ${pathname === `${prefix}/settings`
+          className={`flex items-center gap-3 rounded-xl py-3 text-sm font-semibold transition duration-150 ${collapsed ? "justify-center px-3" : "px-4"} ${pathname === `${prefix}/settings`
               ? "bg-[var(--shelf-cream)] text-[var(--shelf-forest)]"
               : "text-[var(--shelf-muted)] hover:bg-[var(--shelf-cream)]/50 hover:text-[var(--shelf-dark)]"
             }`}
         >
-          <Settings size={18} strokeWidth={1.8} />
+          <Settings size={18} className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
           <span className={collapsed ? "hidden" : ""}>Settings</span>
         </Link>
 
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[var(--shelf-terracotta)] hover:bg-[var(--shelf-terracotta)]/10 transition duration-150 text-left"
+          className={`flex w-full items-center gap-3 rounded-xl py-3 text-sm font-semibold text-[var(--shelf-terracotta)] hover:bg-[var(--shelf-terracotta)]/10 transition duration-150 text-left ${collapsed ? "justify-center px-3" : "px-4"}`}
         >
-          <LogOut size={18} strokeWidth={1.8} />
+          <LogOut size={18} className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
           <span className={collapsed ? "hidden" : ""}>Sign out</span>
         </button>
 

@@ -15,7 +15,7 @@ Last audited: 2026-09-05
 - [x] Discard/archive all expired items through an ownership-safe confirmed inventory action
 - [x] Expand unit normalization and incompatible-unit handling
 - [x] Support missing/ambiguous expiry safely and derive only from reliable evidence
-- [x] Email verification flow (SMTP configuration required for deployment)
+- [x] Strict email verification: signup sends an email, pending page waits, token verification creates the session and redirects to the dashboard
 - [x] P0 build checkpoints (`npm run build`)
 
 ## P1
@@ -27,7 +27,7 @@ Last audited: 2026-09-05
 - [x] Inventory activity/history records for consumption and expired discard
 - [x] Consumption/discard history writes and quantity summaries in activity records
 - [x] Expiry/quantity/name/recently-added sorting alongside search/filter
-- [x] Notification center for expiry, low-stock, and waste-related inventory attention
+- [x] Top-right notification bell for expiry, low-stock, and waste-related inventory attention
 - [x] P1 build checkpoint (`npm run build`)
 
 ## P2
@@ -39,6 +39,8 @@ Last audited: 2026-09-05
 
 - [x] Apply Prisma-next migration with `npx prisma db migrate --to b70d5295c1bd`
 - [ ] Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM`
+
+Signup is blocked until SMTP is configured. There is no local verification bypass.
 
 ## Do not break
 

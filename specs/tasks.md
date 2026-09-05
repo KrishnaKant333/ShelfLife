@@ -18,7 +18,7 @@ The previous UI-overhaul checklist is superseded by `Next task.md`. This registe
 | P0.1 | Discard all expired items | Complete; build passed |
 | P0.2 | Robust quantity/unit normalization | Complete; build passed |
 | P0.3 | Safe missing/ambiguous expiry handling | Complete; build passed |
-| P0.4 | Email verification | Complete in code; SMTP configuration required |
+| P0.4 | Email verification | Complete; real email required, standby pending page, automatic dashboard redirect |
 | P1.5 | Collapsible sidebar and mobile navigation | Complete; build passed |
 | P1.6 | Inventory List/Grid toggle | Complete; build passed |
 | P1.7 | Product detail pages | Complete; ownership-scoped consumer/business routes |
@@ -26,11 +26,11 @@ The previous UI-overhaul checklist is superseded by `Next task.md`. This registe
 | P1.9 | Inventory activity tracking | Complete for consumption and expired discard |
 | P1.10 | Consumption/discard history and summaries | Complete in activity records |
 | P1.11 | Inventory sorting | Complete; expiry, quantity, name, recently added |
-| P1.12 | Notification center | Complete; computed expiry/low-stock attention view |
+| P1.12 | Notification center | Complete; top-right computed expiry/low-stock attention view |
 | P2.13 | Remaining UI/UX polish | Complete for this ordered pass |
 
 ## Checkpoint policy
 
 Run `npm run build` after P0 and P1. Never mark a task complete while the build or ownership/safety regression checks fail.
 
-Deployment follow-up: apply the pending migration rooted at `d4341e80715f` and configure SMTP variables before enabling production signup verification.
+Deployment follow-up: configure SMTP variables before enabling signup verification. No local verification bypass exists.

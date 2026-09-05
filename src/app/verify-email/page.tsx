@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { verifyEmailAction } from "@/lib/actions/auth";
+import { createHash } from "node:crypto";
+import { db } from "@/prisma/db";
+import VerificationForm from "@/components/auth/VerificationForm";
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -17,13 +19,26 @@ export default async function VerifyEmailPage({
     );
   }
 
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const user = await db.orm.public.User.first({
+    emailVerificationTokenHash: tokenHash,
+  });
+
+  if (!user || !user.emailVerificationExpiresAt || new Date(user.emailVerificationExpiresAt).getTime() < Date.now()) {
+    return (
+      <main className="mx-auto min-h-screen max-w-xl px-6 py-20 text-center">
+        <h1 className="text-3xl font-bold text-[var(--shelf-dark)]">Verification link expired</h1>
+        <p className="mt-3 text-[var(--shelf-muted)]">Request a new verification email to continue.</p>
+        <Link href="/" className="mt-6 inline-block text-sm font-medium text-[var(--shelf-forest)]">Return home</Link>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto min-h-screen max-w-xl px-6 py-20 text-center">
       <h1 className="text-3xl font-bold text-[var(--shelf-dark)]">Verify your email</h1>
       <p className="mt-3 text-[var(--shelf-muted)]">Confirm your email address to finish creating your ShelfLife account.</p>
-      <form action={verifyEmailAction.bind(null, token)} className="mt-8">
-        <button className="rounded-xl bg-[var(--shelf-forest)] px-5 py-3 font-semibold text-white">Verify email address</button>
-      </form>
+      <VerificationForm token={token} accountType={user.accountType} />
       <Link href="/" className="mt-6 inline-block text-sm font-medium text-[var(--shelf-forest)]">Return home</Link>
     </main>
   );

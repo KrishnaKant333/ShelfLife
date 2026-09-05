@@ -78,9 +78,9 @@ export async function registerConsumer(
 
   const { name, email, password } = result.data;
 
-  if (!isEmailVerificationConfigured() && process.env.NODE_ENV !== "development") {
+  if (!isEmailVerificationConfigured()) {
     return {
-      error: "Email verification is temporarily unavailable. Please try again later.",
+      error: "Email verification is not configured yet. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, and EMAIL_FROM to .env.local, then restart the dev server.",
     };
   }
 
@@ -97,7 +97,7 @@ export async function registerConsumer(
   const passwordHash = await bcrypt.hash(password, 12);
   const verification = createVerificationToken();
 
-  await db.orm.public.User.create({
+  const createdUser = await db.orm.public.User.create({
     name,
     email,
     passwordHash,
@@ -105,17 +105,18 @@ export async function registerConsumer(
     plan: "consumer_free",
     emailVerificationTokenHash: verification.hash,
     emailVerificationExpiresAt: verification.expiresAt,
-    emailVerifiedAt: isEmailVerificationConfigured()
-      ? null
-      : new Date().toISOString(),
+    emailVerifiedAt: null,
     updatedAt: Temporal.Now.instant(),
   });
 
-  if (isEmailVerificationConfigured()) {
+  try {
     await sendVerificationEmail(email, verification.token);
+  } catch {
+    await db.orm.public.User.where({ id: createdUser.id }).delete();
+    return { error: "We could not send the verification email. Please try again later." };
   }
 
-  redirect("/consumer/login");
+  redirect(`/verify-email/pending?email=${encodeURIComponent(email)}`);
 }
 
 export async function registerBusiness(
@@ -145,9 +146,9 @@ export async function registerBusiness(
     industry,
   } = result.data;
 
-  if (!isEmailVerificationConfigured() && process.env.NODE_ENV !== "development") {
+  if (!isEmailVerificationConfigured()) {
     return {
-      error: "Email verification is temporarily unavailable. Please try again later.",
+      error: "Email verification is not configured yet. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, and EMAIL_FROM to .env.local, then restart the dev server.",
     };
   }
 
@@ -170,7 +171,9 @@ export async function registerBusiness(
     updatedAt: Temporal.Now.instant(),
   });
 
-  await db.orm.public.User.create({
+  let createdUser;
+  try {
+    createdUser = await db.orm.public.User.create({
     name,
     email,
     passwordHash,
@@ -179,17 +182,23 @@ export async function registerBusiness(
     plan: "business_starter",
     emailVerificationTokenHash: verification.hash,
     emailVerificationExpiresAt: verification.expiresAt,
-    emailVerifiedAt: isEmailVerificationConfigured()
-      ? null
-      : new Date().toISOString(),
+    emailVerifiedAt: null,
     updatedAt: Temporal.Now.instant(),
-  });
-
-  if (isEmailVerificationConfigured()) {
-    await sendVerificationEmail(email, verification.token);
+    });
+  } catch {
+    await db.orm.public.Business.where({ id: business.id }).delete();
+    throw new Error("We could not create your business account. Please try again.");
   }
 
-  redirect("/business/login");
+  try {
+    await sendVerificationEmail(email, verification.token);
+  } catch {
+    await db.orm.public.User.where({ id: createdUser.id }).delete();
+    await db.orm.public.Business.where({ id: business.id }).delete();
+    return { error: "We could not send the verification email. Please try again later." };
+  }
+
+  redirect(`/verify-email/pending?email=${encodeURIComponent(email)}`);
 }
 
 export async function verifyEmailAction(token: string): Promise<void> {

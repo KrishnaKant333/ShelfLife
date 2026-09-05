@@ -22,8 +22,8 @@ ShelfLife is a Next.js food-inventory intelligence application for consumers and
 - Inventory expiry is nullable and missing dates are displayed as `Expiry not available` / `Not trackable`.
 - Unit normalization supports broader aliases, decimal quantities, compatible conversions, and explicit incompatible-unit handling.
 - AI/import/label flows derive expiry only from reliable evidence and never invent a date.
-- Email verification is implemented with SMTP delivery; deployment requires SMTP environment variables.
-- The ordered P1 workflow is implemented: collapsible sidebar, List/Grid view, ownership-scoped detail routes, product image field with default icons, activity records, consumption/discard quantities, sorting, and notification center.
+- Email verification now sends a real email after signup, shows a standby pending page, and only signs the user in after the emailed token is clicked. Signup is blocked when SMTP is unavailable; there is no local verification bypass.
+- The ordered P1 workflow is implemented: collapsible sidebar, mutually exclusive List/Grid view, ownership-scoped detail routes, product image field with default icons, activity records, consumption/discard quantities, sorting, and a top-right notification bell.
 - The new nullable-expiry, image, verification, and activity fields require the corresponding Prisma-next migrations to be applied to the deployment database.
 
 ## Routes
@@ -53,7 +53,7 @@ npm run build
 
 The production build is the required checkpoint after each major phase.
 
-The current contract migration has been applied to the configured database. Email verification requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM` in deployment environment variables.
+The current contract migration has been applied to the configured database. Email verification requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM` in `.env.local` before signup is enabled. For Gmail, use a Google App Password rather than the normal account password, then restart the dev server.
 
 ## Safety and engineering rules
 
@@ -82,7 +82,7 @@ The current contract migration has been applied to the configured database. Emai
 9. [x] Add inventory history/activity tracking.
 10. [x] Add product consumption/discard history and quantity summaries.
 11. [x] Add inventory sorting for expiry, quantity, name, and recently added alongside existing search/filter.
-12. [x] Add a notification center for expiry, low-stock, and waste alerts.
+12. [x] Add a top-right notification center for expiry, low-stock, and waste alerts.
 
 ### P2
 
