@@ -38,3 +38,9 @@ Recipe generation -> fetch owned inventory -> deterministic expiry filtering -> 
 5. Shared dashboards provide activity history, computed notifications, responsive navigation, and list/grid inventory views.
 
 Further changes should remain focused on maintenance, testing, and deployment configuration rather than new architecture.
+
+## UI redesign planning state
+
+The next product phase is a documentation-only visual and UX redesign planned in `specs/UI redesign roadmap.md` and Stages 0-12. The redesign may change presentation, interaction, responsive structure, visual tokens, and component composition, but must preserve server actions, route protection, account isolation, ownership, deterministic inventory/expiry/quantity/FIFO/waste logic, recipe safety, AI safety, and pricing rules.
+
+The intended split is expressive marketing and restrained, information-dense authenticated productivity screens. Consumer and Business remain visually related but contextually distinct. Barcode scanning and external barcode lookup remain deferred and hidden.

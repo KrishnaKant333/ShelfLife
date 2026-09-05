@@ -7,3 +7,5 @@ Work through the roadmap strictly in order. After each major phase, update `cont
 Do not fabricate functionality. Unimplemented features must be marked incomplete or Coming Soon. Never expose model chain-of-thought or trust AI with ownership, expiry, quantity, or safety decisions.
 
 The 2026-09-05 final P2 pass audited consumer, business, authentication, inventory, analytics, recipes, waste, settings, import/export, and marketing routes. It preserved the existing architecture, added shared async and accessibility polish, and confirmed that no native browser alert/confirm flows remain.
+
+The visual redesign is planning-only until the staged specifications are explicitly started. Follow `specs/UI redesign roadmap.md` and its Stage 0-12 files in order. Do not implement UI changes while a request is limited to specification work.

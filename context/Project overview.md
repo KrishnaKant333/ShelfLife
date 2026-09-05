@@ -29,3 +29,9 @@ P0: expired discard, robust unit normalization, safe missing-expiry handling, em
 P1: sidebar collapse/mobile navigation, list/grid inventory, product detail, images/default icons, inventory activity, consumption/discard history, sorting, notifications.
 
 P2: remaining UI/UX consistency work from the existing specifications.
+
+## Next phase: staged visual redesign
+
+ShelfLife is entering a planning-only visual and UX redesign from functional MVP polish toward a premium SaaS experience. The staged plan is in `specs/UI redesign roadmap.md` and `specs/UI redesign stage 0 - audit and foundation.md` through Stage 12. Implementation must begin with the audit and design foundation, then proceed in dependency order.
+
+The redesign is presentation and interaction work only. It must preserve product/business logic, account separation, ownership/security, AI and recipe safety, deterministic expiry/quantity/FIFO/waste behavior, pricing rules, and the deferred/hidden barcode state.

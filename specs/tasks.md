@@ -36,3 +36,5 @@ The previous UI-overhaul checklist is superseded by `Next task.md`. This registe
 Run `npm run build` after P0 and P1. Never mark a task complete while the build or ownership/safety regression checks fail.
 
 Deployment follow-up: configure SMTP variables before enabling signup verification. No local verification bypass exists.
+
+The visual redesign is a separate planning-only workstream. Its authoritative stage order and acceptance criteria are in `specs/UI redesign roadmap.md` and the Stage 0-12 files; it must not alter this completed product-safety roadmap or reintroduce deferred barcode scanning.

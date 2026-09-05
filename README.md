@@ -106,6 +106,12 @@ npx prisma db migrate
 
 Features not listed as implemented must remain labelled as incomplete or Coming Soon.
 
+## UI redesign plan
+
+The next phase is planning-only: a staged visual and UX redesign from functional MVP polish toward a premium SaaS product. No redesign implementation is included in the current baseline. See [specs/UI redesign roadmap.md](specs/UI%20redesign%20roadmap.md) and the Stage 0-12 specifications for the dependency order.
+
+The redesign prioritizes a reusable design system, intentional light/dark themes, expressive marketing, restrained productivity dashboards, mobile-first task flows, accessible motion, and performance. It does not change business logic or architecture, and barcode scanning remains deferred/hidden.
+
 ## Final audit status (2026-09-05)
 
 Audited route protection, account-type isolation, ownership checks, responsive layouts, Light/Dark/System theme tokens, async actions, empty/error states, form validation, keyboard semantics, feedback patterns, metadata, links, and placeholder functionality. No native browser `alert`, `confirm`, or `prompt` calls remain in `src`.

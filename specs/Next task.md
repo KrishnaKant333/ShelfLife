@@ -34,3 +34,5 @@ Final checkpoint: `npm run build`, targeted lint/type checks, and regression rev
 Deployment prerequisites: the current Prisma-next migration graph must be applied to the deployment database, and SMTP environment variables must be configured for email verification.
 
 Barcode scanning is intentionally deferred. The Add New Product flow currently exposes only Manual Form, Scan Label (AI), and Bulk Import. Do not reintroduce barcode lookup or add a paid provider until the data-source decision is revisited.
+
+The next task register is now supplemented by the planning-only UI redesign roadmap in `specs/UI redesign roadmap.md`. Do not begin implementation from this note without first completing Stage 0 of that roadmap.

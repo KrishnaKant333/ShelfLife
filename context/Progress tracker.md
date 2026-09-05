@@ -47,6 +47,11 @@ The production build passes. The repository still has pre-existing strict ESLint
 
 Signup is blocked until SMTP is configured. There is no local verification bypass.
 
+## Next planning phase
+
+- [x] Define the planning-only UI redesign roadmap and Stages 0-12 specifications
+- [ ] Implement redesign stages in order, beginning with Stage 0 audit and design foundation
+
 ## Do not break
 
 Authentication, ownership, Consumer/Business isolation, AI and recipe safety, expiry logic, imports, exports, label scanning, analytics, waste, FIFO, and pricing behavior. Barcode data structures should remain available for future work, but barcode scanning is currently deferred.
