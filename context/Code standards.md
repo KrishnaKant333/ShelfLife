@@ -13,11 +13,11 @@
 - Do not introduce dependencies or duplicate actions without a concrete requirement.
 - Run `npm run build` after each major phase and fix regressions before continuing.
 
-## UI redesign workflow
+## UI redesign & design system
 
-- Follow `specs/UI redesign roadmap.md` and complete stages in order; do not mix later-stage motion or 3D work into foundation, auth, or productivity-screen stages.
+- All UI redesign stages (Stage 0 to Stage 12) are completed and documented in `specs/UI redesign final report.md`.
 - Build reusable semantic tokens and primitives before page-specific visual polish.
 - Treat marketing as expressive and authenticated screens as restrained, information-dense productivity surfaces.
-- Design mobile structure intentionally at 320px, 375px, 390px, 414px, tablet, desktop, and large desktop; do not only stack desktop layouts.
+- Design mobile structure intentionally at 320px, 375px, 390px, 414px, tablet, desktop, and large desktop.
 - Preserve light, dark, and system themes, keyboard access, visible focus, reduced motion, and non-color status cues.
-- Barcode scanning remains deferred/hidden and must not be reintroduced by visual redesign work.
+- Barcode scanning remains deferred/hidden.

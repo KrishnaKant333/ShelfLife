@@ -8,4 +8,4 @@ Do not fabricate functionality. Unimplemented features must be marked incomplete
 
 The 2026-09-05 final P2 pass audited consumer, business, authentication, inventory, analytics, recipes, waste, settings, import/export, and marketing routes. It preserved the existing architecture, added shared async and accessibility polish, and confirmed that no native browser alert/confirm flows remain.
 
-The visual redesign is planning-only until the staged specifications are explicitly started. Follow `specs/UI redesign roadmap.md` and its Stage 0-12 files in order. Do not implement UI changes while a request is limited to specification work.
+The visual redesign is completed. Refer to `specs/UI redesign final report.md` for full stage reports, visual system rules, and performance QA sign-off.

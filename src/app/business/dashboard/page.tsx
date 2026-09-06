@@ -13,6 +13,7 @@ import InventoryOverview from "@/components/dashboard/InventoryOverview";
 import QuickActions from "@/components/dashboard/QuickActions";
 import DashboardAiInsights from "@/components/dashboard/DashboardAiInsights";
 import DashboardUseFirst from "@/components/dashboard/DashboardUseFirst";
+import GreetingHeader from "@/components/dashboard/GreetingHeader";
 import { getBusinessInventory } from "@/lib/business-inventory";
 import { getInventoryStatus } from "@/lib/inventory-status";
 
@@ -39,9 +40,6 @@ export default async function BusinessDashboardPage() {
 
   const healthScore = totalItems === 0 ? 100 : Math.round((freshItems / totalItems) * 100);
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-
   // Map dates to ISO string to ensure safety/consistency inside child components
   const formattedInventory = inventory.map((item) => ({
     ...item,
@@ -51,17 +49,11 @@ export default async function BusinessDashboardPage() {
   return (
     <main className="p-4 sm:p-6 md:p-8 lg:p-10">
       <div className="mx-auto max-w-7xl space-y-6 md:space-y-8">
-        <div>
-          <p className="text-sm font-semibold text-[var(--shelf-forest)]">
-            Business Dashboard
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--shelf-dark)] md:text-4xl">
-            {greeting}{session.user.name ? `, ${session.user.name}` : ""}
-          </h1>
-          <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-            Here is a status update on your business inventory.
-          </p>
-        </div>
+        <GreetingHeader
+          userName={session.user.name}
+          badge="Business Dashboard"
+          subtitle="Here is a status update on your business inventory."
+        />
 
         {/* Statistic Cards Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

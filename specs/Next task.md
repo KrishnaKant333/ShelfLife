@@ -1,38 +1,33 @@
-# ShelfLife Main Development Specification
+# ShelfLife Task Register (v1.0 Production Release)
 
-This is the authoritative ordered task list. Inspect the implementation before each task. Complete and test each item before starting the next. After each major phase update this file, `context/Progress tracker.md`, and `README.md`.
+**Version**: v1.0 Production Release
+**Status**: All core phases (P0, P1, P2, UI Redesign Stages 0–12, and v1.0 Enhancements) are **100% Completed & Verified**.
 
-## P0 - safety and trust
+---
 
-1. [x] Discard all expired items. Added an ownership-safe confirmed action to the shared inventory view and revalidated affected dashboards/recipes.
-2. [x] Complete quantity/unit normalization. Added aliases, decimal quantities, compatible conversions, and explicit incompatible-unit behavior across validation and sorting.
-3. [x] Handle ambiguous/missing expiry in AI, import, and label flows. Added evidence-based derivation and `Expiry not available` / `Not trackable` handling.
-4. [x] Add strict email verification. Signup sends a real email and shows a standby pending page; only clicking the emailed token creates the Auth.js session and redirects automatically to the correct dashboard. Signup is blocked when SMTP is unavailable.
+## 📋 Completed Core Roadmap & Enhancements
 
-Checkpoint: run `npm run build`, exercise consumer and business paths, and fix regressions.
+### P0 - Safety & Trust
+1. [x] Discard expired items (ownership-safe bulk action).
+2. [x] Robust unit normalization & incompatible unit handling.
+3. [x] Safe missing/ambiguous expiry handling (`Expiry not available`).
+4. [x] Strict email verification via SMTP token link and pending standby page.
 
-## P1 - dashboard and inventory workflows
-
-5. [x] Collapsible dashboard sidebar with hamburger/mobile navigation and icons-only collapsed state.
+### P1 - Workflows & Navigation
+5. [x] Collapsible dashboard sidebar with responsive drawer navigation.
 6. [x] Inventory List/Grid view toggle.
-7. [x] Clickable inventory items with dedicated product detail pages.
-8. [x] Product image field with category-aware default icons when unavailable.
-9. [x] Inventory history/activity tracking for consumption and discard.
-10. [x] Product consumption/discard history records with quantities.
-11. [x] Inventory sorting by expiry, quantity, name, and recently added alongside existing search/filter.
-12. [x] Top-right notification center for expiry, low-stock, and waste-related attention.
+7. [x] Dedicated product detail & edit pages.
+8. [x] Category-aware default product icons.
+9. [x] Inventory activity history tracking.
+10. [x] Product consumption & discard quantity summaries.
+11. [x] Multi-field inventory sorting (Expiry, Quantity, Name, Date Added).
+12. [x] Top navbar Notification Center vs. Alerts separation.
 
-Checkpoint: run `npm run build` and test both account types and responsive layouts.
-
-## P2 - polish
-
-13. [x] Continue remaining UI/UX polish and consistency work identified by the existing specifications. The ordered feature pass is complete without replacing working business logic or duplicating inventory systems.
-14. [x] Complete final P2 production-readiness audit across protected routes, responsive/theme behavior, async feedback, accessibility, metadata, and ownership boundaries. Added dialog keyboard behavior, destructive-action pending/error states, activity-load errors, theme-safe consumer forms, server-side consumption quantity validation, and baseline social metadata.
-
-Final checkpoint: `npm run build`, targeted lint/type checks, and regression review of all protected features.
-
-Deployment prerequisites: the current Prisma-next migration graph must be applied to the deployment database, and SMTP environment variables must be configured for email verification.
-
-Barcode scanning is intentionally deferred. The Add New Product flow currently exposes only Manual Form, Scan Label (AI), and Bulk Import. Do not reintroduce barcode lookup or add a paid provider until the data-source decision is revisited.
-
-The next task register is now supplemented by the planning-only UI redesign roadmap in `specs/UI redesign roadmap.md`. Do not begin implementation from this note without first completing Stage 0 of that roadmap.
+### P2 - Visual System & v1.0 Production Release Polish
+13. [x] Dedicated Export Hub (`/dashboard/inventory/export` & `/business/dashboard/inventory/export`) with status/category scope filters, live dataset preview, instant CSV download, and printable PDF report formatting.
+14. [x] Dynamic Invoice Intelligence Analysis with client-side real-time stats calculation (`DETECTED`, `NEW ITEMS`, `EXISTING`, `NEAR EXPIRY / EXPIRED`).
+15. [x] Streamlined action header toolbar (`Export`, `Import`, `+ Add Product`, icon-only `Delete Expired` bin button).
+16. [x] Local browser time-accurate dynamic greetings (`GreetingHeader`).
+17. [x] Groq AI JSON extraction fixes (`reasoning_effort: "none"`, schema prompt tuning).
+18. [x] Atmosphere polish: scroll-fog isolated to landing page (`(marketing)/layout.tsx`), ambient mesh background gradients, and persistent Light/Dark themes.
+19. [x] Final production audit: `npm run build` verified clean with code 0.

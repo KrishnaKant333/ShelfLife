@@ -1,37 +1,29 @@
-# ShelfLife Project Overview
+# ShelfLife Project Overview (v1.0 Production Release)
 
-## Product
+## 📌 Product Summary
 
-ShelfLife helps households and food businesses know what inventory they have, what needs attention, and what should be used first. Deterministic application logic is the source of truth; AI assists with extraction and recommendations.
+ShelfLife is a Next.js 16 application for consumers and commercial food businesses to manage inventory, track food freshness, reduce waste, and extract invoice/label data using AI. Deterministic application logic serves as the single source of truth, while AI assists with image extraction and recipe recommendations.
 
-## Account types
+## 👥 Account Types & Isolation
 
-Consumer data is owned by the authenticated user and uses `/dashboard`. Business data is owned by the authenticated user and authenticated business and uses `/business/dashboard`. Shared UI is preferred where behavior is identical.
+- **Consumer**: Account data scoped to authenticated `userId` via `/dashboard` routes.
+- **Business**: Account data scoped to `userId` and `businessId` via `/business/dashboard` routes.
+- Server-side session checks guarantee strict data isolation between consumer and business accounts.
 
-Implemented capabilities include inventory CRUD, expiry/status tracking, imports and exports, label scanning, alerts, analytics, waste management, consumption tracking, recipes, FIFO, Business Inventory Strategy, and theme support. Barcode scanning is currently deferred and hidden from product entry; existing inventory structures are preserved for future reintroduction.
+## 🛠️ Key Implemented Capabilities (v1.0)
 
-## Current status
+1. **Inventory Management**: Full CRUD, search, status filtering (*Fresh*, *Expiring*, *Expired*, *Low Stock*), and multi-field sorting (*Expiry*, *Quantity*, *Name*, *Date Added*).
+2. **Dedicated Export Hub**: `/dashboard/inventory/export` & `/business/dashboard/inventory/export` featuring status/category scope filters, live dataset preview, instant CSV spreadsheet downloads, and printable PDF report formatting.
+3. **Dynamic Invoice Intelligence Analysis**: AI-assisted invoice parsing with real-time dynamic stats re-calculation as product fields are edited in the review table.
+4. **Scan Label AI & Camera Capture**: Live camera capture or image file upload with Groq AI extraction (`llama-3.3-70b-versatile`).
+5. **Alerts vs Notifications**: Urgent actionable inventory risks on `/dashboard/alerts` vs. informational activity log feed on `/dashboard/notifications`.
+6. **Time-Accurate Dynamic Greetings**: Auto-evaluates user's local browser time for *Good morning*, *Good afternoon*, *Good evening*, and *Good night*.
+7. **Recipe Generator**: Safety-enforced AI recipe generation strictly omitting expired ingredients.
+8. **Theme System & Atmosphere**: Persistent Light/Dark/System themes with dynamic mesh gradients and landing-isolated scroll fog.
 
-The ordered P0, P1, and P2 implementation work is complete. Expiry is nullable and trackability-aware; expired discard, unit normalization, email verification, product detail, images, activity history, sorting, notifications, responsive navigation, and theme support are implemented. Remaining work is operational: configure SMTP in each deployment and add broader automated/browser regression coverage.
+## 🔒 Safety Principles
 
-## Safety principles
-
-- Ownership is established from the server session.
+- Session-based ownership validation on every server action.
 - Expiry status is deterministic.
-- Expired inventory is excluded before recipe AI calls and AI responses are validated.
-- AI may not invent dates, quantities, IDs, or ownership facts.
-- Missing expiry remains explicitly unknown rather than silently becoming a guessed date.
-
-## Roadmap order
-
-P0: expired discard, robust unit normalization, safe missing-expiry handling, email verification.
-
-P1: sidebar collapse/mobile navigation, list/grid inventory, product detail, images/default icons, inventory activity, consumption/discard history, sorting, notifications.
-
-P2: remaining UI/UX consistency work from the existing specifications.
-
-## Next phase: staged visual redesign
-
-ShelfLife is entering a planning-only visual and UX redesign from functional MVP polish toward a premium SaaS experience. The staged plan is in `specs/UI redesign roadmap.md` and `specs/UI redesign stage 0 - audit and foundation.md` through Stage 12. Implementation must begin with the audit and design foundation, then proceed in dependency order.
-
-The redesign is presentation and interaction work only. It must preserve product/business logic, account separation, ownership/security, AI and recipe safety, deterministic expiry/quantity/FIFO/waste behavior, pricing rules, and the deferred/hidden barcode state.
+- Expired products are never sent to AI recipe generation.
+- Missing expiry remains explicitly `Expiry not available`.

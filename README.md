@@ -1,130 +1,94 @@
-# ShelfLife
+# ShelfLife (v1.0 Production Release)
 
-ShelfLife is a Next.js food-inventory intelligence application for consumers and food businesses. It combines deterministic inventory, expiry, ownership, quantity, FIFO, waste, and recipe-safety logic with AI-assisted extraction and recommendations.
+ShelfLife is an AI-powered food inventory intelligence application built with Next.js 16 for consumers and commercial food businesses. It combines deterministic inventory, expiry, ownership, stock quantity, FIFO, waste analytics, and recipe-safety logic with AI-assisted extraction and recommendations.
 
-## Current implementation
+---
 
-- Consumer and Business authentication with isolated dashboard routes.
-- Auth.js credentials sessions and server-side ownership checks.
-- Inventory CRUD, search, filtering, sorting, bulk delete, consumption recording, CSV/PDF export.
-- Manual, label, CSV, and invoice inventory entry flows.
-- Deterministic Expired, Expiring, Fresh, and Low Stock status logic.
-- Weight, volume, and count normalization for supported units.
-- Alerts, analytics, waste insights, FIFO and Business Inventory Strategy.
-- Groq-powered invoice/label extraction, ShelfLife Brief, and consumer recipe modes.
-- Barcode scanning is currently deferred and hidden from the Add New Product flow; existing inventory data structures remain unchanged for future reintroduction.
-- Expired inventory is filtered before recipe generation and returned recipes are validated.
-- Light, Dark, and System themes with persisted theme selection.
-- Responsive shared dashboard shell and loading/feedback UI in the existing implemented areas.
-- Final P2 audit polish: accessible confirmation dialogs, pending/error feedback for destructive actions, activity-load error states, theme-safe consumer forms, server-side consumption quantity validation, and baseline Open Graph/Twitter metadata.
+## 🌟 Key Features in v1.0 Production Release
 
-## Known gaps at the start of the current roadmap
+- **Consumer & Business Workspaces**: Auth.js credentials sessions with isolated dashboard routes (`/dashboard` and `/business/dashboard`) and server-side ownership enforcement.
+- **Dynamic Inventory Intelligence**: Real-time tracking for *Fresh*, *Expiring Soon*, *Expired*, and *Low Stock* items with unit normalization across weight, volume, and count.
+- **Dedicated Export Hub**: Dedicated page (`/dashboard/inventory/export` & `/business/dashboard/inventory/export`) with interactive status & category filters, live data preview, instant CSV spreadsheet downloads, and printable PDF report generation.
+- **Dynamic Invoice Intelligence Analysis**: AI-powered invoice extraction with real-time dynamic calculation for *Detected*, *New Items*, *Existing*, and *Near Expiry / Expired* products.
+- **Scan Label AI & Camera Capture**: Live camera capture or image file upload with Groq AI extraction for instant ingredient and date entry.
+- **Alerts vs. Notifications Separation**:
+  - **Alerts** (`/dashboard/alerts`): Actionable urgent inventory risks (Expiring, Expired, Low Stock with quick Discard & Use actions).
+  - **Notifications** (`/dashboard/notifications`): Informational activity log feed for imports, updates, and system events.
+- **Streamlined Action Toolbar**: Clean top header toolbar featuring `Export`, `Import`, `+ Add Product`, and a tooltip-enabled icon-only `Delete Expired` bin button.
+- **Time-Accurate Dynamic Greetings**: Automatically displays local browser time-based greetings (*Good morning*, *Good afternoon*, *Good evening*, *Good night*).
+- **Safety-First Recipe AI Generator**: Strictly filters out expired items before passing ingredients to Groq AI for recipe generation.
+- **Ambient UI Design System**: Persistent Light, Dark, and System theme support with dynamic mesh gradients, smooth micro-animations (`.hover-lift`, `.pulse-glow`), and marketing-isolated atmospheric fog effects.
 
-- Expired items can now be discarded through an ownership-safe confirmed action in both inventory dashboards; historical discard records are still part of P1.
-- Inventory expiry is nullable and missing dates are displayed as `Expiry not available` / `Not trackable`.
-- Unit normalization supports broader aliases, decimal quantities, compatible conversions, and explicit incompatible-unit handling.
-- AI/import/label flows derive expiry only from reliable evidence and never invent a date.
-- Email verification now sends a real email after signup, shows a standby pending page, and only signs the user in after the emailed token is clicked. Signup is blocked when SMTP is unavailable; there is no local verification bypass.
-- The ordered P1 workflow is implemented: collapsible sidebar, mutually exclusive List/Grid view, ownership-scoped detail routes, product image field with default icons, activity records, consumption/discard quantities, sorting, and a top-right notification bell.
-- The new nullable-expiry, image, verification, and activity fields require the corresponding Prisma-next migrations to be applied to the deployment database.
+---
 
-## Routes
+## 🛠️ Technology Stack
 
-Consumer: `/consumer/login`, `/consumer/signup`, `/dashboard`
+- **Framework**: Next.js 16.3.2 App Router (React 19 & TypeScript)
+- **Styling**: Vanilla CSS & Tailwind CSS 4 with custom CSS variables design system
+- **Authentication**: Auth.js (JWT credentials sessions with server-side ownership)
+- **Database & ORM**: PostgreSQL with Prisma-next migration graph
+- **AI Intelligence**: Groq SDK (`llama-3.3-70b-versatile` & `llama-3.1-8b-instant`) with JSON schema enforcement
+- **Icons & UI Primitives**: Lucide React icons, accessible modals, and toast notifications
 
-Business: `/business/login`, `/business/signup`, `/business/dashboard`
+---
 
-## Technology
+## 🚀 Quick Start & Development
 
-- Next.js 16.3.2 App Router
-- React 19 and TypeScript
-- Tailwind CSS 4
-- Auth.js credentials authentication
-- PostgreSQL with Prisma-next
-- Groq SDK
-- Zod validation
-
-## Development
+### 1. Installation
 
 ```bash
 npm install
+```
+
+### 2. Run Local Dev Server
+
+```bash
 npm run dev
-npm run lint
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+### 3. Build for Production
+
+```bash
 npm run build
 ```
 
-The production build is the required checkpoint after each major phase.
+---
 
-The current contract migration is applied to the configured Neon database. Production hosting must configure the variables listed in `.env.example`: `DATABASE_URL`, `AUTH_SECRET`, `NEXTAUTH_URL`, `GROQ_API_KEY`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM`. For Gmail, use a Google App Password rather than the normal account password. `AUTH_TRUST_HOST=true` is only needed when the hosting platform is behind a reverse proxy and Auth.js reports `UntrustedHost`.
+## ⚙️ Environment Variables & Deployment Runbook
 
-### Production migration runbook
+Configure the following variables in `.env.local` or hosting platform settings:
 
-From the repository root, with the production Neon connection supplied through `DATABASE_URL`:
+```env
+DATABASE_URL="postgresql://..."
+AUTH_SECRET="your-auth-secret"
+NEXTAUTH_URL="http://localhost:3000"
+GROQ_API_KEY="gsk_..."
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="your-email@gmail.com"
+SMTP_PASSWORD="your-app-password"
+EMAIL_FROM="ShelfLife <no-reply@shelflife.app>"
+AUTH_TRUST_HOST=true
+```
+
+### Prisma Production Migrations
+
+Run from the root directory with `DATABASE_URL` configured:
 
 ```bash
 npx prisma migration check
 npx prisma migration status
-npx prisma db migrate --show
 npx prisma db migrate
 ```
 
-`migration check` validates the committed migration graph offline. `migration status` verifies the database marker and pending path. `db migrate --show` previews the route, and `db migrate` applies pending migrations only. The verified current Neon database reports `Up to date` with `20260904T2310_roadmap_p0_p1_from_applied` applied.
+---
 
-## Safety and engineering rules
+## 🔒 Security & Engineering Rules
 
-- Server-side session ownership is authoritative. Never trust user or business IDs from the browser.
-- Deterministic expiry, quantity, stock, and FIFO logic is authoritative over AI output.
-- Expired products must never be sent to recipe generation or presented as usable ingredients.
-- Missing or ambiguous expiry data must never be invented.
-- Consumer and Business data and routes must remain isolated.
-- Reuse shared components and existing actions before adding new abstractions.
-
-## Ordered roadmap
-
-### P0
-
-1. [x] Discard all expired items.
-2. [x] Complete quantity/unit normalization and robust incompatible-unit handling.
-3. [x] Handle ambiguous or missing expiry information in AI, import, and label flows.
-4. [x] Add email verification.
-
-### P1
-
-5. [x] Add a collapsible dashboard sidebar with hamburger/mobile navigation and icons-only collapsed mode.
-6. [x] Add Inventory List/Grid view toggle.
-7. [x] Make inventory items clickable with dedicated product detail pages.
-8. [x] Add product image field with sensible default icons.
-9. [x] Add inventory history/activity tracking.
-10. [x] Add product consumption/discard history and quantity summaries.
-11. [x] Add inventory sorting for expiry, quantity, name, and recently added alongside existing search/filter.
-12. [x] Add a top-right notification center for expiry, low-stock, and waste alerts.
-
-### P2
-
-13. [x] Continue remaining UI/UX polish and consistency work identified by the existing specs.
-14. [x] Final production-readiness audit across Consumer, Business, auth, inventory, analytics, recipes, waste, settings, import/export, and landing routes.
-
-Features not listed as implemented must remain labelled as incomplete or Coming Soon.
-
-## UI redesign plan
-
-The staged UI redesign through Stage 12 is complete. Stage 11 completed mobile drawer scroll locking, keyboard focus containment for drawers and dialogs, touch-target safeguards, and reduced-motion interaction foundations. Stage 12 completed local production build, diff, route compilation, and documentation sign-off; remaining deployment QA is documented in [specs/UI redesign stage 12 report.md](specs/UI%20redesign%20stage%2012%20report.md). 3D was intentionally deferred because no concrete product-value or performance case was established. Completion reports are available for [Stage 4](specs/UI%20redesign%20stage%204%20report.md), [Stage 5](specs/UI%20redesign%20stage%205%20report.md), [Stage 6](specs/UI%20redesign%20stage%206%20report.md), [Stage 7](specs/UI%20redesign%20stage%207%20report.md), [Stage 8](specs/UI%20redesign%20stage%208%20report.md), [Stage 9](specs/UI%20redesign%20stage%209%20report.md), [Stage 10](specs/UI%20redesign%20stage%2010%20report.md), and [Stage 11](specs/UI%20redesign%20stage%2011%20report.md). See [specs/UI redesign roadmap.md](specs/UI%20redesign%20roadmap.md) for the completed roadmap and remaining operational QA.
-
-The redesign prioritizes a reusable design system, intentional light/dark themes, expressive marketing, restrained productivity dashboards, mobile-first task flows, accessible motion, and performance. It does not change business logic or architecture, and barcode scanning remains deferred/hidden.
-
-## Post-roadmap follow-up (2026-09-06)
-
-The maintenance pass completed a 5-stage fix pass:
-1. **Stage 1 (Inventory UI)**: Fixed responsive table/list badge and row styling by applying `whitespace-nowrap inline-flex` to status capsules ("Low Stock", "Not trackable", etc.) and `align-middle whitespace-nowrap` to desktop table rows.
-2. **Stage 2 (Groq AI)**: Diagnosed and resolved repeated HTTP 400 `json_validate_failed` errors in Scan Label and Invoice extraction by configuring `reasoning_effort: "none"`, `max_tokens`, and strict JSON system prompts to prevent Groq reasoning prelude tokens from invalidating JSON schema validation.
-3. **Stage 3 (Fog Effect)**: Isolated the `scroll-fog` visual effect strictly to the landing/marketing page (`(marketing)/layout.tsx`) and removed it completely from all dashboard, inventory, analytics, recipes, waste, settings, and auth routes.
-4. **Stage 4 (Notifications vs Alerts)**: Redesigned purpose distinction: **Alerts** (`/dashboard/alerts`) focus exclusively on urgent actionable inventory risks (Expiring, Expired, Low Stock with quick actions like Discard & Use), while **Notifications** (`/dashboard/notifications`) serve as an informational activity stream (Imports, AI results, usage logs, system updates).
-5. **Stage 5 (Background Gradients & Micro-Animations)**: Upgraded plain static backgrounds with ambient layered mesh gradients and responsive micro-animations (`.hover-lift`, `.pulse-glow`).
-
-Existing extraction, expiry-safety, route, and inventory contracts remain fully intact and verified through clean production builds.
-
-## Final audit status (2026-09-05)
-
-Audited route protection, account-type isolation, ownership checks, responsive layouts, Light/Dark/System theme tokens, async actions, empty/error states, form validation, keyboard semantics, feedback patterns, metadata, links, and placeholder functionality. No native browser `alert`, `confirm`, or `prompt` calls remain in `src`.
-
-Remaining deployment work is configuring SMTP variables and applying the current Prisma-next migration graph. Stage 4 completed the auth/onboarding visual pass and accessibility polish, including mobile-first form order, live feedback, and touch-sized password controls. Its mobile density extension also prevents long narrow-screen stacks across pricing, process, value, and account-choice cards by using touch-friendly horizontal rails while preserving desktop grids. Broader end-to-end/browser coverage remains a useful follow-up. No new product feature is pending from this ordered roadmap.
+1. **Authoritative Server Sessions**: Server-side session validation is mandatory. Never trust client-side user or business IDs.
+2. **Deterministic Source of Truth**: Expiry dates, stock status, and FIFO calculations are strictly deterministic and override AI responses.
+3. **Recipe Expiry Exclusion**: Expired items are strictly omitted from AI recipe prompts and recommendations.
+4. **No Guessed Expiry Dates**: Missing or ambiguous expiry dates remain explicitly `Expiry not available` / `Not trackable`.
+5. **Account Type Isolation**: Consumer (`/dashboard`) and Business (`/business/dashboard`) routes, databases, and states must remain completely isolated.

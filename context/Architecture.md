@@ -1,46 +1,29 @@
-# ShelfLife Architecture
+# ShelfLife Architecture (v1.0 Production Release)
 
-## Stack
+## 🏗️ Technology Stack
 
-- Next.js 16.3.2 App Router, React 19, TypeScript, Tailwind CSS 4
-- Auth.js credentials authentication with JWT sessions
-- PostgreSQL through Prisma-next
-- Groq for extraction and recommendations
+- **Framework**: Next.js 16.3.2 App Router, React 19, TypeScript, Tailwind CSS 4
+- **Authentication**: Auth.js credentials with JWT sessions
+- **Database & ORM**: PostgreSQL with Prisma-next migration graph
+- **AI Intelligence**: Groq SDK (`llama-3.3-70b-versatile` & `llama-3.1-8b-instant`) with JSON schema enforcement
 
-## Boundaries
+## 🛡️ Boundaries & Ownership
 
-Server components load authenticated data. Server actions authenticate, validate, derive ownership, mutate the database, and revalidate the correct consumer or business routes. Client components are reserved for interaction such as forms, scanners, filters, themes, charts, and modals.
+- **Server Components**: Load authenticated data directly from database helpers (`getInventory()`, `getBusinessInventory()`).
+- **Server Actions**: Authenticate session, validate parameters with Zod, verify ownership, mutate database, and revalidate tag/path caches.
+- **Client Components**: Handle user interactions, state bindings, local date evaluations, filters, modals, and dynamic calculations (e.g. `ExportInventoryView`, `GreetingHeader`, `InvoiceImport`).
 
-## Ownership
+## 📊 Core Data Flows
 
-Consumer inventory uses the authenticated `userId` with no business scope. Business inventory requires both the authenticated user and authenticated `businessId`. Client-provided ownership identifiers are never authoritative.
+1. **Manual Entry**: Form input -> Zod validation -> server action -> ownership check -> Prisma mutation.
+2. **Invoice / Label AI Extraction**: Image upload/capture -> Groq AI extraction (`reasoning_effort: "none"`) -> client preview review table -> dynamic intelligence stats calculation -> bulk insert.
+3. **Dedicated Export Flow**: Dedicated export page (`/dashboard/inventory/export`) -> client status/category filter state -> live preview table -> CSV trigger or print-window PDF rendering.
+4. **Recipe AI Flow**: Fetch owned inventory -> filter out expired items -> format prompt -> Groq AI call -> Zod validation -> render recipe cards.
+5. **Dynamic Greetings**: Client component (`GreetingHeader`) -> evaluates `new Date().getHours()` on user's browser clock -> renders local greeting.
 
-## Current inventory model
+## 🎨 UI Architecture & Aesthetics
 
-`InventoryItem` contains name, category, decimal quantity, unit, nullable expiry date, optional image URL, user/business ownership, and timestamps. `InventoryConsumption` and `InventoryActivity` record owned consumption/discard history, quantities, units, and timestamps. Unknown expiry is explicit and is never treated as safe for recipe generation.
-
-## Current flows
-
-Manual entry -> server validation -> ownership check -> database.
-
-Label/invoice -> extraction -> preview/review -> validation -> save. Barcode scanning and external barcode lookup are deferred; no barcode provider is active in the current entry flow.
-
-CSV -> parse -> validate -> preview -> import.
-
-Recipe generation -> fetch owned inventory -> deterministic expiry filtering -> AI -> response validation -> display.
-
-## Current architectural state
-
-1. Expired items can be discarded through an ownership-safe confirmed action; the discard is recorded in activity history.
-2. Unit parsing and normalization return explicit compatible/incompatible results for supported weight, volume, and count units.
-3. Expiry is nullable and reliable date derivation is used by AI, import, label, and inventory flows.
-4. Signup requires email verification through a delivered token; there is no local bypass.
-5. Shared dashboards provide activity history, computed notifications, responsive navigation, and list/grid inventory views.
-
-Further changes should remain focused on maintenance, testing, and deployment configuration rather than new architecture.
-
-## UI redesign planning state
-
-The next product phase is a documentation-only visual and UX redesign planned in `specs/UI redesign roadmap.md` and Stages 0-12. The redesign may change presentation, interaction, responsive structure, visual tokens, and component composition, but must preserve server actions, route protection, account isolation, ownership, deterministic inventory/expiry/quantity/FIFO/waste logic, recipe safety, AI safety, and pricing rules.
-
-The intended split is expressive marketing and restrained, information-dense authenticated productivity screens. Consumer and Business remain visually related but contextually distinct. Barcode scanning and external barcode lookup remain deferred and hidden.
+- Theme-aware CSS variable design system supporting Light, Dark, and System modes.
+- Ambient mesh background gradients (`.sl-ambient-mesh`, `.sl-mesh-subtle`).
+- Micro-animations (`.hover-lift`, `.pulse-glow`) for elevated interactivity.
+- Atmospheric scroll fog isolated strictly to `src/app/(marketing)/layout.tsx`.
