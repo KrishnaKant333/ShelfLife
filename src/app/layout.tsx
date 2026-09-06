@@ -45,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${shelfBody.variable} ${shelfDisplay.variable} scroll-fog`}
+        className={`${shelfBody.variable} ${shelfDisplay.variable}`}
       >
         <ThemeProvider>{children}</ThemeProvider>
         <Analytics />

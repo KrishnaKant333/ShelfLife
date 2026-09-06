@@ -89,6 +89,11 @@ Signup is blocked until SMTP is configured. There is no local verification bypas
 - [x] Post-roadmap follow-up: investigate and fix Scan Label upload/camera production failures
 - [x] Post-roadmap follow-up: add richer but controlled gradient atmosphere and keep scroll motion adjustable
 - [x] Post-roadmap follow-up: align Server Action upload limits, normalize label MIME types, harden camera readiness, add varied gradients, and make scroll reveals opt-in
+- [x] 5-Stage Fix Pass (2026-09-06): Stage 1 Inventory UI responsive table/badge fixes (whitespace-nowrap capsules, align-middle table rows)
+- [x] 5-Stage Fix Pass (2026-09-06): Stage 2 Groq AI diagnosis & fix for HTTP 400 json_validate_failed (added reasoning_effort: none, max_tokens: 700/1000, and JSON prompt tuning)
+- [x] 5-Stage Fix Pass (2026-09-06): Stage 3 Fog effect isolation strictly to landing/marketing layout (removed from app layout, isolated to (marketing)/layout.tsx)
+- [x] 5-Stage Fix Pass (2026-09-06): Stage 4 Notifications vs Alerts purpose redesign (Alerts = urgent actionable inventory attention; Notifications = informational activity stream)
+- [x] 5-Stage Fix Pass (2026-09-06): Stage 5 Enhanced dynamic mesh background gradients & interactive micro-animations (.hover-lift, .pulse-glow)
 
 ## Do not break
 

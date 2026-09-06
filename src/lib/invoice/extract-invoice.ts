@@ -90,7 +90,10 @@ Expected format:
       },
 
       temperature: 0,
-    });
+      max_tokens: 1000,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      reasoning_effort: "none",
+    } as any);
 
   const content =
     response.choices[0]?.message?.content;

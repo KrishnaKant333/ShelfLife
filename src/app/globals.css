@@ -180,7 +180,19 @@ html {
 
 body {
   margin: 0;
-  background: var(--shelf-cream);
+  background:
+    radial-gradient(
+      ellipse at 15% 10%,
+      color-mix(in srgb, var(--sl-color-action-soft) 40%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 85% 85%,
+      color-mix(in srgb, var(--sl-color-info) 10%, transparent),
+      transparent 40%
+    ),
+    var(--shelf-cream);
+  background-attachment: fixed;
   color: var(--sl-color-text);
   font-family: var(--font-shelf-body), sans-serif;
   font-size: 1rem;
@@ -188,6 +200,24 @@ body {
   transition:
     background-color var(--sl-duration-base) var(--sl-ease-standard),
     color var(--sl-duration-base) var(--sl-ease-standard);
+}
+
+.hover-lift {
+  transition: transform var(--sl-duration-base) var(--sl-ease-emphasis), box-shadow var(--sl-duration-base) var(--sl-ease-emphasis);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sl-shadow-md);
+}
+
+.pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sl-color-action) 35%, transparent); }
+  50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--sl-color-action) 0%, transparent); }
 }
 
 h1,

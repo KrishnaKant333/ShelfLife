@@ -65,7 +65,7 @@ export default function InventoryOverview({
               </div>
 
               <span
-                className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-medium ${statusStyles[status]}`}
+                className={`inline-flex items-center shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-medium ${statusStyles[status]}`}
               >
                 {status}
               </span>

@@ -6,9 +6,9 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <div className="scroll-fog min-h-screen">
       <Navbar />
       {children}
-    </>
+    </div>
   );
 }

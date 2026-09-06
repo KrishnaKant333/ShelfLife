@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Sidebar from "./Sidebar";
-import { Menu } from "lucide-react";
-import { Bell } from "lucide-react";
+import { Menu, Bell, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { getInventoryStatus } from "@/lib/inventory-status";
@@ -91,9 +90,12 @@ export default function DashboardShell({ children, user, inventory = [] }: Dashb
           priority
         />
         <div className="flex items-center gap-2">
+          <Link href={`${prefix}/alerts`} aria-label="Actionable Alerts" className="sl-focus-ring relative flex h-11 w-11 items-center justify-center rounded-[var(--sl-radius-md)] text-[var(--shelf-terracotta)] hover:bg-[var(--sl-color-surface-inset)]">
+            <AlertTriangle size={20} />
+            {alertCount > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--shelf-terracotta)] px-1 text-[9px] font-bold text-white">{alertCount > 9 ? "9+" : alertCount}</span>}
+          </Link>
           <Link href={`${prefix}/notifications`} aria-label="Notifications" className="sl-focus-ring relative flex h-11 w-11 items-center justify-center rounded-[var(--sl-radius-md)] text-[var(--sl-color-text-muted)] hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)]">
             <Bell size={20} />
-            {alertCount > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--shelf-terracotta)] px-1 text-[9px] font-bold text-white">{alertCount > 9 ? "9+" : alertCount}</span>}
           </Link>
           <button
             ref={mobileMenuButtonRef}
@@ -132,10 +134,13 @@ export default function DashboardShell({ children, user, inventory = [] }: Dashb
       {/* Main Page Content Body */}
       <main className="min-w-0 flex-1 lg:pl-0">
         <div className="relative py-4 md:py-6">
-          <div className="absolute right-6 top-2 hidden lg:block">
+          <div className="absolute right-6 top-2 hidden lg:flex items-center gap-2">
+            <Link href={`${prefix}/alerts`} aria-label="Actionable Alerts" className="sl-focus-ring relative inline-flex h-11 w-11 items-center justify-center rounded-[var(--sl-radius-md)] text-[var(--shelf-terracotta)] hover:bg-[var(--sl-color-surface)]">
+              <AlertTriangle size={20} />
+              {alertCount > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--shelf-terracotta)] px-1 text-[9px] font-bold text-white">{alertCount > 9 ? "9+" : alertCount}</span>}
+            </Link>
             <Link href={`${prefix}/notifications`} aria-label="Notifications" className="sl-focus-ring relative inline-flex h-11 w-11 items-center justify-center rounded-[var(--sl-radius-md)] text-[var(--sl-color-text-muted)] hover:bg-[var(--sl-color-surface)] hover:text-[var(--sl-color-text)]">
               <Bell size={20} />
-              {alertCount > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--shelf-terracotta)] px-1 text-[9px] font-bold text-white">{alertCount > 9 ? "9+" : alertCount}</span>}
             </Link>
           </div>
           {children}

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   Bell,
+  AlertTriangle,
   BarChart3,
   LayoutDashboard,
   Package,
@@ -68,8 +69,14 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
     {
       label: "Alerts",
       href: `${prefix}/alerts`,
-      icon: Bell,
+      icon: AlertTriangle,
       count: alertCount,
+    },
+    {
+      label: "Notifications",
+      href: `${prefix}/notifications`,
+      icon: Bell,
+      count: 0,
     },
     {
       label: "Analytics",

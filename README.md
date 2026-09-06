@@ -114,7 +114,14 @@ The redesign prioritizes a reusable design system, intentional light/dark themes
 
 ## Post-roadmap follow-up (2026-09-06)
 
-The maintenance pass fixed two Scan Label (AI) production paths and one visual adjustment: Server Action uploads now support the configured 20MB image ceiling with MIME normalization and stable Groq failure messages; live camera capture now centralizes stream attachment/playback and waits for a current frame before capture; public backgrounds now use varied layered gradients, while scroll-timeline reveals remain adjustable through an opt-in class. Existing extraction, expiry-safety, route, and inventory contracts remain unchanged.
+The maintenance pass completed a 5-stage fix pass:
+1. **Stage 1 (Inventory UI)**: Fixed responsive table/list badge and row styling by applying `whitespace-nowrap inline-flex` to status capsules ("Low Stock", "Not trackable", etc.) and `align-middle whitespace-nowrap` to desktop table rows.
+2. **Stage 2 (Groq AI)**: Diagnosed and resolved repeated HTTP 400 `json_validate_failed` errors in Scan Label and Invoice extraction by configuring `reasoning_effort: "none"`, `max_tokens`, and strict JSON system prompts to prevent Groq reasoning prelude tokens from invalidating JSON schema validation.
+3. **Stage 3 (Fog Effect)**: Isolated the `scroll-fog` visual effect strictly to the landing/marketing page (`(marketing)/layout.tsx`) and removed it completely from all dashboard, inventory, analytics, recipes, waste, settings, and auth routes.
+4. **Stage 4 (Notifications vs Alerts)**: Redesigned purpose distinction: **Alerts** (`/dashboard/alerts`) focus exclusively on urgent actionable inventory risks (Expiring, Expired, Low Stock with quick actions like Discard & Use), while **Notifications** (`/dashboard/notifications`) serve as an informational activity stream (Imports, AI results, usage logs, system updates).
+5. **Stage 5 (Background Gradients & Micro-Animations)**: Upgraded plain static backgrounds with ambient layered mesh gradients and responsive micro-animations (`.hover-lift`, `.pulse-glow`).
+
+Existing extraction, expiry-safety, route, and inventory contracts remain fully intact and verified through clean production builds.
 
 ## Final audit status (2026-09-05)
 

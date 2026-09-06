@@ -671,28 +671,28 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                                 )}
                               </button>
                             </td>
-                            <td className="px-6 py-4 text-sm font-bold text-[var(--shelf-dark)]">
+                            <td className="px-6 py-4 align-middle whitespace-nowrap text-sm font-bold text-[var(--shelf-dark)]">
                               <Link href={`${prefix}/inventory/${item.id}`} className="hover:text-[var(--shelf-forest)] hover:underline">
                                 {item.name}
                               </Link>
                             </td>
-                            <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">
+                            <td className="px-6 py-4 align-middle whitespace-nowrap text-sm text-[var(--shelf-muted)]">
                               {item.category}
                             </td>
-                            <td className="px-6 py-4 text-sm text-[var(--shelf-muted)] font-medium">
+                            <td className="px-6 py-4 align-middle whitespace-nowrap text-sm text-[var(--shelf-muted)] font-medium">
                               {item.quantity} {item.unit}
                             </td>
-                            <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">
+                            <td className="px-6 py-4 align-middle whitespace-nowrap text-sm text-[var(--shelf-muted)]">
                               {formatExpiry(item.expiryDate)}
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-6 py-4 align-middle whitespace-nowrap">
                               <span
-                                className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusStyles[status]}`}
+                                className={`inline-flex items-center shrink-0 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusStyles[status]}`}
                               >
                                 {status}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-right">
+                            <td className="px-6 py-4 align-middle whitespace-nowrap text-right">
                               <div className="flex justify-end gap-3 items-center">
                                 <button
                                   onClick={() => handleOpenConsume(item)}
@@ -730,23 +730,23 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2.5">
+                        <div className="flex items-start gap-2.5 min-w-0">
                           <button
                             type="button"
                             onClick={() => handleToggleSelect(item.id)}
                             aria-label={`Select ${item.name}`}
                             aria-pressed={isSelected}
-                            className="cursor-pointer mt-0.5 text-[var(--shelf-muted)] bg-transparent border-none"
+                            className="cursor-pointer mt-0.5 text-[var(--shelf-muted)] bg-transparent border-none shrink-0"
                           >
                             {isSelected ? <CheckSquare size={16} className="text-[var(--shelf-forest)]" /> : <Square size={16} />}
                           </button>
-                          <div>
-                            <Link href={`${prefix}/inventory/${item.id}`} className="font-bold text-[var(--shelf-dark)] leading-tight hover:text-[var(--shelf-forest)] hover:underline">{item.name}</Link>
-                            <p className="mt-1 text-xs text-[var(--shelf-muted)]">{item.category}</p>
+                          <div className="min-w-0">
+                            <Link href={`${prefix}/inventory/${item.id}`} className="font-bold text-[var(--shelf-dark)] leading-tight hover:text-[var(--shelf-forest)] hover:underline truncate block">{item.name}</Link>
+                            <p className="mt-1 text-xs text-[var(--shelf-muted)] truncate">{item.category}</p>
                           </div>
                         </div>
                         <span
-                          className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${statusStyles[status]}`}
+                          className={`inline-flex items-center shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${statusStyles[status]}`}
                         >
                           {status}
                         </span>

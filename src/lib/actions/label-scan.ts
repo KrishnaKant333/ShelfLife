@@ -45,11 +45,12 @@ export async function extractLabelAction(formData: FormData): Promise<LabelExtra
     response = await groq.chat.completions.create({
       model: "qwen/qwen3.6-27b",
       messages: [
-      {
-        role: "system",
-        content: `
-You are a product label scanner for ShelfLife.
+        {
+          role: "system",
+          content: `You are a product label scanner for ShelfLife.
 Analyze the provided product label image.
+You MUST respond with ONLY a valid JSON object. Do not include markdown code block markup or reasoning text.
+
 Attempt to extract the following fields if present on the label:
 - name: The name of the product.
 - category: A reasonable food or inventory category (e.g., Dairy, Bakery, Produce, Grains, Beverages, Canned Goods, Pantry). Infer this from the product name if not explicitly stated.
@@ -64,39 +65,42 @@ Rules:
 1. Do NOT invent or make up values.
 2. If a field (especially expiryDate or quantity) is not confidently visible, return null for it.
 3. If expiryDate has a format like "12 SEP 26" or "09/12/26", parse and convert it to YYYY-MM-DD.
-4. Return ONLY a valid JSON object matching the expected format.
-
-Expected JSON format:
+4. Output raw valid JSON matching this schema:
 {
   "name": "Organic Whole Milk",
   "category": "Dairy",
   "quantity": 1,
   "unit": "litres",
-  "expiryDate": "2026-09-12"
-}
-        `.trim(),
-      },
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: "Extract information from this product label.",
-          },
-          {
-            type: "image_url",
-            image_url: {
-              url: `data:${fileType};base64,${base64}`,
+  "expiryDate": "2026-09-12",
+  "bestBeforeDate": null,
+  "manufacturingDate": null,
+  "shelfLifeDays": null
+}`,
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Extract information from this product label into a valid JSON object.",
             },
-          },
-        ],
-      },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${fileType};base64,${base64}`,
+              },
+            },
+          ],
+        },
       ],
       response_format: {
         type: "json_object",
       },
       temperature: 0,
-    });
+      max_tokens: 700,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      reasoning_effort: "none",
+    } as any);
   } catch (error) {
     const message = error instanceof Error ? error.message : "The label scanning service is unavailable.";
     throw new Error(`Label scanning failed: ${message}`);
