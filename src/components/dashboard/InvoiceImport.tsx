@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { extractInvoiceAction } from "@/lib/actions/invoice";
 import { importInventoryAction } from "@/lib/actions/inventory";
 
@@ -15,16 +15,52 @@ type InvoiceItem = {
 export default function InvoiceImport() {
   const [file, setFile] = useState<File | null>(null);
   const [items, setItems] = useState<InvoiceItem[]>([]);
-  const [stats, setStats] = useState<{
-    detectedCount: number;
-    newCount: number;
-    presentCount: number;
-    expiringCount: number;
-  } | null>(null);
+  const [existingNames, setExistingNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const stats = useMemo(() => {
+    if (items.length === 0) return null;
+
+    const detectedCount = items.length;
+    const presentCount = items.filter((item) =>
+      existingNames.includes(item.name.toLowerCase().trim())
+    ).length;
+    const newCount = Math.max(0, detectedCount - presentCount);
+
+    const expiringCount = items.filter((item) => {
+      if (!item.expiryDate || !item.expiryDate.trim()) return false;
+      const dateStr = item.expiryDate.trim();
+      let dateObj: Date | null = null;
+
+      if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+        const [day, month, year] = dateStr.split("-").map(Number);
+        dateObj = new Date(year, month - 1, day);
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const [year, month, day] = dateStr.split("-").map(Number);
+        dateObj = new Date(year, month - 1, day);
+      } else {
+        dateObj = new Date(dateStr);
+      }
+
+      if (!dateObj || isNaN(dateObj.getTime())) return false;
+
+      const threshold = new Date();
+      threshold.setDate(threshold.getDate() + 7);
+      threshold.setHours(23, 59, 59, 999);
+
+      return dateObj <= threshold;
+    }).length;
+
+    return {
+      detectedCount,
+      newCount,
+      presentCount,
+      expiringCount,
+    };
+  }, [items, existingNames]);
 
   async function handleExtract() {
     if (!file) return;
@@ -33,7 +69,7 @@ export default function InvoiceImport() {
     setError("");
     setSuccess("");
     setItems([]);
-    setStats(null);
+    setExistingNames([]);
 
     try {
       const formData = new FormData();
@@ -41,7 +77,9 @@ export default function InvoiceImport() {
 
       const result = await extractInvoiceAction(formData);
       setItems(result.items);
-      setStats(result.stats);
+      if (result.existingNames) {
+        setExistingNames(result.existingNames);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invoice extraction failed.");
     } finally {
@@ -145,7 +183,7 @@ export default function InvoiceImport() {
                 onChange={(event) => {
                   setFile(event.target.files?.[0] ?? null);
                   setItems([]);
-                  setStats(null);
+                  setExistingNames([]);
                   setError("");
                   setSuccess("");
                 }}
@@ -223,7 +261,7 @@ export default function InvoiceImport() {
                     <span className="block text-sm font-extrabold text-[var(--shelf-blue)] mt-0.5">{stats.presentCount} products</span>
                   </div>
                   <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
-                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">Near Expiry</span>
+                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">Near Expiry / Expired</span>
                     <span className="block text-sm font-extrabold text-[var(--shelf-terracotta)] mt-0.5">{stats.expiringCount} products</span>
                   </div>
                 </div>

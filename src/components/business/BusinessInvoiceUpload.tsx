@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { extractInvoiceAction } from "@/lib/actions/invoice";
 import { importBusinessInventory } from "@/lib/actions/business-inventory";
@@ -16,11 +16,53 @@ type InvoiceItem = {
 export default function BusinessInvoiceUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [existingNames, setExistingNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const stats = useMemo(() => {
+    if (items.length === 0) return null;
+
+    const detectedCount = items.length;
+    const presentCount = items.filter((item) =>
+      existingNames.includes(item.name.toLowerCase().trim())
+    ).length;
+    const newCount = Math.max(0, detectedCount - presentCount);
+
+    const expiringCount = items.filter((item) => {
+      if (!item.expiryDate || !item.expiryDate.trim()) return false;
+      const dateStr = item.expiryDate.trim();
+      let dateObj: Date | null = null;
+
+      if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+        const [day, month, year] = dateStr.split("-").map(Number);
+        dateObj = new Date(year, month - 1, day);
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const [year, month, day] = dateStr.split("-").map(Number);
+        dateObj = new Date(year, month - 1, day);
+      } else {
+        dateObj = new Date(dateStr);
+      }
+
+      if (!dateObj || isNaN(dateObj.getTime())) return false;
+
+      const threshold = new Date();
+      threshold.setDate(threshold.getDate() + 7);
+      threshold.setHours(23, 59, 59, 999);
+
+      return dateObj <= threshold;
+    }).length;
+
+    return {
+      detectedCount,
+      newCount,
+      presentCount,
+      expiringCount,
+    };
+  }, [items, existingNames]);
 
   async function handleExtract() {
     if (!file) return;
@@ -29,6 +71,7 @@ export default function BusinessInvoiceUpload() {
     setError("");
     setSuccess("");
     setItems([]);
+    setExistingNames([]);
 
     try {
       const formData = new FormData();
@@ -37,6 +80,9 @@ export default function BusinessInvoiceUpload() {
       const result = await extractInvoiceAction(formData);
 
       setItems(result.items);
+      if (result.existingNames) {
+        setExistingNames(result.existingNames);
+      }
     } catch (error) {
       setError(
         error instanceof Error
@@ -169,6 +215,7 @@ export default function BusinessInvoiceUpload() {
               );
 
               setItems([]);
+              setExistingNames([]);
               setError("");
               setSuccess("");
             }}
@@ -212,7 +259,7 @@ export default function BusinessInvoiceUpload() {
       {/* Preview */}
       {items.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-sm">
-          <div className="border-b border-[var(--shelf-border)] p-6">
+          <div className="border-b border-[var(--shelf-border)] p-6 space-y-4">
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
                 <h2 className="text-xl font-semibold">
@@ -229,6 +276,32 @@ export default function BusinessInvoiceUpload() {
                 {items.length} products
               </span>
             </div>
+
+            {stats && (
+              <div className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 text-xs space-y-2">
+                <h4 className="font-bold text-[var(--shelf-dark)] uppercase tracking-wider">
+                  Invoice Intelligence Analysis
+                </h4>
+                <div className="grid gap-3 grid-cols-2 md:grid-cols-4 pt-1 text-center">
+                  <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
+                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">Detected</span>
+                    <span className="block text-sm font-extrabold text-[var(--shelf-dark)] mt-0.5">{stats.detectedCount} products</span>
+                  </div>
+                  <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
+                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">New Items</span>
+                    <span className="block text-sm font-extrabold text-[var(--shelf-forest)] mt-0.5">{stats.newCount} products</span>
+                  </div>
+                  <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
+                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">Existing</span>
+                    <span className="block text-sm font-extrabold text-[var(--shelf-blue)] mt-0.5">{stats.presentCount} products</span>
+                  </div>
+                  <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
+                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">Near Expiry / Expired</span>
+                    <span className="block text-sm font-extrabold text-[var(--shelf-terracotta)] mt-0.5">{stats.expiringCount} products</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="overflow-x-auto">

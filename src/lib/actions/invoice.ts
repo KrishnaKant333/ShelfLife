@@ -57,29 +57,13 @@ export async function extractInvoiceAction(
     }
   }
 
-  const detectedCount = extraction.items.length;
-  const presentCount = extraction.items.filter(item =>
-    currentInventory.some(x => x.name.toLowerCase().trim() === item.name.toLowerCase().trim())
-  ).length;
-  const newCount = detectedCount - presentCount;
-
-  const expiringCount = extraction.items.filter(item => {
-    if (!item.expiryDate) return false;
-    const diff = new Date(item.expiryDate).getTime() - new Date().getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days >= 0 && days <= 3;
-  }).length;
+  const existingNames = currentInventory.map((x) => x.name.toLowerCase().trim());
 
   return {
     items: extraction.items.map((item) => ({
       ...item,
       expiryDate: deriveExpiryDate(item),
     })),
-    stats: {
-      detectedCount,
-      newCount,
-      presentCount,
-      expiringCount,
-    }
+    existingNames,
   };
 }
