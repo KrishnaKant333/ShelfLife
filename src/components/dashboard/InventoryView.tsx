@@ -494,66 +494,174 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
         {/* Main List Section */}
         <div className="lg:col-span-3 space-y-6">
           
-          {/* Toolbar - Search, Filters & Sorting */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-[var(--shelf-surface)] border border-[var(--shelf-border)] p-4 rounded-2xl shadow-xs">
-            {/* Search Bar */}
-            <div className="relative flex-1 max-w-xs">
-              <span className="absolute inset-y-0 left-3 flex items-center text-[var(--shelf-muted)]">
-                <Search size={18} />
-              </span>
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 py-2.5 pl-10 pr-4 text-sm text-[var(--shelf-dark)] outline-none focus:border-[var(--shelf-forest)] focus:bg-[var(--shelf-surface)] transition"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1 rounded-xl border border-[var(--shelf-border)]/50 bg-[var(--shelf-cream)]/50 p-1">
-                <button type="button" onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-lg p-2 ${viewMode === "list" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
-                  <List size={16} />
-                </button>
-                <button type="button" onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-lg p-2 ${viewMode === "grid" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
-                  <Grid2X2 size={16} />
-                </button>
+          {/* Toolbar - Desktop (md:flex) vs Mobile (md:hidden) */}
+          <div className="bg-[var(--shelf-surface)] border border-[var(--shelf-border)] p-3 md:p-4 rounded-2xl shadow-xs">
+            {/* Desktop Layout (md:flex) */}
+            <div className="hidden md:flex md:items-center md:justify-between gap-4">
+              <div className="relative flex-1 max-w-xs">
+                <span className="absolute inset-y-0 left-3 flex items-center text-[var(--shelf-muted)]">
+                  <Search size={18} />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 py-2.5 pl-10 pr-4 text-sm text-[var(--shelf-dark)] outline-none focus:border-[var(--shelf-forest)] focus:bg-[var(--shelf-surface)] transition"
+                />
               </div>
-              {/* Filter Buttons */}
-              <div className="flex flex-wrap gap-1.5 bg-[var(--shelf-cream)]/50 p-1 rounded-xl border border-[var(--shelf-border)]/50">
-                {(["All", "Expired", "Fresh", "Expiring", "Low Stock"] as const).map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setActiveFilter(filter)}
-                    className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold tracking-wide uppercase transition ${
-                      activeFilter === filter
-                        ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)] shadow-xs"
-                        : "text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
-                    }`}
-                  >
-                    {filter}
+
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1 rounded-xl border border-[var(--shelf-border)]/50 bg-[var(--shelf-cream)]/50 p-1">
+                  <button type="button" onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-lg p-2 ${viewMode === "list" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
+                    <List size={16} />
                   </button>
-                ))}
-              </div>
+                  <button type="button" onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-lg p-2 ${viewMode === "grid" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
+                    <Grid2X2 size={16} />
+                  </button>
+                </div>
+                {/* Filter Buttons */}
+                <div className="flex flex-wrap gap-1.5 bg-[var(--shelf-cream)]/50 p-1 rounded-xl border border-[var(--shelf-border)]/50">
+                  {(["All", "Expired", "Fresh", "Expiring", "Low Stock"] as const).map((filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => setActiveFilter(filter)}
+                      className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold tracking-wide uppercase transition ${
+                        activeFilter === filter
+                          ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)] shadow-xs"
+                          : "text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
+                      }`}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
 
-              {/* Sort selector dropdown */}
-              <div className="relative flex items-center gap-1.5 bg-[var(--shelf-cream)]/50 px-3 py-2 rounded-xl border border-[var(--shelf-border)]/50 text-[11px] font-semibold text-[var(--shelf-dark)]">
-                <span className="text-[var(--shelf-muted)] uppercase tracking-wide">Sort:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="bg-transparent border-none outline-none pr-1.5 font-bold cursor-pointer"
-                >
-                  <option value="expiry-asc">Expiry: Nearest</option>
-                  <option value="expiry-desc">Expiry: Latest</option>
-                  <option value="name-asc">Name: A-Z</option>
-                  <option value="name-desc">Name: Z-A</option>
-                  <option value="qty-asc">Qty: Lowest</option>
-                  <option value="qty-desc">Qty: Highest</option>
-                  <option value="date-added">Recently Added</option>
-                </select>
+                {/* Sort selector dropdown */}
+                <div className="relative flex items-center gap-1.5 bg-[var(--shelf-cream)]/50 px-3 py-2 rounded-xl border border-[var(--shelf-border)]/50 text-[11px] font-semibold text-[var(--shelf-dark)]">
+                  <span className="text-[var(--shelf-muted)] uppercase tracking-wide">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    className="bg-transparent border-none outline-none pr-1.5 font-bold cursor-pointer text-[var(--shelf-dark)]"
+                  >
+                    <option value="expiry-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Expiry: Nearest</option>
+                    <option value="expiry-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Expiry: Latest</option>
+                    <option value="name-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Name: A-Z</option>
+                    <option value="name-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Name: Z-A</option>
+                    <option value="qty-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Qty: Lowest</option>
+                    <option value="qty-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Qty: Highest</option>
+                    <option value="date-added" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Recently Added</option>
+                  </select>
+                </div>
               </div>
             </div>
+
+            {/* Compact Mobile Toolbar (< md) */}
+            <div className="flex flex-col gap-2.5 md:hidden">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute inset-y-0 left-3 flex items-center text-[var(--shelf-muted)]">
+                    <Search size={16} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 py-2 pl-9 pr-3 text-xs text-[var(--shelf-dark)] outline-none focus:border-[var(--shelf-forest)]"
+                  />
+                </div>
+                <div className="flex items-center gap-0.5 rounded-xl border border-[var(--shelf-border)]/50 bg-[var(--shelf-cream)]/50 p-1 shrink-0">
+                  <button type="button" onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-lg p-1.5 ${viewMode === "list" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
+                    <List size={15} />
+                  </button>
+                  <button type="button" onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-lg p-1.5 ${viewMode === "grid" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
+                    <Grid2X2 size={15} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+                <div className="relative flex items-center gap-1 bg-[var(--shelf-cream)]/50 px-2.5 py-1.5 rounded-xl border border-[var(--shelf-border)]/50 text-[11px]">
+                  <Filter size={13} className="text-[var(--shelf-muted)] shrink-0" />
+                  <select
+                    value={activeFilter}
+                    onChange={(e) => setActiveFilter(e.target.value as typeof activeFilter)}
+                    className="w-full bg-transparent border-none outline-none font-bold cursor-pointer text-[var(--shelf-dark)] truncate"
+                  >
+                    <option value="All" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Status: All</option>
+                    <option value="Expired" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Expired</option>
+                    <option value="Fresh" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Fresh</option>
+                    <option value="Expiring" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Expiring Soon</option>
+                    <option value="Low Stock" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Low Stock</option>
+                  </select>
+                </div>
+
+                <div className="relative flex items-center gap-1 bg-[var(--shelf-cream)]/50 px-2.5 py-1.5 rounded-xl border border-[var(--shelf-border)]/50 text-[11px]">
+                  <span className="text-[var(--shelf-muted)] shrink-0">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    className="w-full bg-transparent border-none outline-none font-bold cursor-pointer text-[var(--shelf-dark)] truncate"
+                  >
+                    <option value="expiry-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Nearest Expiry</option>
+                    <option value="expiry-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Latest Expiry</option>
+                    <option value="name-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Name: A-Z</option>
+                    <option value="name-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Name: Z-A</option>
+                    <option value="qty-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Qty: Lowest</option>
+                    <option value="qty-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Qty: Highest</option>
+                    <option value="date-added" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Recently Added</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Recent Activity Accordion Panel */}
+          <div className="lg:hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-xs">
+            <details className="group">
+              <summary className="cursor-pointer flex items-center justify-between font-bold text-xs text-[var(--shelf-dark)] select-none">
+                <span className="flex items-center gap-1.5">
+                  <Clock size={16} className="text-[var(--shelf-forest)]" />
+                  Recent Activity {history.length > 0 ? `(${history.length})` : ""}
+                </span>
+                <ChevronDown size={16} className="transition-transform group-open:rotate-180 text-[var(--shelf-muted)]" />
+              </summary>
+              <div className="mt-3 pt-3 border-t border-[var(--shelf-border)]/50 space-y-2 max-h-48 overflow-y-auto pr-1">
+                {loadingHistory ? (
+                  <div className="flex items-center gap-2 py-2 text-xs text-[var(--shelf-muted)]">
+                    <Loader2 className="animate-spin text-[var(--shelf-forest)] h-4 w-4" />
+                    <span>Loading activity stream...</span>
+                  </div>
+                ) : historyError ? (
+                  <div className="space-y-1 py-1">
+                    <p className="text-xs text-[var(--shelf-terracotta)]">{historyError}</p>
+                    <button type="button" onClick={fetchHistory} className="text-xs font-semibold text-[var(--shelf-forest)] hover:underline">
+                      Try again
+                    </button>
+                  </div>
+                ) : history.length === 0 ? (
+                  <p className="text-xs text-[var(--shelf-muted)] italic py-1">
+                    No consumption recorded yet. Use products to see usage logs.
+                  </p>
+                ) : (
+                  history.map((record) => (
+                    <div key={`mob-${record.id}`} className="text-xs border-b border-[var(--shelf-border)]/30 pb-2 last:border-0 last:pb-0">
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="font-semibold text-[var(--shelf-dark)] truncate">{record.productName}</span>
+                        <span className="text-[9px] bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 text-[var(--shelf-forest)] px-1.5 py-0.5 rounded font-bold shrink-0">
+                          -{record.quantityUsed} {record.unit}
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-[var(--shelf-muted)] block mt-0.5">
+                        {new Date(record.consumedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </details>
           </div>
 
           {/* Bulk Action Controls */}
@@ -792,8 +900,8 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
           )}
         </div>
 
-        {/* Sidebar Activity History */}
-        <div className="lg:col-span-1">
+        {/* Sidebar Activity History (Desktop only) */}
+        <div className="hidden lg:block lg:col-span-1">
           <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-xs sticky top-6">
             <h3 className="text-sm font-bold text-[var(--shelf-dark)] mb-4 flex items-center gap-1.5">
               <Clock size={16} className="text-[var(--shelf-forest)]" />

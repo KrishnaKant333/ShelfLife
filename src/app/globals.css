@@ -202,6 +202,11 @@ h6 {
   line-height: 1.08;
 }
 
+select option {
+  background-color: var(--sl-color-surface) !important;
+  color: var(--sl-color-text) !important;
+}
+
 button,
 a,
 input,

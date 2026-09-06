@@ -14,7 +14,7 @@ type NotificationItem = {
 
 type ActivityEvent = {
   id: string;
-  category: "Import" | "AI" | "Usage" | "System";
+  category: "Product" | "Import" | "AI" | "System";
   title: string;
   detail: string;
   timestamp: string;
@@ -25,46 +25,46 @@ type ActivityEvent = {
 
 export default function NotificationCenter({ inventory, isBusiness = false }: { inventory: NotificationItem[]; isBusiness?: boolean }) {
   const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
-  const [activeTab, setActiveTab] = useState<"All" | "Import" | "AI" | "Usage" | "System">("All");
+  const [activeTab, setActiveTab] = useState<"All" | "Product" | "Import" | "AI" | "System">("All");
   const [cleared, setCleared] = useState(false);
 
   // Generate informational activity stream from current system state
   const mockSystemEvents: ActivityEvent[] = [
     {
       id: "evt-1",
-      category: "Import",
-      title: "Batch Inventory Sync Complete",
-      detail: `${inventory.length} total product items are synchronized and active on your shelf.`,
+      category: "Product",
+      title: "Inventory Items Tracking Active",
+      detail: `${inventory.length} total product(s) currently tracked in your active shelf inventory.`,
       timestamp: "Just now",
-      icon: FileSpreadsheet,
-      iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      icon: CheckCircle2,
+      iconBg: "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]",
       link: `${prefix}/inventory`,
     },
     {
       id: "evt-2",
+      category: "Import",
+      title: "Batch Import & Label Scan Ready",
+      detail: "CSV, invoice, and Groq AI label scanning flows are active for instant product entry.",
+      timestamp: "5m ago",
+      icon: FileSpreadsheet,
+      iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      link: `${prefix}/inventory/new?tab=import`,
+    },
+    {
+      id: "evt-3",
       category: "AI",
-      title: "Groq AI Recipe Engine Ready",
-      detail: "ShelfLife AI scanned your non-expired ingredients and generated smart recipe recommendations.",
-      timestamp: "10m ago",
+      title: "Groq AI Recipe Engine Synchronized",
+      detail: "ShelfLife AI scanned your safe, non-expired inventory to generate customized recipes.",
+      timestamp: "15m ago",
       icon: Sparkles,
       iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
       link: `${prefix}/recipes`,
     },
     {
-      id: "evt-3",
-      category: "Usage",
-      title: "Consumption Tracking Active",
-      detail: "Usage logs recorded automatically when ingredients are marked consumed.",
-      timestamp: "1h ago",
-      icon: Activity,
-      iconBg: "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]",
-      link: `${prefix}/inventory`,
-    },
-    {
       id: "evt-4",
       category: "System",
       title: "Account Security & Verification",
-      detail: "Your email session is authenticated and protected with Auth.js credentials security.",
+      detail: "Authenticated session is secured with Auth.js credentials protection.",
       timestamp: "Today",
       icon: ShieldCheck,
       iconBg: "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]",
@@ -87,7 +87,7 @@ export default function NotificationCenter({ inventory, isBusiness = false }: { 
               Informational Stream
             </p>
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-[var(--shelf-dark)]">
-              Activity & Updates
+              Activity & Notifications
             </h1>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function NotificationCenter({ inventory, isBusiness = false }: { 
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center gap-2 bg-[var(--shelf-surface)] border border-[var(--shelf-border)] p-1.5 rounded-xl shadow-xs">
-        {(["All", "Import", "AI", "Usage", "System"] as const).map((tab) => (
+        {(["All", "Product", "Import", "AI", "System"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}

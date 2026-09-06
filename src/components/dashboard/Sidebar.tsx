@@ -67,18 +67,6 @@ export default function Sidebar({ user, onCloseMobile, inventory = [], collapsed
       count: 0,
     },
     {
-      label: "Alerts",
-      href: `${prefix}/alerts`,
-      icon: AlertTriangle,
-      count: alertCount,
-    },
-    {
-      label: "Notifications",
-      href: `${prefix}/notifications`,
-      icon: Bell,
-      count: 0,
-    },
-    {
       label: "Analytics",
       href: `${prefix}/analytics`,
       icon: BarChart3,
