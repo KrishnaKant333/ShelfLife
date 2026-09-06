@@ -159,6 +159,7 @@
 .auth-contrast-panel .auth-panel-border {
   border-color: color-mix(in srgb, var(--auth-panel-text) 18%, transparent);
 }
+
 .shelf-card {
   background: var(--sl-color-surface);
   border: 1px solid var(--sl-color-border);
@@ -180,19 +181,7 @@ html {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(
-      ellipse at 15% 10%,
-      color-mix(in srgb, var(--sl-color-action-soft) 40%, transparent),
-      transparent 45%
-    ),
-    radial-gradient(
-      ellipse at 85% 85%,
-      color-mix(in srgb, var(--sl-color-info) 10%, transparent),
-      transparent 40%
-    ),
-    var(--shelf-cream);
-  background-attachment: fixed;
+  background: var(--shelf-cream);
   color: var(--sl-color-text);
   font-family: var(--font-shelf-body), sans-serif;
   font-size: 1rem;
@@ -200,24 +189,6 @@ body {
   transition:
     background-color var(--sl-duration-base) var(--sl-ease-standard),
     color var(--sl-duration-base) var(--sl-ease-standard);
-}
-
-.hover-lift {
-  transition: transform var(--sl-duration-base) var(--sl-ease-emphasis), box-shadow var(--sl-duration-base) var(--sl-ease-emphasis);
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--sl-shadow-md);
-}
-
-.pulse-glow {
-  animation: pulseGlow 2.5s infinite ease-in-out;
-}
-
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sl-color-action) 35%, transparent); }
-  50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--sl-color-action) 0%, transparent); }
 }
 
 h1,
@@ -258,41 +229,31 @@ a {
   position: relative;
   isolation: isolate;
   background:
-    radial-gradient(
-      ellipse at 12% 8%,
+    radial-gradient(ellipse at 12% 8%,
       color-mix(in srgb, var(--sl-color-action-soft) 82%, transparent),
-      transparent 42%
-    ),
-    radial-gradient(
-      ellipse at 88% 22%,
+      transparent 42%),
+    radial-gradient(ellipse at 88% 22%,
       color-mix(in srgb, var(--sl-color-info) 8%, transparent),
-      transparent 38%
-    ),
-    linear-gradient(
-      118deg,
+      transparent 38%),
+    linear-gradient(118deg,
       color-mix(in srgb, var(--sl-color-action-soft) 24%, transparent),
       transparent 32%,
       color-mix(in srgb, var(--sl-color-warning) 5%, transparent) 68%,
-      transparent
-    ),
+      transparent),
     var(--shelf-cream);
 }
 
-.shelf-background > section:nth-of-type(3n + 1) {
-  background-image: linear-gradient(
-    132deg,
-    color-mix(in srgb, var(--sl-color-action-soft) 16%, transparent),
-    transparent 46%
-  );
+.shelf-background>section:nth-of-type(3n + 1) {
+  background-image: linear-gradient(132deg,
+      color-mix(in srgb, var(--sl-color-action-soft) 16%, transparent),
+      transparent 46%);
   background-blend-mode: soft-light;
 }
 
-.shelf-background > section:nth-of-type(3n + 2) {
-  background-image: linear-gradient(
-    224deg,
-    color-mix(in srgb, var(--sl-color-info) 7%, transparent),
-    transparent 52%
-  );
+.shelf-background>section:nth-of-type(3n + 2) {
+  background-image: linear-gradient(224deg,
+      color-mix(in srgb, var(--sl-color-info) 7%, transparent),
+      transparent 52%);
   background-blend-mode: soft-light;
 }
 
@@ -312,25 +273,22 @@ a {
 
 .scroll-fog::before {
   top: 0;
-  background: linear-gradient(
-    to bottom,
-    var(--sl-color-canvas) 0%,
-    color-mix(in srgb, var(--sl-color-canvas) 82%, transparent) 38%,
-    transparent 100%
-  );
+  background: linear-gradient(to bottom,
+      var(--sl-color-canvas) 0%,
+      color-mix(in srgb, var(--sl-color-canvas) 82%, transparent) 38%,
+      transparent 100%);
 }
 
 .scroll-fog::after {
   bottom: 0;
-  background: linear-gradient(
-    to top,
-    var(--sl-color-canvas) 0%,
-    color-mix(in srgb, var(--sl-color-canvas) 82%, transparent) 38%,
-    transparent 100%
-  );
+  background: linear-gradient(to top,
+      var(--sl-color-canvas) 0%,
+      color-mix(in srgb, var(--sl-color-canvas) 82%, transparent) 38%,
+      transparent 100%);
 }
 
 @media (max-width: 640px) {
+
   .scroll-fog::before,
   .scroll-fog::after {
     height: 4.5rem;
@@ -340,28 +298,23 @@ a {
 
 .dark .shelf-background {
   background:
-    radial-gradient(
-      ellipse at 12% 8%,
+    radial-gradient(ellipse at 12% 8%,
       color-mix(in srgb, var(--sl-color-action-soft) 78%, transparent),
-      transparent 42%
-    ),
-    radial-gradient(
-      ellipse at 88% 22%,
+      transparent 42%),
+    radial-gradient(ellipse at 88% 22%,
       color-mix(in srgb, var(--sl-color-info) 7%, transparent),
-      transparent 38%
-    ),
-    linear-gradient(
-      118deg,
+      transparent 38%),
+    linear-gradient(118deg,
       color-mix(in srgb, var(--sl-color-action-soft) 22%, transparent),
       transparent 32%,
       color-mix(in srgb, var(--sl-color-warning) 4%, transparent) 68%,
-      transparent
-    ),
+      transparent),
     var(--shelf-cream);
 }
 
 
 @keyframes heroFloat {
+
   0%,
   100% {
     transform: translateY(0);
@@ -373,6 +326,7 @@ a {
 }
 
 @keyframes heroFloatReverse {
+
   0%,
   100% {
     transform: translateY(0);
@@ -385,15 +339,11 @@ a {
 
 .feature-active {
   background:
-    linear-gradient(
-      145deg,
+    linear-gradient(145deg,
       var(--shelf-surface),
-      color-mix(
-        in srgb,
+      color-mix(in srgb,
         var(--shelf-sage) 10%,
-        var(--shelf-surface)
-      )
-    );
+        var(--shelf-surface)));
 }
 
 [id] {
@@ -453,8 +403,15 @@ a {
 }
 
 @keyframes sl-fade-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .sl-enter {
@@ -484,6 +441,7 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
