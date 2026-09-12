@@ -1,15 +1,119 @@
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Milk, Package, Wheat } from "lucide-react";
+import { ArrowLeft, PackageOpen } from "lucide-react";
 import { auth } from "@/auth";
 import { db } from "@/prisma/db";
-import { formatExpiry } from "@/lib/format-expiry";
 import { getInventoryStatus } from "@/lib/inventory-status";
+import ProductDossierView from "@/components/inventory/ProductDossierView";
+import type { ConsumptionRecord } from "@/lib/actions/recipes";
 
-export default async function BusinessProductPage({ params }: { params: Promise<{ id: string }> }) {
+interface BusinessProductPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function BusinessProductPage({ params }: BusinessProductPageProps) {
   const session = await auth();
-  if (!session?.user?.businessId) return <p className="p-8">Unauthorized.</p>;
-  const product = await db.orm.public.InventoryItem.first({ id: Number((await params).id), businessId: Number(session.user.businessId) });
-  if (!product) return <main className="p-8"><h1>Product not found</h1><Link href="/business/dashboard/inventory">Back to inventory</Link></main>;
-  const Icon = product.category.toLowerCase().includes("dairy") ? Milk : product.category.toLowerCase().includes("grain") ? Wheat : Package;
-  return <main className="mx-auto max-w-4xl p-6 md:p-10"><Link href="/business/dashboard/inventory" className="text-sm font-medium text-[var(--shelf-forest)]">Back to inventory</Link><div className="mt-6 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-8"><div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--shelf-cream)] text-[var(--shelf-forest)]"><Icon size={36} /></div><h1 className="mt-6 text-3xl font-bold text-[var(--shelf-dark)]">{product.name}</h1><p className="mt-2 text-[var(--shelf-muted)]">{product.category}</p><div className="mt-8 grid gap-4 sm:grid-cols-3"><div><p className="text-xs text-[var(--shelf-muted)]">Quantity</p><p className="font-semibold text-[var(--shelf-dark)]">{product.quantity} {product.unit}</p></div><div><p className="text-xs text-[var(--shelf-muted)]">Expiry</p><p className="font-semibold text-[var(--shelf-dark)]">{formatExpiry(product.expiryDate)}</p></div><div><p className="text-xs text-[var(--shelf-muted)]">Status</p><p className="font-semibold text-[var(--shelf-dark)]">{getInventoryStatus(product.quantity, product.expiryDate, product.unit)}</p></div></div><Link href={`/business/dashboard/inventory/${product.id}/edit`} className="mt-8 inline-flex rounded-xl bg-[var(--shelf-forest)] px-5 py-3 font-semibold text-white">Edit product</Link></div></main>;
+
+  if (!session?.user?.id || !session.user.businessId) {
+    redirect("/auth/signin");
+  }
+
+  const resolvedParams = await params;
+  const productId = Number(resolvedParams.id);
+
+  if (!productId || isNaN(productId)) {
+    notFound();
+  }
+
+  const businessId = Number(session.user.businessId);
+
+  // Fetch product verified by business ownership
+  const product = await db.orm.public.InventoryItem.first({
+    id: productId,
+    businessId,
+  });
+
+  if (!product) {
+    return (
+      <div className="sl-editorial-card p-12 text-center max-w-lg mx-auto my-12 space-y-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--app-surface-base)] border border-[var(--app-border-subtle)] text-[var(--app-text-muted)] mx-auto">
+          <PackageOpen size={30} />
+        </div>
+        <h2 className="sl-display-serif text-2xl font-bold text-[var(--app-text-display)]">
+          Commercial Asset Not Found
+        </h2>
+        <p className="text-xs text-[var(--app-text-muted)] leading-relaxed">
+          The requested commercial inventory batch does not exist or has been depleted from your catalog.
+        </p>
+        <Link
+          href="/business/dashboard/inventory"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--app-accent-emerald)] px-4 py-2 text-xs font-bold text-white shadow-xs hover:brightness-105 transition"
+        >
+          <ArrowLeft size={14} />
+          <span>Return to Business Catalog</span>
+        </Link>
+      </div>
+    );
+  }
+
+  // Calculate FIFO rank relative to all business inventory items
+  const allBusinessItems = await db.orm.public.InventoryItem.where({
+    businessId,
+  }).all();
+
+  allBusinessItems.sort((a, b) => {
+    const aTime = a.expiryDate ? new Date(a.expiryDate).getTime() : Number.POSITIVE_INFINITY;
+    const bTime = b.expiryDate ? new Date(b.expiryDate).getTime() : Number.POSITIVE_INFINITY;
+    return aTime - bTime;
+  });
+
+  const rankIndex = allBusinessItems.findIndex((i) => i.id === product.id);
+  const fifoRank = rankIndex >= 0 ? rankIndex + 1 : 1;
+
+  // Fetch historical consumption logs for this commercial asset
+  let consumptionRecords = await db.orm.public.InventoryConsumption.where({
+    businessId,
+    inventoryItemId: product.id,
+  }).all();
+
+  if (consumptionRecords.length === 0) {
+    const allConsumptions = await db.orm.public.InventoryConsumption.where({
+      businessId,
+    }).all();
+
+    consumptionRecords = allConsumptions.filter(
+      (r) => r.productName.toLowerCase() === product.name.toLowerCase()
+    );
+  }
+
+  consumptionRecords.sort(
+    (a, b) => new Date(b.consumedAt).getTime() - new Date(a.consumedAt).getTime()
+  );
+
+  const formattedHistory: ConsumptionRecord[] = consumptionRecords.map((r) => ({
+    id: r.id,
+    productName: r.productName,
+    quantityUsed: r.quantityUsed,
+    unit: r.unit,
+    consumedAt: r.consumedAt,
+  }));
+
+  // Compute status
+  const status = getInventoryStatus(product.quantity, product.expiryDate, product.unit);
+  const itemWithStatus = {
+    ...product,
+    status,
+    createdAt: (product as any).createdAt ?? null,
+  };
+
+  return (
+    <div className="space-y-6">
+      <ProductDossierView
+        item={itemWithStatus}
+        history={formattedHistory}
+        isBusiness={true}
+        fifoRank={fifoRank}
+      />
+    </div>
+  );
 }

@@ -36,7 +36,7 @@ const footerGroups = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] px-6 py-14 md:py-20">
+    <footer className="relative z-20 border-t border-white/10 bg-[#0c120e] px-6 py-14 md:py-20">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div>

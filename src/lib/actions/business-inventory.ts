@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { db } from "@/prisma/db";
 import { InventoryImportItem } from "../import/inventory-schema";
+import { planInventoryMerge } from "@/lib/inventory-merge";
 
 const optionalExpiryDate = z.preprocess(
   (value) => (value === "" || value == null ? null : value),
@@ -192,8 +193,22 @@ export async function importBusinessInventory(
     throw new Error("No inventory items to import.");
   }
 
-  await Promise.all(
-    items.map((item) =>
+  const existingInventory = await db.orm.public.InventoryItem
+    .where({ businessId: business.businessId })
+    .all();
+
+  const { itemsToUpdate, itemsToCreate } = planInventoryMerge(existingInventory, items);
+
+  await Promise.all([
+    ...itemsToUpdate.map((item) =>
+      db.orm.public.InventoryItem
+        .where({ id: item.id })
+        .update({
+          quantity: item.quantity,
+          expiryDate: item.expiryDate,
+        })
+    ),
+    ...itemsToCreate.map((item) =>
       db.orm.public.InventoryItem.create({
         userId: business.userId,
         businessId: business.businessId,
@@ -201,10 +216,10 @@ export async function importBusinessInventory(
         category: item.category,
         quantity: item.quantity,
         unit: item.unit,
-        expiryDate: item.expiryDate?.toISOString() ?? null,
-      }),
+        expiryDate: item.expiryDate,
+      })
     ),
-  );
+  ]);
 
   revalidatePath("/business/dashboard");
   revalidatePath("/business/dashboard/inventory");
@@ -212,5 +227,7 @@ export async function importBusinessInventory(
   return {
     success: true,
     count: items.length,
+    mergedCount: itemsToUpdate.length,
+    createdCount: itemsToCreate.length,
   };
 }

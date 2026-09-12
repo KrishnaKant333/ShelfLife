@@ -77,7 +77,7 @@ model InventoryConsumption {
   business           Business?                  @relation(fields: [businessId], references: [id])
   inventoryItemId    Int
   productName        String
-  quantityUsed       Int
+  quantityUsed       Float
   unit               String
   normalizedQuantityUsed Float?
   consumedAt         TimestamptzString          @default(now())

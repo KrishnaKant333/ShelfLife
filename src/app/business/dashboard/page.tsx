@@ -1,18 +1,11 @@
-import {
-  AlertTriangle,
-  Package,
-  TrendingDown,
-  Activity,
-} from "lucide-react";
-
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import StatCard from "@/components/dashboard/StatCard";
-import ExpiryOverview from "@/components/dashboard/ExpiryOverview";
-import InventoryOverview from "@/components/dashboard/InventoryOverview";
+import MetricCounter from "@/components/dashboard/MetricCounter";
+import NeedsAttentionBento from "@/components/dashboard/NeedsAttentionBento";
+import EditorialAIBrief from "@/components/dashboard/EditorialAIBrief";
+import ActivityTimeline from "@/components/dashboard/ActivityTimeline";
 import QuickActions from "@/components/dashboard/QuickActions";
-import DashboardAiInsights from "@/components/dashboard/DashboardAiInsights";
-import DashboardUseFirst from "@/components/dashboard/DashboardUseFirst";
+import InventoryOverview from "@/components/dashboard/InventoryOverview";
 import GreetingHeader from "@/components/dashboard/GreetingHeader";
 import { getBusinessInventory } from "@/lib/business-inventory";
 import { getInventoryStatus } from "@/lib/inventory-status";
@@ -35,76 +28,96 @@ export default async function BusinessDashboardPage() {
 
   const totalItems = inventory.length;
   const expiringSoon = statuses.filter((status) => status === "Expiring").length;
+  const expiredItems = statuses.filter((status) => status === "Expired").length;
   const lowStock = statuses.filter((status) => status === "Low Stock").length;
   const freshItems = statuses.filter((status) => status === "Fresh").length;
 
   const healthScore = totalItems === 0 ? 100 : Math.round((freshItems / totalItems) * 100);
+  const urgentTotal = expiringSoon + expiredItems + lowStock;
 
   // Map dates to ISO string to ensure safety/consistency inside child components
   const formattedInventory = inventory.map((item) => ({
     ...item,
-    expiryDate: item.expiryDate ? (typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()) : null
+    expiryDate: item.expiryDate
+      ? typeof item.expiryDate === "string"
+        ? item.expiryDate
+        : new Date(item.expiryDate).toISOString()
+      : null,
   }));
 
+  const contextualSubtitle =
+    totalItems === 0
+      ? "Welcome to ShelfLife Business Console. Initialize inventory to monitor commercial stock health."
+      : urgentTotal > 0
+      ? `Commercial stock health is at ${healthScore}%. ${urgentTotal} batch item${urgentTotal === 1 ? "" : "s"} require FIFO priority dispatch.`
+      : `Commercial stock health is at ${healthScore}%. All inventory batches are stable.`;
+
   return (
-    <main className="p-4 sm:p-6 md:p-8 lg:p-10">
-      <div className="mx-auto max-w-7xl space-y-6 md:space-y-8">
-        <GreetingHeader
-          userName={session.user.name}
-          badge="Business Dashboard"
-          subtitle="Here is a status update on your business inventory."
+    <div className="space-y-6 md:space-y-8">
+      {/* Editorial Greeting Header & Quick Actions */}
+      <GreetingHeader
+        userName={session.user.name}
+        badge="Business Operations Command Center"
+        subtitle={contextualSubtitle}
+        isBusiness={true}
+      />
+
+      {/* Macro Metrics Counter Strip */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <MetricCounter
+          label="Tracked Batches"
+          value={totalItems}
+          description="Commercial SKU inventory"
+          iconType="package"
+          isPrimary
         />
 
-        {/* Statistic Cards Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Total Items"
-            value={totalItems}
-            description="Active products tracked"
-            icon={Package}
-          />
+        <MetricCounter
+          label="FIFO Action Items"
+          value={urgentTotal}
+          description="Expiring or stockout risks"
+          iconType="alert"
+          variant={urgentTotal > 0 ? (expiredItems > 0 ? "danger" : "warning") : "default"}
+          isPrimary
+        />
 
-          <StatCard
-            label="Expiring Soon"
-            value={expiringSoon}
-            description="Items needing attention"
-            icon={AlertTriangle}
-          />
+        <MetricCounter
+          label="Freshness Index"
+          value={healthScore}
+          suffix="%"
+          description={`${freshItems} batches optimal`}
+          iconType="activity"
+          variant="success"
+        />
 
-          <StatCard
-            label="Low Stock"
-            value={lowStock}
-            description="Items below threshold"
-            icon={TrendingDown}
-          />
+        <MetricCounter
+          label="Low Stock Alerts"
+          value={lowStock}
+          description="Below replenishment level"
+          iconType="trending-down"
+          variant={lowStock > 0 ? "warning" : "default"}
+        />
+      </div>
 
-          <StatCard
-            label="Inventory Health"
-            value={`${healthScore}%`}
-            description="Proportion of fresh stock"
-            icon={Activity}
-          />
+      {/* Core Asymmetric Bento Command Center */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-stretch">
+        {/* Dominant Operational Hub: Needs Attention Bento (7 columns) with FIFO prioritization */}
+        <div className="lg:col-span-7 flex flex-col">
+          <NeedsAttentionBento inventory={formattedInventory as any} isBusiness={true} />
         </div>
 
-        {/* AI Brief and Use First Widgets */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-2">
-            <DashboardAiInsights cacheKey="business" inventory={formattedInventory as any} />
-          </div>
-          <div className="md:col-span-1">
-            <DashboardUseFirst inventory={formattedInventory as any} isBusiness={true} />
-          </div>
-        </div>
-
-        {/* Action Panel */}
-        <QuickActions isBusiness={true} />
-
-        {/* Breakdown Grid */}
-        <div className="grid gap-6 xl:grid-cols-2">
-          <ExpiryOverview inventory={formattedInventory as any} isBusiness={true} />
-          <InventoryOverview inventory={formattedInventory as any} />
+        {/* Strategic Intelligence Partner: Editorial AI Brief (5 columns) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <EditorialAIBrief cacheKey="business" inventory={formattedInventory as any} />
         </div>
       </div>
-    </main>
+
+      {/* Secondary Analytical Bento Row: Activity Ledger, Quick Actions & Stock Distribution */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ActivityTimeline isBusiness={true} />
+        <QuickActions isBusiness={true} />
+        <InventoryOverview inventory={formattedInventory as any} />
+      </div>
+    </div>
   );
 }

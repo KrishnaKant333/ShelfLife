@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 export default function VerificationForm({
   token,
@@ -24,7 +25,7 @@ export default function VerificationForm({
 
       if (cancelled) return;
       if (result?.error) {
-        setError("This verification link is invalid or has expired.");
+        setError("This verification link is invalid or has expired. Please request a new verification email.");
         return;
       }
 
@@ -38,8 +39,26 @@ export default function VerificationForm({
   }, [accountType, token]);
 
   if (error) {
-    return <p role="alert" aria-live="assertive" className="mt-6 rounded-xl bg-[var(--sl-color-danger)]/10 px-4 py-3 text-sm text-[var(--sl-color-danger)]">{error}</p>;
+    return (
+      <div
+        role="alert"
+        aria-live="assertive"
+        className="flex items-start gap-2.5 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-xs sm:text-sm text-red-300 text-left"
+      >
+        <AlertCircle className="h-4 w-4 shrink-0 text-red-400 mt-0.5" />
+        <span>{error}</span>
+      </div>
+    );
   }
 
-  return <p role="status" aria-live="polite" className="mt-6 text-sm text-[var(--sl-color-text-muted)]">Verifying your email and signing you in...</p>;
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex flex-col items-center justify-center gap-3 py-4 text-sm text-[#aab7ab]"
+    >
+      <Loader2 className="h-6 w-6 animate-spin text-[#22c55e]" />
+      <span>Verifying your email and preparing your workspace...</span>
+    </div>
+  );
 }

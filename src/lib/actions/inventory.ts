@@ -13,6 +13,7 @@ const optionalExpiryDate = z.preprocess(
 );
 
 import { redirect } from "next/navigation";
+import { planInventoryMerge } from "@/lib/inventory-merge";
 
 const inventorySchema = z.object({
   name: z
@@ -215,8 +216,25 @@ export async function importInventoryAction(
     throw new Error("You must be logged in to import inventory.");
   }
 
-  await Promise.all(
-    items.map((item) =>
+  const filter =
+    session.accountType === "business" && session.businessId
+      ? { businessId: session.businessId }
+      : { userId: session.userId };
+
+  const existingInventory = await db.orm.public.InventoryItem.where(filter).all();
+
+  const { itemsToUpdate, itemsToCreate } = planInventoryMerge(existingInventory, items);
+
+  await Promise.all([
+    ...itemsToUpdate.map((item) =>
+      db.orm.public.InventoryItem
+        .where({ id: item.id })
+        .update({
+          quantity: item.quantity,
+          expiryDate: item.expiryDate,
+        })
+    ),
+    ...itemsToCreate.map((item) =>
       db.orm.public.InventoryItem.create({
         userId: session.userId,
         businessId: session.businessId,
@@ -224,10 +242,10 @@ export async function importInventoryAction(
         category: item.category,
         quantity: item.quantity,
         unit: item.unit,
-        expiryDate: item.expiryDate?.toISOString() ?? null,
+        expiryDate: item.expiryDate,
       })
-    )
-  );
+    ),
+  ]);
 
   if (session.accountType === "business") {
     revalidatePath("/business/dashboard");
@@ -242,6 +260,8 @@ export async function importInventoryAction(
   return {
     success: true,
     count: items.length,
+    mergedCount: itemsToUpdate.length,
+    createdCount: itemsToCreate.length,
   };
 }
 

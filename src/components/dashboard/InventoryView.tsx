@@ -1,29 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Search,
-  Grid2X2,
-  List,
-  Filter,
   Plus,
-  FileText,
   Upload,
   Download,
-  Calendar,
-  Clock,
-  Loader2,
   Trash2,
-  Check,
   CheckSquare,
   Square,
-  Printer,
-  ChevronDown,
 } from "lucide-react";
 import { getInventoryStatus } from "@/lib/inventory-status";
-import { formatExpiry } from "@/lib/format-expiry";
 import { normalizeQuantity } from "@/lib/normalization";
 import {
   consumeIngredientsAction,
@@ -33,38 +21,65 @@ import {
 import {
   bulkDeleteAction,
   discardExpiredItemsAction,
+  deleteInventoryItem,
 } from "@/lib/actions/inventory";
-import DeleteProductButton from "@/components/dashboard/DeleteProductButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
-
-type InventoryItem = {
-  id: number;
-  name: string;
-  category: string;
-  quantity: number;
-  unit: string;
-  expiryDate: string | null;
-  createdAt: string;
-};
+import InventoryToolbar, {
+  type FilterType,
+  type SortType,
+} from "@/components/inventory/InventoryToolbar";
+import ProductCatalogCard from "@/components/inventory/ProductCatalogCard";
+import ProductCatalogRow from "@/components/inventory/ProductCatalogRow";
+import dynamic from "next/dynamic";
+const ProductDetailDrawer = dynamic(() => import("@/components/inventory/ProductDetailDrawer"), {
+  ssr: false,
+});
+import {
+  EmptyShelf,
+  EmptySearch,
+} from "@/components/inventory/InventoryEmptyState";
+import type { InventoryItem } from "@/lib/inventory";
 
 interface InventoryViewProps {
   initialInventory: InventoryItem[];
   isBusiness?: boolean;
 }
 
-function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryViewProps) {
+function InventoryViewInner({
+  initialInventory,
+  isBusiness = false,
+}: InventoryViewProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"All" | "Expired" | "Fresh" | "Expiring" | "Low Stock">("All");
-  const [sortBy, setSortBy] = useState<"expiry-asc" | "expiry-desc" | "name-asc" | "name-desc" | "qty-asc" | "qty-desc" | "date-added">("expiry-asc");
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
-  // Selection states for bulk actions
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("q") ?? searchParams.get("search") ?? ""
+  );
+  const [activeFilter, setActiveFilter] = useState<FilterType>("All");
+  const [sortBy, setSortBy] = useState<SortType>("expiry-asc");
+
+  // Default to GRID view mode as requested
+  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+
+  // Active Product Detail Drawer state
+  const [activeDrawerProduct, setActiveDrawerProduct] = useState<
+    (InventoryItem & { status: string; createdAt?: string }) | null
+  >(null);
+
+  // Sync search parameters from top app header
+  useEffect(() => {
+    const q = searchParams.get("q") ?? searchParams.get("search");
+    if (q !== null) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
+
+  // Bulk selection states
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-  // Confirm dialog state
+  // Confirmation dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
     title: string;
     message: string;
@@ -73,114 +88,116 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
   } | null>(null);
   const [isBulkActionPending, setIsBulkActionPending] = useState(false);
 
-  // Consumption Modal states
+  // Manual Consumption Modal states
   const [consumeItem, setConsumeItem] = useState<InventoryItem | null>(null);
   const [consumeQty, setConsumeQty] = useState<number>(1);
   const [isConsuming, setIsConsuming] = useState(false);
 
-  // Recent History states
-  const [history, setHistory] = useState<ConsumptionRecord[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
-  const [historyError, setHistoryError] = useState<string | null>(null);
-
   const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
 
-  // Fetch recent consumption activity
-  const fetchHistory = async () => {
-    setLoadingHistory(true);
-    setHistoryError(null);
-    try {
-      const res = await getRecentConsumptionAction();
-      if (res.success && res.history) {
-        setHistory(res.history);
-      } else if (!res.success) {
-        setHistoryError(res.error || "Unable to load recent activity.");
-      }
-    } catch {
-      setHistoryError("Unable to load recent activity. Please try again.");
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
+  // Compute status for all items once
+  const itemsWithStatus = useMemo(() => {
+    return initialInventory.map((item) => ({
+      ...item,
+      status: getInventoryStatus(item.quantity, item.expiryDate, item.unit),
+    }));
+  }, [initialInventory]);
 
+  // Keep active drawer product synchronized if inventory revalidates
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void fetchHistory();
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
+    if (activeDrawerProduct) {
+      const refreshed = itemsWithStatus.find((i) => i.id === activeDrawerProduct.id);
+      if (refreshed) {
+        setActiveDrawerProduct(refreshed);
+      } else {
+        // Item was consumed/deleted
+        setActiveDrawerProduct(null);
+      }
+    }
+  }, [itemsWithStatus]);
+
+  // Compute live filter counts for pills
+  const filterCounts = useMemo<Record<FilterType, number>>(() => {
+    const counts: Record<FilterType, number> = {
+      All: initialInventory.length,
+      Fresh: 0,
+      Expiring: 0,
+      "Low Stock": 0,
+      Expired: 0,
+    };
+    for (const item of itemsWithStatus) {
+      if (item.status in counts) {
+        counts[item.status as FilterType]++;
+      }
+    }
+    return counts;
+  }, [initialInventory.length, itemsWithStatus]);
 
   // Filter, search, and sort logic
-  const processedInventory = [...initialInventory]
-    .filter((item) => {
-      const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
-      
-      // Search match
-      const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase());
+  const processedInventory = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
 
-      // Filter match
-      const matchesFilter =
-        activeFilter === "All" || status === activeFilter;
+    return itemsWithStatus
+      .filter((item) => {
+        // Search match
+        const matchesSearch =
+          !query ||
+          item.name.toLowerCase().includes(query) ||
+          item.category.toLowerCase().includes(query);
 
-      return matchesSearch && matchesFilter;
-    })
-    .sort((a, b) => {
-      if (sortBy === "name-asc") {
-        return a.name.localeCompare(b.name);
-      }
-      if (sortBy === "name-desc") {
-        return b.name.localeCompare(a.name);
-      }
-      if (sortBy === "expiry-asc") {
-        return (a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity) -
-          (b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity);
-      }
-      if (sortBy === "expiry-desc") {
-        return (b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity) -
-          (a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity);
-      }
-      if (sortBy === "qty-asc") {
-        const normalizedA = normalizeQuantity(a.quantity, a.unit);
-        const normalizedB = normalizeQuantity(b.quantity, b.unit);
-        if (normalizedA.category !== normalizedB.category) return 0;
-        return (
-          normalizedA.normalizedValue - normalizedB.normalizedValue
-        );
-      }
-      if (sortBy === "qty-desc") {
-        const normalizedA = normalizeQuantity(a.quantity, a.unit);
-        const normalizedB = normalizeQuantity(b.quantity, b.unit);
-        if (normalizedA.category !== normalizedB.category) return 0;
-        return (
-          normalizedB.normalizedValue - normalizedA.normalizedValue
-        );
-      }
-      if (sortBy === "date-added") {
-        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeB - timeA;
-      }
-      return 0;
-    });
+        // Filter match
+        const matchesFilter =
+          activeFilter === "All" || item.status === activeFilter;
 
-  const statusStyles = {
-    Expired: "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)] border-[var(--shelf-terracotta)]/20",
-    Fresh: "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] border-[var(--shelf-forest)]/20",
-    Expiring: "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] border-[var(--shelf-amber)]/20",
-    "Low Stock": "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)] border-[var(--shelf-terracotta)]/20",
-    "Not trackable": "bg-[var(--shelf-cream)] text-[var(--shelf-muted)] border-[var(--shelf-border)]",
-  };
+        return matchesSearch && matchesFilter;
+      })
+      .sort((a, b) => {
+        if (sortBy === "name-asc") {
+          return a.name.localeCompare(b.name);
+        }
+        if (sortBy === "name-desc") {
+          return b.name.localeCompare(a.name);
+        }
+        if (sortBy === "expiry-asc") {
+          return (
+            (a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity) -
+            (b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity)
+          );
+        }
+        if (sortBy === "expiry-desc") {
+          return (
+            (b.expiryDate ? new Date(b.expiryDate).getTime() : -Infinity) -
+            (a.expiryDate ? new Date(a.expiryDate).getTime() : -Infinity)
+          );
+        }
+        if (sortBy === "qty-asc") {
+          const normA = normalizeQuantity(a.quantity, a.unit);
+          const normB = normalizeQuantity(b.quantity, b.unit);
+          if (normA.category !== normB.category) return 0;
+          return normA.normalizedValue - normB.normalizedValue;
+        }
+        if (sortBy === "qty-desc") {
+          const normA = normalizeQuantity(a.quantity, a.unit);
+          const normB = normalizeQuantity(b.quantity, b.unit);
+          if (normA.category !== normB.category) return 0;
+          return normB.normalizedValue - normA.normalizedValue;
+        }
+        if (sortBy === "date-added") {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        }
+        return 0;
+      });
+  }, [itemsWithStatus, searchQuery, activeFilter, sortBy]);
 
-  // Toggle single item selection
+  // Selection handlers
   const handleToggleSelect = (id: number) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  // Toggle master select all
   const handleToggleSelectAll = () => {
     const visibleIds = processedInventory.map((item) => item.id);
     const allSelected = visibleIds.every((id) => selectedIds.includes(id));
@@ -192,10 +209,10 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
     }
   };
 
-  // Trigger manual item consumption modal
+  // Quick consumption trigger
   const handleOpenConsume = (item: InventoryItem) => {
     setConsumeItem(item);
-    setConsumeQty(1);
+    setConsumeQty(Math.min(1, item.quantity));
   };
 
   // Confirm manual consumption
@@ -207,37 +224,68 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
         { itemId: consumeItem.id, quantityUsed: consumeQty },
       ]);
       if (res.success) {
+        showToast(
+          `Logged ${consumeQty} ${consumeItem.unit} of ${consumeItem.name} consumed.`,
+          "success"
+        );
         setConsumeItem(null);
-        fetchHistory();
         router.refresh();
       } else {
         showToast(res.error || "Failed to record consumption.", "error");
       }
-    } catch (err) {
+    } catch {
       showToast("Error occurred while saving consumption.", "error");
     } finally {
       setIsConsuming(false);
     }
   };
 
+  // Delete single item handler
+  const handleDeleteSingle = (id: number) => {
+    const targetItem = initialInventory.find((x) => x.id === id);
+    setConfirmDialog({
+      title: "Delete Product",
+      message: `Are you sure you want to delete ${
+        targetItem ? `"${targetItem.name}"` : "this item"
+      }? This cannot be undone.`,
+      isDestructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteInventoryItem(id);
+          showToast("Product deleted successfully.", "success");
+          setSelectedIds((prev) => prev.filter((x) => x !== id));
+          if (activeDrawerProduct?.id === id) {
+            setActiveDrawerProduct(null);
+          }
+          router.refresh();
+        } catch {
+          showToast("Unable to delete this product. Please try again.", "error");
+        } finally {
+          setConfirmDialog(null);
+        }
+      },
+    });
+  };
+
   // Bulk actions handlers
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedIds.length === 0) return;
     setConfirmDialog({
-      title: "Delete Items",
-      message: `Are you sure you want to delete ${selectedIds.length} item(s)?`,
+      title: "Delete Selected Products",
+      message: `Are you sure you want to permanently delete ${selectedIds.length} item(s)? This cannot be undone.`,
       isDestructive: true,
       onConfirm: async () => {
         setIsBulkActionPending(true);
         try {
           const res = await bulkDeleteAction(selectedIds);
           if (res.success) {
+            showToast(`${selectedIds.length} product(s) deleted.`, "success");
             setSelectedIds([]);
             router.refresh();
           } else {
             showToast(res.error || "Bulk delete failed.", "error");
           }
-        } catch (err) {
+        } catch {
           showToast("Error executing bulk delete.", "error");
         } finally {
           setIsBulkActionPending(false);
@@ -247,11 +295,11 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
     });
   };
 
-  const handleBulkConsume = async () => {
+  const handleBulkConsume = () => {
     if (selectedIds.length === 0) return;
     setConfirmDialog({
-      title: "Mark as Consumed",
-      message: `Mark ${selectedIds.length} item(s) as fully consumed?`,
+      title: "Mark as Fully Consumed",
+      message: `Mark ${selectedIds.length} selected item(s) as fully consumed? Their stock will be reduced to 0.`,
       onConfirm: async () => {
         setIsBulkActionPending(true);
         try {
@@ -264,13 +312,16 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
           });
           const res = await consumeIngredientsAction(itemsToConsume);
           if (res.success) {
+            showToast(
+              `${selectedIds.length} product(s) marked as consumed.`,
+              "success"
+            );
             setSelectedIds([]);
-            fetchHistory();
             router.refresh();
           } else {
             showToast(res.error || "Bulk consume failed.", "error");
           }
-        } catch (err) {
+        } catch {
           showToast("Error executing bulk consumption.", "error");
         } finally {
           setIsBulkActionPending(false);
@@ -282,8 +333,9 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
 
   const handleDiscardExpired = () => {
     setConfirmDialog({
-      title: "Discard expired items",
-      message: "Discard every expired item in this inventory? This cannot be undone.",
+      title: "Discard Expired Items",
+      message:
+        "Discard every expired item in this inventory? This action is permanent and records an activity audit log.",
       isDestructive: true,
       onConfirm: async () => {
         setIsBulkActionPending(true);
@@ -294,7 +346,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
               result.count
                 ? `${result.count} expired item(s) discarded.`
                 : "No expired items found.",
-              "success",
+              "success"
             );
             router.refresh();
           } else {
@@ -310,539 +362,251 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
     });
   };
 
-
+  const isAllSelected =
+    processedInventory.length > 0 &&
+    processedInventory.every((item) => selectedIds.includes(item.id));
 
   return (
     <div className="space-y-6">
-      {/* Header and Add Actions */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+      {/* Top Editorial Header Section matching reference design */}
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm font-semibold text-[var(--shelf-forest)]">
-            Inventory
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--shelf-dark)]">
-            {isBusiness ? "Business Shelf" : "Your Products"}
+          <h1 className="sl-display-serif text-3xl sm:text-4xl font-bold tracking-tight text-[var(--app-text-display)]">
+            {isBusiness ? "Business Inventory" : "Inventory"}
           </h1>
-          <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-            Manage and track freshness, stock quantity, and expiry alerts.
+          <p className="mt-1 text-xs sm:text-sm text-[var(--app-text-muted)]">
+            All your food, organized and in view.
           </p>
         </div>
 
+        {/* Global Header Actions */}
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`${prefix}/inventory/export`}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-[var(--shelf-surface)] text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
+            className="sl-focus-ring inline-flex items-center gap-1.5 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-3.5 py-2 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] transition shadow-2xs"
           >
-            <Download size={16} />
-            Export
+            <Download size={14} className="text-[var(--app-text-muted)]" />
+            <span>Export</span>
           </Link>
+
           <Link
             href={`${prefix}/inventory/new?tab=import`}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[var(--shelf-border)] px-4 py-2.5 text-sm font-semibold bg-[var(--shelf-surface)] text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
+            className="sl-focus-ring inline-flex items-center gap-1.5 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-3.5 py-2 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] transition shadow-2xs"
           >
-            <Upload size={16} />
-            Import
+            <Upload size={14} className="text-[var(--app-text-muted)]" />
+            <span>Import</span>
           </Link>
+
           <Link
             href={`${prefix}/inventory/new`}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[var(--shelf-forest)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 shadow-xs"
+            className="sl-focus-ring inline-flex items-center gap-1.5 rounded-xl bg-[var(--app-accent-emerald)] px-4 py-2 text-xs font-bold text-white shadow-xs hover:brightness-105 transition cursor-pointer"
           >
-            <Plus size={16} />
-            Add Product
+            <Plus size={15} />
+            <span>Add Product</span>
           </Link>
-          <button
-            type="button"
-            onClick={handleDiscardExpired}
-            title="Delete expired"
-            aria-label="Delete expired"
-            className="inline-flex items-center justify-center rounded-xl border border-[var(--shelf-terracotta)]/30 p-2.5 text-[var(--shelf-terracotta)] transition hover:bg-[var(--shelf-terracotta)]/10 hover:border-[var(--shelf-terracotta)]/60"
+
+          {filterCounts.Expired > 0 && (
+            <button
+              type="button"
+              onClick={handleDiscardExpired}
+              title="Discard all expired items"
+              aria-label="Discard all expired items"
+              className="sl-focus-ring inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/20 transition"
+            >
+              <Trash2 size={13} />
+              <span>Discard Expired ({filterCounts.Expired})</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Sticky Inventory Toolbar */}
+      <InventoryToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        filterCounts={filterCounts}
+      />
+
+      {/* Bulk Action Controls Banner */}
+      {selectedIds.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-500/30 bg-[var(--app-surface-elevated)] p-3.5 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--app-accent-emerald)] text-[11px] font-bold text-white">
+              {selectedIds.length}
+            </span>
+            <span className="text-xs font-bold text-[var(--app-text-display)]">
+              Products selected
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleBulkConsume}
+              disabled={isBulkActionPending}
+              className="sl-focus-ring cursor-pointer rounded-lg bg-[var(--app-accent-emerald)] px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:brightness-105 disabled:opacity-50 transition"
+            >
+              Mark Consumed
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBulkDelete}
+              disabled={isBulkActionPending}
+              className="sl-focus-ring cursor-pointer rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-500 hover:bg-rose-500/20 disabled:opacity-50 transition"
+            >
+              Delete Selected
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="sl-focus-ring text-xs font-medium text-[var(--app-text-muted)] hover:text-[var(--app-text-body)] px-2 py-1 transition"
+            >
+              Deselect
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Catalog Stage: Stable layout with drawer slide-in */}
+      <div
+        className={`transition-all duration-300 ease-out ${
+          activeDrawerProduct ? "lg:mr-[420px] xl:mr-[460px]" : ""
+        }`}
+      >
+        {initialInventory.length === 0 ? (
+          <EmptyShelf isBusiness={isBusiness} />
+        ) : processedInventory.length === 0 ? (
+          <EmptySearch
+            searchQuery={searchQuery}
+            activeFilter={activeFilter}
+            onReset={() => {
+              setSearchQuery("");
+              setActiveFilter("All");
+            }}
+          />
+        ) : viewMode === "grid" ? (
+          /* GRID VIEW (Default): Centered product imagery cards */
+          <div
+            className={`grid gap-4 transition-all duration-300 ${
+              activeDrawerProduct
+                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
+                : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+            }`}
           >
-            <Trash2 size={18} />
-          </button>
-        </div>
-      </div>
-
-      {/* Main content split grid */}
-      <div className="grid gap-6 lg:grid-cols-4">
-        
-        {/* Main List Section */}
-        <div className="lg:col-span-3 space-y-6">
-          
-          {/* Toolbar - Desktop (md:flex) vs Mobile (md:hidden) */}
-          <div className="bg-[var(--shelf-surface)] border border-[var(--shelf-border)] p-3 md:p-4 rounded-2xl shadow-xs">
-            {/* Desktop Layout (md:flex) */}
-            <div className="hidden md:flex md:items-center md:justify-between gap-4">
-              <div className="relative flex-1 max-w-xs">
-                <span className="absolute inset-y-0 left-3 flex items-center text-[var(--shelf-muted)]">
-                  <Search size={18} />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 py-2.5 pl-10 pr-4 text-sm text-[var(--shelf-dark)] outline-none focus:border-[var(--shelf-forest)] focus:bg-[var(--shelf-surface)] transition"
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-1 rounded-xl border border-[var(--shelf-border)]/50 bg-[var(--shelf-cream)]/50 p-1">
-                  <button type="button" onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-lg p-2 ${viewMode === "list" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
-                    <List size={16} />
-                  </button>
-                  <button type="button" onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-lg p-2 ${viewMode === "grid" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
-                    <Grid2X2 size={16} />
-                  </button>
-                </div>
-                {/* Filter Buttons */}
-                <div className="flex flex-wrap gap-1.5 bg-[var(--shelf-cream)]/50 p-1 rounded-xl border border-[var(--shelf-border)]/50">
-                  {(["All", "Expired", "Fresh", "Expiring", "Low Stock"] as const).map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setActiveFilter(filter)}
-                      className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold tracking-wide uppercase transition ${
-                        activeFilter === filter
-                          ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)] shadow-xs"
-                          : "text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Sort selector dropdown */}
-                <div className="relative flex items-center gap-1.5 bg-[var(--shelf-cream)]/50 px-3 py-2 rounded-xl border border-[var(--shelf-border)]/50 text-[11px] font-semibold text-[var(--shelf-dark)]">
-                  <span className="text-[var(--shelf-muted)] uppercase tracking-wide">Sort:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                    className="bg-transparent border-none outline-none pr-1.5 font-bold cursor-pointer text-[var(--shelf-dark)]"
-                  >
-                    <option value="expiry-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Expiry: Nearest</option>
-                    <option value="expiry-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Expiry: Latest</option>
-                    <option value="name-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Name: A-Z</option>
-                    <option value="name-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Name: Z-A</option>
-                    <option value="qty-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Qty: Lowest</option>
-                    <option value="qty-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Qty: Highest</option>
-                    <option value="date-added" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Recently Added</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Compact Mobile Toolbar (< md) */}
-            <div className="flex flex-col gap-2.5 md:hidden">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute inset-y-0 left-3 flex items-center text-[var(--shelf-muted)]">
-                    <Search size={16} />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 py-2 pl-9 pr-3 text-xs text-[var(--shelf-dark)] outline-none focus:border-[var(--shelf-forest)]"
-                  />
-                </div>
-                <div className="flex items-center gap-0.5 rounded-xl border border-[var(--shelf-border)]/50 bg-[var(--shelf-cream)]/50 p-1 shrink-0">
-                  <button type="button" onClick={() => setViewMode("list")} aria-label="List view" className={`rounded-lg p-1.5 ${viewMode === "list" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
-                    <List size={15} />
-                  </button>
-                  <button type="button" onClick={() => setViewMode("grid")} aria-label="Grid view" className={`rounded-lg p-1.5 ${viewMode === "grid" ? "bg-[var(--shelf-surface)] text-[var(--shelf-forest)]" : "text-[var(--shelf-muted)]"}`}>
-                    <Grid2X2 size={15} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
-                <div className="relative flex items-center gap-1 bg-[var(--shelf-cream)]/50 px-2.5 py-1.5 rounded-xl border border-[var(--shelf-border)]/50 text-[11px]">
-                  <Filter size={13} className="text-[var(--shelf-muted)] shrink-0" />
-                  <select
-                    value={activeFilter}
-                    onChange={(e) => setActiveFilter(e.target.value as typeof activeFilter)}
-                    className="w-full bg-transparent border-none outline-none font-bold cursor-pointer text-[var(--shelf-dark)] truncate"
-                  >
-                    <option value="All" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Status: All</option>
-                    <option value="Expired" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Expired</option>
-                    <option value="Fresh" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Fresh</option>
-                    <option value="Expiring" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Expiring Soon</option>
-                    <option value="Low Stock" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Low Stock</option>
-                  </select>
-                </div>
-
-                <div className="relative flex items-center gap-1 bg-[var(--shelf-cream)]/50 px-2.5 py-1.5 rounded-xl border border-[var(--shelf-border)]/50 text-[11px]">
-                  <span className="text-[var(--shelf-muted)] shrink-0">Sort:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                    className="w-full bg-transparent border-none outline-none font-bold cursor-pointer text-[var(--shelf-dark)] truncate"
-                  >
-                    <option value="expiry-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Nearest Expiry</option>
-                    <option value="expiry-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Latest Expiry</option>
-                    <option value="name-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Name: A-Z</option>
-                    <option value="name-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Name: Z-A</option>
-                    <option value="qty-asc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Qty: Lowest</option>
-                    <option value="qty-desc" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Qty: Highest</option>
-                    <option value="date-added" className="bg-[var(--sl-color-surface)] text-[var(--sl-color-text)]">Recently Added</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            {processedInventory.map((item, idx) => (
+              <ProductCatalogCard
+                key={item.id}
+                item={item}
+                isSelected={selectedIds.includes(item.id)}
+                isActiveInDrawer={activeDrawerProduct?.id === item.id}
+                onSelectProduct={(clickedItem) => setActiveDrawerProduct(clickedItem)}
+                onToggleSelect={handleToggleSelect}
+                onQuickUse={handleOpenConsume}
+                onDelete={handleDeleteSingle}
+                isBusiness={isBusiness}
+                index={idx}
+              />
+            ))}
           </div>
-
-          {/* Mobile Recent Activity Accordion Panel */}
-          <div className="lg:hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-xs">
-            <details className="group">
-              <summary className="cursor-pointer flex items-center justify-between font-bold text-xs text-[var(--shelf-dark)] select-none">
-                <span className="flex items-center gap-1.5">
-                  <Clock size={16} className="text-[var(--shelf-forest)]" />
-                  Recent Activity {history.length > 0 ? `(${history.length})` : ""}
-                </span>
-                <ChevronDown size={16} className="transition-transform group-open:rotate-180 text-[var(--shelf-muted)]" />
-              </summary>
-              <div className="mt-3 pt-3 border-t border-[var(--shelf-border)]/50 space-y-2 max-h-48 overflow-y-auto pr-1">
-                {loadingHistory ? (
-                  <div className="flex items-center gap-2 py-2 text-xs text-[var(--shelf-muted)]">
-                    <Loader2 className="animate-spin text-[var(--shelf-forest)] h-4 w-4" />
-                    <span>Loading activity stream...</span>
-                  </div>
-                ) : historyError ? (
-                  <div className="space-y-1 py-1">
-                    <p className="text-xs text-[var(--shelf-terracotta)]">{historyError}</p>
-                    <button type="button" onClick={fetchHistory} className="text-xs font-semibold text-[var(--shelf-forest)] hover:underline">
-                      Try again
-                    </button>
-                  </div>
-                ) : history.length === 0 ? (
-                  <p className="text-xs text-[var(--shelf-muted)] italic py-1">
-                    No consumption recorded yet. Use products to see usage logs.
-                  </p>
-                ) : (
-                  history.map((record) => (
-                    <div key={`mob-${record.id}`} className="text-xs border-b border-[var(--shelf-border)]/30 pb-2 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-center gap-2">
-                        <span className="font-semibold text-[var(--shelf-dark)] truncate">{record.productName}</span>
-                        <span className="text-[9px] bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 text-[var(--shelf-forest)] px-1.5 py-0.5 rounded font-bold shrink-0">
-                          -{record.quantityUsed} {record.unit}
-                        </span>
-                      </div>
-                      <span className="text-[9px] text-[var(--shelf-muted)] block mt-0.5">
-                        {new Date(record.consumedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </details>
-          </div>
-
-          {/* Bulk Action Controls */}
-          {selectedIds.length > 0 && (
-            <div className="flex items-center justify-between bg-[var(--shelf-terracotta)]/5 border border-[var(--shelf-terracotta)]/20 p-4 rounded-xl">
-              <span className="text-xs font-semibold text-[var(--shelf-terracotta)]">
-                {selectedIds.length} item(s) selected
-              </span>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleBulkConsume}
-                  className="cursor-pointer rounded-lg bg-[var(--shelf-forest)] px-3.5 py-2 text-xs font-semibold text-white transition hover:opacity-90"
-                >
-                  Mark fully consumed
-                </button>
-                <button
-                  onClick={handleBulkDelete}
-                  className="cursor-pointer rounded-lg bg-[var(--shelf-terracotta)] px-3.5 py-2 text-xs font-semibold text-white transition hover:opacity-90"
-                >
-                  Delete selected
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Product Display */}
-          {initialInventory.length === 0 ? (
-            <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-12 text-center shadow-xs">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--shelf-cream)] text-[var(--shelf-forest)]">
-                <Plus size={28} />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold text-[var(--shelf-dark)]">Your shelf is empty</h3>
-              <p className="mt-2 text-sm text-[var(--shelf-muted)] max-w-md mx-auto">
-                Add your first product manually or upload an invoice/CSV sheet to start tracking freshness.
-              </p>
-              <div className="mt-6">
-                <Link
-                  href={`${prefix}/inventory/new`}
-                  className="rounded-xl bg-[var(--shelf-forest)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
-                >
-                  Add Product
-                </Link>
-              </div>
-            </div>
-          ) : processedInventory.length === 0 ? (
-            <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-10 text-center shadow-xs">
-              <p className="text-sm font-semibold text-[var(--shelf-dark)]">No products found</p>
-              <p className="mt-1 text-xs text-[var(--shelf-muted)]">
-                Try adjusting your search query or switching your status filter tab.
-              </p>
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setActiveFilter("All");
-                }}
-                className="mt-4 text-xs font-semibold text-[var(--shelf-forest)] hover:underline"
-              >
-                Clear Filters
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className={`${viewMode === "list" ? "hidden md:block" : "hidden"} overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-xs`}>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[800px] text-left">
-                    <thead className="border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/20">
-                      <tr>
-                        <th className="w-12 px-6 py-4">
-                          <button
-                            type="button"
-                            onClick={handleToggleSelectAll}
-                            aria-label="Select all visible products"
-                            aria-pressed={processedInventory.length > 0 && processedInventory.every((item) => selectedIds.includes(item.id))}
-                            className="cursor-pointer flex items-center text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
-                          >
-                            {processedInventory.every((item) => selectedIds.includes(item.id)) ? (
-                              <CheckSquare size={16} className="text-[var(--shelf-forest)]" />
-                            ) : (
-                              <Square size={16} />
-                            )}
-                          </button>
-                        </th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[var(--shelf-muted)]">Product</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[var(--shelf-muted)]">Category</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[var(--shelf-muted)]">Quantity</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[var(--shelf-muted)]">Expiry</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[var(--shelf-muted)]">Status</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[var(--shelf-muted)] text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {processedInventory.map((item) => {
-                        const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
-                        const isSelected = selectedIds.includes(item.id);
-                        return (
-                          <tr
-                            key={item.id}
-                            className={`border-b border-[var(--shelf-border)] last:border-0 hover:bg-[var(--shelf-cream)]/5 transition duration-150 ${
-                              isSelected ? "bg-[var(--shelf-cream)]/10" : ""
-                            }`}
-                          >
-                            <td className="px-6 py-4">
-                              <button
-                                type="button"
-                                onClick={() => handleToggleSelect(item.id)}
-                                aria-label={`Select ${item.name}`}
-                                aria-pressed={isSelected}
-                                className="cursor-pointer flex items-center text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
-                              >
-                                {isSelected ? (
-                                  <CheckSquare size={16} className="text-[var(--shelf-forest)]" />
-                                ) : (
-                                  <Square size={16} />
-                                )}
-                              </button>
-                            </td>
-                            <td className="px-6 py-4 align-middle whitespace-nowrap text-sm font-bold text-[var(--shelf-dark)]">
-                              <Link href={`${prefix}/inventory/${item.id}`} className="hover:text-[var(--shelf-forest)] hover:underline">
-                                {item.name}
-                              </Link>
-                            </td>
-                            <td className="px-6 py-4 align-middle whitespace-nowrap text-sm text-[var(--shelf-muted)]">
-                              {item.category}
-                            </td>
-                            <td className="px-6 py-4 align-middle whitespace-nowrap text-sm text-[var(--shelf-muted)] font-medium">
-                              {item.quantity} {item.unit}
-                            </td>
-                            <td className="px-6 py-4 align-middle whitespace-nowrap text-sm text-[var(--shelf-muted)]">
-                              {formatExpiry(item.expiryDate)}
-                            </td>
-                            <td className="px-6 py-4 align-middle whitespace-nowrap">
-                              <span
-                                className={`inline-flex items-center shrink-0 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusStyles[status]}`}
-                              >
-                                {status}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 align-middle whitespace-nowrap text-right">
-                              <div className="flex justify-end gap-3 items-center">
-                                <button
-                                  onClick={() => handleOpenConsume(item)}
-                                  className="cursor-pointer text-sm font-bold text-[var(--shelf-forest)] hover:underline bg-transparent border-none"
-                                >
-                                  Use
-                                </button>
-                                <Link
-                                  href={`${prefix}/inventory/${item.id}/edit`}
-                                  className="text-sm font-semibold text-[var(--shelf-forest)] hover:underline"
-                                >
-                                  Edit
-                                </Link>
-                                <DeleteProductButton id={item.id} />
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Mobile Cards Grid View */}
-              <div className={`grid gap-4 sm:grid-cols-2 ${viewMode === "grid" ? "md:grid" : "md:hidden"}`}>
-                {processedInventory.map((item) => {
-                  const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
-                  const isSelected = selectedIds.includes(item.id);
-                  return (
-                    <div
+        ) : (
+          /* LIST VIEW: High-density table */
+          <div className="sl-editorial-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left border-collapse">
+                <thead className="border-b border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]">
+                  <tr>
+                    <th className="w-12 px-4 py-3.5 sm:px-5">
+                      <button
+                        type="button"
+                        onClick={handleToggleSelectAll}
+                        aria-label="Select all visible products"
+                        aria-pressed={isAllSelected}
+                        className="sl-focus-ring flex items-center text-[var(--app-text-muted)] hover:text-[var(--app-text-body)] transition"
+                      >
+                        {isAllSelected ? (
+                          <CheckSquare size={16} className="text-[var(--app-accent-emerald)]" />
+                        ) : (
+                          <Square size={16} />
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                      Product
+                    </th>
+                    <th className="hidden sm:table-cell px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                      Category
+                    </th>
+                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                      Quantity
+                    </th>
+                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                      Shelf Life
+                    </th>
+                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                      Status
+                    </th>
+                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)] text-right">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--app-border-subtle)]">
+                  {processedInventory.map((item, idx) => (
+                    <ProductCatalogRow
                       key={item.id}
-                      className={`rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-[var(--shelf-sage)] transition ${
-                        isSelected ? "border-[var(--shelf-forest)] bg-[var(--shelf-cream)]/10" : ""
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2.5 min-w-0">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleSelect(item.id)}
-                            aria-label={`Select ${item.name}`}
-                            aria-pressed={isSelected}
-                            className="cursor-pointer mt-0.5 text-[var(--shelf-muted)] bg-transparent border-none shrink-0"
-                          >
-                            {isSelected ? <CheckSquare size={16} className="text-[var(--shelf-forest)]" /> : <Square size={16} />}
-                          </button>
-                          <div className="min-w-0">
-                            <Link href={`${prefix}/inventory/${item.id}`} className="font-bold text-[var(--shelf-dark)] leading-tight hover:text-[var(--shelf-forest)] hover:underline truncate block">{item.name}</Link>
-                            <p className="mt-1 text-xs text-[var(--shelf-muted)] truncate">{item.category}</p>
-                          </div>
-                        </div>
-                        <span
-                          className={`inline-flex items-center shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${statusStyles[status]}`}
-                        >
-                          {status}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-xs border-y border-[var(--shelf-border)]/50 py-3">
-                        <div>
-                          <p className="text-[var(--shelf-muted)] font-medium">Stock level</p>
-                          <p className="font-bold text-[var(--shelf-dark)] mt-0.5">{item.quantity} {item.unit}</p>
-                        </div>
-                        <div>
-                          <p className="text-[var(--shelf-muted)] font-medium">Shelf freshness</p>
-                          <p className="font-bold text-[var(--shelf-dark)] mt-0.5 flex items-center gap-1">
-                            <Calendar size={13} className="text-[var(--shelf-forest)]" />
-                            {formatExpiry(item.expiryDate)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-center pt-2">
-                        <span className="text-[10px] text-[var(--shelf-muted)] font-mono">ID: #{item.id}</span>
-                        <div className="flex gap-4 items-center">
-                          <button
-                            onClick={() => handleOpenConsume(item)}
-                            className="cursor-pointer text-xs font-bold text-[var(--shelf-forest)] hover:underline bg-transparent border-none"
-                          >
-                            Use
-                          </button>
-                          <Link
-                            href={`${prefix}/inventory/${item.id}/edit`}
-                            className="text-xs font-bold text-[var(--shelf-forest)] hover:underline"
-                          >
-                            Edit
-                          </Link>
-                          <DeleteProductButton id={item.id} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Sidebar Activity History (Desktop only) */}
-        <div className="hidden lg:block lg:col-span-1">
-          <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-xs sticky top-6">
-            <h3 className="text-sm font-bold text-[var(--shelf-dark)] mb-4 flex items-center gap-1.5">
-              <Clock size={16} className="text-[var(--shelf-forest)]" />
-              Recent Activity
-            </h3>
-
-            {loadingHistory ? (
-              <div className="flex items-center gap-2 py-3 text-xs text-[var(--shelf-muted)]">
-                <Loader2 className="animate-spin text-[var(--shelf-forest)] h-4 w-4" />
-                <span>Loading activity stream...</span>
-              </div>
-            ) : historyError ? (
-              <div className="space-y-2 py-2">
-                <p className="text-xs text-[var(--shelf-terracotta)]">{historyError}</p>
-                <button type="button" onClick={fetchHistory} className="text-xs font-semibold text-[var(--shelf-forest)] hover:underline">
-                  Try again
-                </button>
-              </div>
-            ) : history.length === 0 ? (
-              <p className="text-xs text-[var(--shelf-muted)] italic py-2">
-                No consumption recorded yet. Use products to see usage logs.
-              </p>
-            ) : (
-              <div className="space-y-3.5 max-h-[480px] overflow-y-auto pr-1">
-                {history.map((record) => (
-                  <div
-                    key={record.id}
-                    className="text-xs border-b border-[var(--shelf-border)]/50 pb-2.5 last:border-0 last:pb-0"
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="font-semibold text-[var(--shelf-dark)] truncate max-w-[120px]">
-                        {record.productName}
-                      </span>
-                      <span className="text-[9px] bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 text-[var(--shelf-forest)] px-1.5 py-0.5 rounded shrink-0 font-bold">
-                        -{record.quantityUsed} {record.unit}
-                      </span>
-                    </div>
-                    <span className="text-[9px] text-[var(--shelf-muted)] block mt-1">
-                      {new Date(record.consumedAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+                      item={item}
+                      isSelected={selectedIds.includes(item.id)}
+                      isActiveInDrawer={activeDrawerProduct?.id === item.id}
+                      onSelectProduct={(clickedItem) =>
+                        setActiveDrawerProduct(clickedItem)
+                      }
+                      onToggleSelect={handleToggleSelect}
+                      onQuickUse={handleOpenConsume}
+                      onDelete={handleDeleteSingle}
+                      isBusiness={isBusiness}
+                      index={idx}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-
+        )}
       </div>
+
+      {/* Product Detail Slide-Over Drawer */}
+      <ProductDetailDrawer
+        item={activeDrawerProduct}
+        onClose={() => setActiveDrawerProduct(null)}
+        onRefresh={() => router.refresh()}
+        onEdit={(item) => router.push(`${prefix}/inventory/${item.id}/edit`)}
+        onDelete={handleDeleteSingle}
+        isBusiness={isBusiness}
+      />
 
       {/* Manual Consume Item Dialog */}
       {consumeItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4">
-          <div className="relative flex flex-col w-full max-w-sm bg-[var(--shelf-surface)] rounded-2xl shadow-xl border border-[var(--shelf-border)] p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="relative flex flex-col w-full max-w-sm rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] p-6 shadow-2xl space-y-4">
             <div>
-              <h3 className="text-lg font-bold text-[var(--shelf-dark)]">Use Product</h3>
-              <p className="text-xs text-[var(--shelf-muted)] mt-1">
-                Record how much of <strong>{consumeItem.name}</strong> you are consuming.
+              <h3 className="sl-display-serif text-lg font-bold text-[var(--app-text-display)]">
+                Use {consumeItem.name}
+              </h3>
+              <p className="text-xs text-[var(--app-text-muted)] mt-1">
+                Record how much you are consuming. Stock will be adjusted accordingly.
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--shelf-dark)] block">
+              <label className="text-xs font-semibold text-[var(--app-text-body)] block">
                 Quantity to use (Max: {consumeItem.quantity} {consumeItem.unit})
               </label>
               <div className="flex gap-2 items-center">
@@ -859,9 +623,9 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                       )
                     )
                   }
-                  className="flex-1 rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 px-3.5 py-2 text-sm text-[var(--shelf-dark)] outline-none focus:border-[var(--shelf-forest)]"
+                  className="sl-focus-ring flex-1 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-3.5 py-2 text-sm text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
                 />
-                <span className="text-sm font-semibold text-[var(--shelf-muted)]">
+                <span className="text-sm font-semibold text-[var(--app-text-muted)]">
                   {consumeItem.unit}
                 </span>
               </div>
@@ -871,7 +635,7 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
               <button
                 type="button"
                 onClick={() => setConsumeItem(null)}
-                className="cursor-pointer rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] transition"
+                className="sl-focus-ring cursor-pointer rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-4 py-2 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-border-subtle)]/40 transition"
               >
                 Cancel
               </button>
@@ -879,16 +643,16 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
                 type="button"
                 onClick={handleConfirmConsume}
                 disabled={isConsuming}
-                className="cursor-pointer rounded-xl bg-[var(--shelf-forest)] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50 transition"
+                className="sl-focus-ring cursor-pointer rounded-xl bg-[var(--app-accent-emerald)] px-4 py-2 text-xs font-bold text-white shadow-xs hover:brightness-105 disabled:opacity-50 transition"
               >
-                {isConsuming ? "Processing..." : "Confirm"}
+                {isConsuming ? "Recording..." : "Confirm Consumption"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Confirm Dialog */}
+      {/* Unified Confirm Dialog */}
       {confirmDialog && (
         <ConfirmDialog
           title={confirmDialog.title}
@@ -906,7 +670,9 @@ function InventoryViewInner({ initialInventory, isBusiness = false }: InventoryV
 export default function InventoryView(props: InventoryViewProps) {
   return (
     <ToastProvider>
-      <InventoryViewInner {...props} />
+      <Suspense fallback={null}>
+        <InventoryViewInner {...props} />
+      </Suspense>
     </ToastProvider>
   );
 }

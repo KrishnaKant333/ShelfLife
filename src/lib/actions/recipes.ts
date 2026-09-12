@@ -9,7 +9,7 @@ import { getInventoryStatus } from "@/lib/inventory-status";
 import { getDaysUntilExpiry } from "@/lib/format-expiry";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { normalizeQuantity } from "@/lib/normalization";
+import { normalizeQuantity, isIntegerUnit } from "@/lib/normalization";
 
 const recipeIngredientSchema = z.object({
   name: z.string(),
@@ -77,7 +77,7 @@ async function getCurrentUserSession() {
   };
 }
 
-export type RecipeMode = "use_soon" | "quick_meal" | "use_what_i_have";
+export type RecipeMode = "use_soon" | "quick_meal" | "use_what_i_have" | "culinary_exploration";
 
 export async function generateRecipesAction(mode: RecipeMode = "use_soon"): Promise<{ success: boolean; recipes?: Recipe[]; excludedCount?: number; error?: string }> {
   try {
@@ -134,6 +134,9 @@ Prioritize quick-to-prepare ingredients already in the inventory.`;
       modeInstructions = `Minimize ingredients that are NOT in inventory.
 Prioritize recipes using the highest proportion of current inventory ingredients.
 Mark optional pantry items clearly.`;
+    } else if (mode === "culinary_exploration") {
+      modeInstructions = `Inspire culinary creativity by pairing current inventory ingredients with 1-2 common household staples to create restaurant-quality dishes.
+Emphasize artisanal flavors, balancing texture and taste.`;
     }
 
     const prompt = `
@@ -261,9 +264,20 @@ export async function consumeIngredientsAction(
       if (!Number.isFinite(item.quantityUsed) || item.quantityUsed <= 0 || item.quantityUsed > dbItem.quantity) {
         return {
           success: false,
-          error: `Quantity for ${dbItem.name} must be greater than zero and no more than the available stock.`,
+          error: `Quantity for ${dbItem.name} must be greater than zero and no more than the available stock (${dbItem.quantity} ${dbItem.unit}).`,
         };
       }
+
+      // Respect integer-only units such as pieces, units, cans, bottles
+      if (isIntegerUnit(dbItem.unit) && !Number.isInteger(item.quantityUsed)) {
+        return {
+          success: false,
+          error: `Quantity for ${dbItem.name} must be a whole number for unit "${dbItem.unit}".`,
+        };
+      }
+
+      // Clean floating-point precision to avoid 0.20000000000000007 artifacts
+      const cleanQuantityUsed = Math.round(item.quantityUsed * 10000) / 10000;
 
       // Create consumption record
       await db.orm.public.InventoryConsumption.create({
@@ -271,9 +285,9 @@ export async function consumeIngredientsAction(
         businessId: session.accountType === "business" ? session.businessId : null,
         inventoryItemId: item.itemId,
         productName: dbItem.name,
-        quantityUsed: item.quantityUsed,
+        quantityUsed: cleanQuantityUsed,
         unit: dbItem.unit,
-        normalizedQuantityUsed: normalizeQuantity(item.quantityUsed, dbItem.unit).normalizedValue,
+        normalizedQuantityUsed: normalizeQuantity(cleanQuantityUsed, dbItem.unit).normalizedValue,
       });
 
       await db.orm.public.InventoryActivity.create({
@@ -282,11 +296,12 @@ export async function consumeIngredientsAction(
         inventoryItemId: item.itemId,
         productName: dbItem.name,
         action: "consumed",
-        quantity: item.quantityUsed,
+        quantity: cleanQuantityUsed,
         unit: dbItem.unit,
       });
 
-      const newQty = dbItem.quantity - item.quantityUsed;
+      const rawNewQty = dbItem.quantity - cleanQuantityUsed;
+      const newQty = Math.round(rawNewQty * 10000) / 10000;
 
       if (newQty <= 0) {
         // Delete item

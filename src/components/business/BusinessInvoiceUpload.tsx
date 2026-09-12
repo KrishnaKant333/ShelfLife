@@ -28,7 +28,7 @@ export default function BusinessInvoiceUpload() {
 
     const detectedCount = items.length;
     const presentCount = items.filter((item) =>
-      existingNames.includes(item.name.toLowerCase().trim())
+      existingNames.includes(item.name.toLowerCase().trim().replace(/\s+/g, " "))
     ).length;
     const newCount = Math.max(0, detectedCount - presentCount);
 

@@ -6,7 +6,7 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="scroll-fog min-h-screen">
+    <div className="dark min-h-screen bg-[#0c120e] text-[var(--sl-color-text)]">
       <Navbar />
       {children}
     </div>

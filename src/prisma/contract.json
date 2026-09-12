@@ -370,7 +370,7 @@
               "quantityUsed": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/float8@1",
                   "kind": "scalar"
                 }
               },
@@ -1030,8 +1030,8 @@
                   "nullable": false
                 },
                 "quantityUsed": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/float8@1",
+                  "nativeType": "float8",
                   "nullable": false
                 },
                 "unit": {
@@ -1398,7 +1398,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "b70d5295c1bd97549f3e243febfb4d8089f4ecf243f67f8dd528a5430956032a"
+    "storageHash": "6059162589031ed870d8d501475ad224dde50213d4a1e4d0138c053dd1efbbb8"
   },
   "execution": {
     "executionHash": "7d80476c0bb076336617ca6c01539bf0d0e03bbce6eb7ad70ff49d188d7443cd",

@@ -1,272 +1,501 @@
 "use client";
 
-import { useState } from "react";
-import { AlertTriangle, CheckCircle2, ShieldAlert, ArrowRight, Trash2, Utensils, RefreshCw } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Trash2,
+  Utensils,
+  Sparkles,
+  Clock,
+  TrendingDown,
+  X,
+  Filter,
+} from "lucide-react";
 import { getInventoryStatus } from "@/lib/inventory-status";
 import { formatExpiry } from "@/lib/format-expiry";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { discardExpiredItemsAction } from "@/lib/actions/inventory";
+import { isIntegerUnit } from "@/lib/normalization";
+import { consumeIngredientsAction } from "@/lib/actions/recipes";
+import { deleteInventoryItem, discardExpiredItemsAction } from "@/lib/actions/inventory";
+import { ToastProvider, useToast } from "@/components/ui/Toast";
+import AlertActionCard, { AlertCardData, AlertSeverity } from "@/components/alerts/AlertActionCard";
 
-type InventoryItem = {
+export interface RawInventoryItem {
   id: number;
   name: string;
   category: string;
   quantity: number;
   unit: string;
   expiryDate: string | null;
-};
-
-type AlertObject = {
-  item: InventoryItem;
-  status: "Expired" | "Expiring" | "Low Stock";
-  priority: string;
-  title: string;
-  description: string;
-  badgeClass: string;
-  iconClass: string;
-  actionType: "discard" | "recipe" | "restock";
-};
+}
 
 interface AlertsViewProps {
-  inventory: InventoryItem[];
+  inventory: RawInventoryItem[];
   isBusiness?: boolean;
 }
 
-export default function AlertsView({ inventory, isBusiness = false }: AlertsViewProps) {
+function AlertsViewInner({ inventory, isBusiness = false }: AlertsViewProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"All" | "Expired" | "Expiring" | "Low Stock">("All");
-  const [isDiscarding, setIsDiscarding] = useState(false);
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const { showToast } = useToast();
+  const [activeTab, setActiveTab] = useState<"ALL" | AlertSeverity>("ALL");
+  const [consumeItem, setConsumeItem] = useState<AlertCardData | null>(null);
+  const [useQuantity, setUseQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
+  const [singleDiscardItem, setSingleDiscardItem] = useState<AlertCardData | null>(null);
 
-  const dashboardUrl = isBusiness ? "/business/dashboard" : "/dashboard";
+  const currentDate = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
 
-  const allAlerts: AlertObject[] = inventory.flatMap((item): AlertObject[] => {
-    const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
-    if (status === "Expired") {
-      return [{
-        item,
-        status: "Expired",
-        priority: "CRITICAL",
-        title: `${item.name} is Expired`,
-        description: `Expired on ${formatExpiry(item.expiryDate)}. Discard immediately to keep your shelf safe.`,
-        badgeClass: "bg-[var(--shelf-terracotta)]/15 text-[var(--shelf-terracotta)] border-[var(--shelf-terracotta)]/30",
-        iconClass: "bg-[var(--shelf-terracotta)]/10 text-[var(--shelf-terracotta)]",
-        actionType: "discard",
-      }];
-    }
-    if (status === "Expiring") {
-      return [{
-        item,
-        status: "Expiring",
-        priority: "URGENT",
-        title: `${item.name} Expires Soon`,
-        description: `Expires on ${formatExpiry(item.expiryDate)}. Plan a meal or consume soon to prevent waste.`,
-        badgeClass: "bg-[var(--shelf-amber)]/15 text-[var(--shelf-amber)] border-[var(--shelf-amber)]/30",
-        iconClass: "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)]",
-        actionType: "recipe",
-      }];
-    }
-    if (status === "Low Stock") {
-      return [{
-        item,
-        status: "Low Stock",
-        priority: "WARNING",
-        title: `${item.name} Low Stock Alert`,
-        description: `Only ${item.quantity} ${item.unit} remaining on shelf. Consider restocking soon.`,
-        badgeClass: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
-        iconClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-        actionType: "restock",
-      }];
-    }
-    return [];
-  });
+  // Derive alert cards strictly from verified status logic
+  const allAlerts = useMemo(() => {
+    const alerts: AlertCardData[] = [];
+    inventory.forEach((item) => {
+      const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
+      if (status === "Expired") {
+        alerts.push({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          quantity: item.quantity,
+          unit: item.unit,
+          expiryDate: item.expiryDate,
+          status: "Expired",
+          urgencyText: `Expired ${formatExpiry(item.expiryDate)}`,
+        });
+      } else if (status === "Expiring") {
+        alerts.push({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          quantity: item.quantity,
+          unit: item.unit,
+          expiryDate: item.expiryDate,
+          status: "Expiring",
+          urgencyText: `Expires in ${formatExpiry(item.expiryDate)}`,
+        });
+      } else if (status === "Low Stock") {
+        alerts.push({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          quantity: item.quantity,
+          unit: item.unit,
+          expiryDate: item.expiryDate,
+          status: "Low Stock",
+          urgencyText: "Depleted stock",
+        });
+      }
+    });
 
-  const filteredAlerts = allAlerts.filter(a => activeTab === "All" || a.status === activeTab);
+    // Priority sort: Expired first, then Expiring, then Low Stock
+    return alerts.sort((a, b) => {
+      const rank = { Expired: 1, Expiring: 2, "Low Stock": 3 };
+      return rank[a.status] - rank[b.status];
+    });
+  }, [inventory]);
 
-  const handleDiscardAllExpired = async () => {
-    setIsDiscarding(true);
-    setActionFeedback(null);
+  const expiredCount = allAlerts.filter((a) => a.status === "Expired").length;
+  const expiringCount = allAlerts.filter((a) => a.status === "Expiring").length;
+  const lowStockCount = allAlerts.filter((a) => a.status === "Low Stock").length;
+
+  const filteredAlerts = useMemo(() => {
+    if (activeTab === "ALL") return allAlerts;
+    return allAlerts.filter((a) => a.status === activeTab);
+  }, [allAlerts, activeTab]);
+
+  // Handlers
+  const handleOpenConsume = (item: AlertCardData) => {
+    setConsumeItem(item);
+    setUseQuantity(isIntegerUnit(item.unit) ? 1 : Math.min(item.quantity, 1));
+  };
+
+  const handleConfirmConsume = async () => {
+    if (!consumeItem) return;
+    setLoading(true);
     try {
-      const res = await discardExpiredItemsAction();
+      const res = await consumeIngredientsAction([
+        { itemId: consumeItem.id, quantityUsed: useQuantity },
+      ]);
       if (res.success) {
-        setActionFeedback(res.count ? `${res.count} expired item(s) discarded successfully.` : "No expired items remaining.");
+        showToast(`${consumeItem.name} logged as consumed.`, "success");
+        setConsumeItem(null);
         router.refresh();
       } else {
-        setActionFeedback(res.error || "Failed to discard expired items.");
+        showToast(res.error || "Failed to update item.", "error");
       }
     } catch {
-      setActionFeedback("Error occurred while discarding expired items.");
+      showToast("An unexpected error occurred.", "error");
     } finally {
-      setIsDiscarding(false);
+      setLoading(false);
     }
   };
 
-  const expiredCount = allAlerts.filter(a => a.status === "Expired").length;
-  const expiringCount = allAlerts.filter(a => a.status === "Expiring").length;
-  const lowStockCount = allAlerts.filter(a => a.status === "Low Stock").length;
+  const handleConfirmSingleDiscard = async () => {
+    if (!singleDiscardItem) return;
+    setLoading(true);
+    try {
+      await deleteInventoryItem(singleDiscardItem.id);
+      showToast(`${singleDiscardItem.name} discarded and logged.`, "success");
+      setSingleDiscardItem(null);
+      router.refresh();
+    } catch {
+      showToast("Failed to discard product.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmBulkDiscard = async () => {
+    setLoading(true);
+    try {
+      const res = await discardExpiredItemsAction();
+      if (res.success) {
+        showToast(
+          res.count && res.count > 0
+            ? `Discarded ${res.count} expired item${res.count > 1 ? "s" : ""} and updated audit register.`
+            : "No expired items to discard.",
+          "success"
+        );
+        setConfirmBulkOpen(false);
+        router.refresh();
+      } else {
+        showToast(res.error || "Failed to purge expired items.", "error");
+      }
+    } catch {
+      showToast("Failed to purge expired items.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const tabs: Array<{ id: "ALL" | AlertSeverity; label: string; count: number }> = [
+    { id: "ALL", label: "All Risks", count: allAlerts.length },
+    { id: "Expired", label: "Critical / Expired", count: expiredCount },
+    { id: "Expiring", label: "Impending Expiry", count: expiringCount },
+    { id: "Low Stock", label: "Low Stock", count: lowStockCount },
+  ];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      {/* Header Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-[var(--sl-color-surface)] via-[var(--sl-color-surface)] to-[var(--shelf-terracotta)]/5 p-6 rounded-2xl border border-[var(--shelf-border)] shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <ShieldAlert size={20} className="text-[var(--shelf-terracotta)] animate-pulse" />
-            <p className="text-xs font-bold uppercase tracking-wider text-[var(--shelf-terracotta)]">
-              Urgent Inventory Attention
+    <div className="mx-auto max-w-6xl space-y-8">
+      {/* 1. Editorial Masthead identical to Analytics, Recipes, and Waste */}
+      <header className="border-b border-[var(--shelf-border)]/60 pb-6 pt-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--shelf-terracotta)]/10 px-2.5 py-0.5 text-xs font-semibold text-[var(--shelf-terracotta)]">
+                <AlertTriangle size={12} />
+                Actionable Inventory Safeguards
+              </span>
+              <span className="text-xs text-[var(--shelf-muted)]">
+                {isBusiness ? "Commercial Kitchen Pro" : "Household Pantry"} • {currentDate}
+              </span>
+            </div>
+
+            <h1 className="mt-2 font-serif text-3xl font-normal tracking-tight text-[var(--shelf-dark)] sm:text-4xl">
+              Urgent Inventory Alerts
+            </h1>
+            <p className="mt-1 text-sm text-[var(--shelf-muted)]">
+              Real-time risk warnings requiring direct consumption, meal preparation, or food safety discard.
             </p>
           </div>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--shelf-dark)]">
-            Actionable System Alerts
-          </h1>
-          <p className="mt-1 text-sm text-[var(--shelf-muted)]">
-            Immediate inventory risks requiring user intervention (Expiring, Expired, Low Stock).
-          </p>
+
+          {/* Bulk Action Controls */}
+          <div className="flex flex-wrap items-center gap-2 sm:self-end">
+            {!isBusiness && expiringCount > 0 && (
+              <Link
+                href="/dashboard/recipes"
+                className="sl-focus-ring inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3.5 py-2 text-xs font-semibold text-[var(--shelf-dark)] shadow-xs transition hover:bg-[var(--shelf-cream)]/40 cursor-pointer"
+              >
+                <Sparkles size={13} className="text-[var(--shelf-forest)]" />
+                Cook With Expiring Items
+              </Link>
+            )}
+
+            {expiredCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setConfirmBulkOpen(true)}
+                className="sl-focus-ring inline-flex items-center gap-1.5 rounded-xl bg-[var(--shelf-terracotta)] px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition hover:opacity-90 cursor-pointer"
+              >
+                <Trash2 size={13} />
+                Discard All Expired ({expiredCount})
+              </button>
+            )}
+          </div>
         </div>
 
-        {expiredCount > 0 && (
-          <button
-            type="button"
-            onClick={handleDiscardAllExpired}
-            disabled={isDiscarding}
-            className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--shelf-terracotta)] px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:opacity-90 disabled:opacity-50 shrink-0"
-          >
-            <Trash2 size={16} />
-            {isDiscarding ? "Discarding..." : `Discard Expired (${expiredCount})`}
-          </button>
-        )}
-      </div>
-
-      {actionFeedback && (
-        <div className="rounded-xl border border-[var(--sl-color-action)]/30 bg-[var(--sl-color-action-soft)] p-3 text-xs font-semibold text-[var(--sl-color-action)] flex justify-between items-center">
-          <span>{actionFeedback}</span>
-          <button type="button" onClick={() => setActionFeedback(null)} className="hover:underline">Dismiss</button>
+        {/* Live Status Pill */}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="inline-flex items-center gap-2 rounded-lg border border-[var(--shelf-border)]/50 bg-[var(--shelf-cream)]/30 px-3 py-1 text-xs font-medium text-[var(--shelf-dark)]">
+            <span
+              className={`h-2 w-2 rounded-full ${
+                expiredCount > 0
+                  ? "bg-[var(--shelf-terracotta)] animate-pulse"
+                  : expiringCount > 0
+                  ? "bg-[var(--shelf-amber)]"
+                  : "bg-[var(--shelf-forest)]"
+              }`}
+            />
+            <span>
+              <strong>Safeguard Status:</strong> {allAlerts.length} Actionable Risk{allAlerts.length !== 1 ? "s" : ""}
+            </span>
+            <span className="text-[var(--shelf-muted)]">•</span>
+            <span>{expiredCount} expired</span>
+            <span className="text-[var(--shelf-muted)]">•</span>
+            <span>{expiringCount} impending</span>
+            <span className="text-[var(--shelf-muted)]">•</span>
+            <span>{lowStockCount} low stock</span>
+          </div>
         </div>
-      )}
+      </header>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-2 bg-[var(--shelf-surface)] border border-[var(--shelf-border)] p-1.5 rounded-xl shadow-xs">
-        {(["All", "Expired", "Expiring", "Low Stock"] as const).map((tab) => {
-          const count = tab === "All" ? allAlerts.length : tab === "Expired" ? expiredCount : tab === "Expiring" ? expiringCount : lowStockCount;
+      {/* 2. Urgency Filter Navigation Strip */}
+      <div className="flex flex-wrap items-center gap-2">
+        {tabs.map((tab) => {
+          const active = activeTab === tab.id;
           return (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition ${
-                activeTab === tab
-                  ? "bg-[var(--sl-color-action-soft)] text-[var(--sl-color-action)] shadow-xs"
-                  : "text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)]"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`sl-focus-ring inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition cursor-pointer ${
+                active
+                  ? "bg-[var(--shelf-forest)] text-white shadow-xs"
+                  : "border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)] hover:bg-[var(--shelf-cream)]/40"
               }`}
             >
-              <span>{tab} Alerts</span>
-              {count > 0 && (
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                  activeTab === tab ? "bg-[var(--sl-color-action)] text-white" : "bg-[var(--shelf-cream)] text-[var(--shelf-muted)]"
-                }`}>
-                  {count}
-                </span>
-              )}
+              <span>{tab.label}</span>
+              <span
+                className={`rounded-full px-1.5 py-0.2 font-mono text-[10px] font-bold ${
+                  active
+                    ? "bg-white/20 text-white"
+                    : "bg-[var(--shelf-cream)] text-[var(--shelf-dark)]"
+                }`}
+              >
+                {tab.count}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Alert Cards List */}
-      <div className="space-y-3">
+      {/* 3. Alerts Card Feed */}
+      <div className="space-y-3.5">
         {filteredAlerts.length === 0 ? (
-          <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-12 text-center shadow-xs">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]">
-              <CheckCircle2 size={32} />
+          <div className="sl-editorial-card flex flex-col items-center justify-center p-12 text-center shadow-xs">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]">
+              <CheckCircle2 size={30} />
             </div>
-            <h3 className="mt-4 text-lg font-bold text-[var(--shelf-dark)]">
-              No Actionable Inventory Alerts
+            <h3 className="mt-4 font-serif text-xl font-normal text-[var(--shelf-dark)]">
+              Pristine Shelf Safeguard
             </h3>
-            <p className="mt-2 text-sm text-[var(--shelf-muted)] max-w-md mx-auto">
-              Your inventory is in great shape! All products are fresh and well-stocked.
+            <p className="mx-auto mt-1 max-w-md text-xs text-[var(--shelf-muted)] sm:text-sm">
+              Zero actionable risks detected in this filter. All inventory items are within safe freshness horizons and optimal replenishment levels.
             </p>
-            <div className="mt-6">
+            <div className="mt-5">
               <Link
-                href={`${dashboardUrl}/inventory`}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-5 py-2.5 text-xs font-bold text-white transition hover:opacity-90"
+                href={isBusiness ? "/business/dashboard/inventory" : "/dashboard/inventory"}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] shadow-xs transition hover:bg-[var(--shelf-cream)]/40"
               >
-                View Inventory
-                <ArrowRight size={14} />
+                View Full Inventory Catalog →
               </Link>
             </div>
           </div>
         ) : (
-          filteredAlerts.map(({ item, priority, title, description, badgeClass, iconClass, actionType }) => (
-            <div
-              key={`${item.id}-${priority}`}
-              className="flex flex-col gap-4 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 shadow-xs transition hover:border-[var(--shelf-sage)] sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="flex items-start gap-4">
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${iconClass}`}>
-                  <AlertTriangle size={22} />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="font-bold text-[var(--shelf-dark)] text-base truncate">
-                      {title}
-                    </h4>
-                    <span className={`inline-flex items-center shrink-0 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${badgeClass}`}>
-                      {priority}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[var(--shelf-muted)]">
-                    {description}
-                  </p>
-                  <div className="flex items-center gap-3 text-[11px] font-medium text-[var(--shelf-muted)] pt-1">
-                    <span>Category: <strong className="text-[var(--shelf-dark)]">{item.category}</strong></span>
-                    <span>·</span>
-                    <span>Quantity: <strong className="text-[var(--shelf-dark)]">{item.quantity} {item.unit}</strong></span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-2 sm:pt-0 shrink-0">
-                {actionType === "discard" && (
-                  <button
-                    type="button"
-                    onClick={handleDiscardAllExpired}
-                    disabled={isDiscarding}
-                    className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl bg-[var(--shelf-terracotta)] px-3.5 py-2 text-xs font-bold text-white transition hover:opacity-90"
-                  >
-                    <Trash2 size={14} />
-                    Discard
-                  </button>
-                )}
-                {actionType === "recipe" && (
-                  <Link
-                    href={`${dashboardUrl}/recipes`}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--shelf-forest)] px-3.5 py-2 text-xs font-bold text-white transition hover:opacity-90 shadow-xs"
-                  >
-                    <Utensils size={14} />
-                    Cook Recipe
-                  </Link>
-                )}
-                {actionType === "restock" && (
-                  <Link
-                    href={`${dashboardUrl}/inventory/${item.id}/edit`}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--sl-color-action-soft)] border border-[var(--sl-color-action)]/30 px-3.5 py-2 text-xs font-bold text-[var(--sl-color-action)] transition hover:bg-[var(--sl-color-action-soft)]/80"
-                  >
-                    <RefreshCw size={14} />
-                    Restock
-                  </Link>
-                )}
-                <Link
-                  href={`${dashboardUrl}/inventory/${item.id}`}
-                  className="inline-flex items-center gap-1 rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3.5 py-2 text-xs font-semibold text-[var(--shelf-dark)] hover:bg-[var(--shelf-cream)] transition"
-                >
-                  Details
-                </Link>
-              </div>
-            </div>
+          filteredAlerts.map((alert) => (
+            <AlertActionCard
+              key={alert.id}
+              alert={alert}
+              onConsume={handleOpenConsume}
+              onDiscard={(item) => setSingleDiscardItem(item)}
+              isBusiness={isBusiness}
+            />
           ))
         )}
       </div>
+
+      {/* Interactive Modal: Consume Item */}
+      {consumeItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="use-product-title"
+            className="relative flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-2xl"
+          >
+            <div className="p-5 border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40">
+              <h3 id="use-product-title" className="font-serif text-lg font-bold text-[var(--shelf-dark)]">
+                Consume Product
+              </h3>
+              <p className="text-xs text-[var(--shelf-muted)] mt-0.5">
+                Mark {consumeItem.name} as prepared or consumed.
+              </p>
+              <button
+                onClick={() => setConsumeItem(null)}
+                aria-label="Close dialog"
+                className="absolute top-5 right-5 text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)] cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--shelf-muted)] mb-2">
+                  Quantity to Use ({consumeItem.unit})
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    step={isIntegerUnit(consumeItem.unit) ? "1" : "any"}
+                    min={isIntegerUnit(consumeItem.unit) ? "1" : "0.01"}
+                    max={consumeItem.quantity}
+                    value={useQuantity}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val)) {
+                        setUseQuantity(Math.min(consumeItem.quantity, Math.max(0.01, val)));
+                      }
+                    }}
+                    className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-2.5 text-center font-mono text-sm font-bold outline-none"
+                  />
+                  <span className="text-xs font-mono font-semibold text-[var(--shelf-dark)] shrink-0">
+                    / {consumeItem.quantity} {consumeItem.unit}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse gap-2.5 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-4 sm:flex-row sm:justify-end">
+              <button
+                onClick={() => setConsumeItem(null)}
+                className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmConsume}
+                disabled={loading}
+                className="sl-focus-ring inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[var(--shelf-forest)] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-xs"
+              >
+                {loading ? "Updating..." : "Confirm Consumption"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Single Discard Confirmation Modal */}
+      {singleDiscardItem && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="single-discard-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+        >
+          <div className="relative flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-2xl">
+            <div className="p-6 border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30">
+              <div className="flex items-center gap-3">
+                <span className="rounded-xl bg-[var(--shelf-terracotta)]/15 p-2.5 text-[var(--shelf-terracotta)]">
+                  <Trash2 className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 id="single-discard-title" className="font-serif text-lg font-bold text-[var(--shelf-dark)]">
+                    Discard {singleDiscardItem.name}
+                  </h3>
+                  <p className="text-xs text-[var(--shelf-muted)] mt-0.5">
+                    Remove {singleDiscardItem.quantity} {singleDiscardItem.unit} and register discard in audit log.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 text-xs text-[var(--shelf-muted)] leading-relaxed">
+              This product will be purged from active inventory and archived as an avoidable discard event. Are you sure you want to proceed?
+            </div>
+
+            <div className="flex flex-col-reverse gap-2.5 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/20 p-4 sm:flex-row sm:justify-end">
+              <button
+                onClick={() => setSingleDiscardItem(null)}
+                disabled={loading}
+                className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmSingleDiscard}
+                disabled={loading}
+                className="sl-focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl bg-[var(--shelf-terracotta)] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:opacity-90 disabled:opacity-50 cursor-pointer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {loading ? "Discarding..." : "Confirm Discard"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Purge Expired Confirmation Modal */}
+      {confirmBulkOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bulk-discard-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+        >
+          <div className="relative flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-2xl">
+            <div className="p-6 border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30">
+              <div className="flex items-center gap-3">
+                <span className="rounded-xl bg-[var(--shelf-terracotta)]/15 p-2.5 text-[var(--shelf-terracotta)]">
+                  <AlertTriangle className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 id="bulk-discard-title" className="font-serif text-lg font-bold text-[var(--shelf-dark)]">
+                    Discard All Expired Items
+                  </h3>
+                  <p className="text-xs text-[var(--shelf-muted)] mt-0.5">
+                    Purge all {expiredCount} expired products from your shelf.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 text-xs text-[var(--shelf-muted)] leading-relaxed">
+              All items currently past their expiration date will be permanently removed from inventory and registered in the loss audit log.
+            </div>
+
+            <div className="flex flex-col-reverse gap-2.5 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/20 p-4 sm:flex-row sm:justify-end">
+              <button
+                onClick={() => setConfirmBulkOpen(false)}
+                disabled={loading}
+                className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] px-4 py-2 text-xs font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmBulkDiscard}
+                disabled={loading}
+                className="sl-focus-ring inline-flex items-center justify-center gap-1.5 rounded-xl bg-[var(--shelf-terracotta)] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:opacity-90 disabled:opacity-50 cursor-pointer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {loading ? "Purging..." : `Purge ${expiredCount} Items`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function AlertsView(props: AlertsViewProps) {
+  return (
+    <ToastProvider>
+      <AlertsViewInner {...props} />
+    </ToastProvider>
   );
 }

@@ -1,22 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Utensils,
-  Clock,
-  CheckCircle,
   AlertTriangle,
-  HelpCircle,
-  Loader2,
-  X,
-  Check,
-  ChevronRight,
   RefreshCw,
   Info,
+  ChefHat,
+  Sparkles,
+  BookOpen,
 } from "lucide-react";
-import { generateRecipesAction, consumeIngredientsAction, type Recipe, type RecipeIngredient, type RecipeMode } from "@/lib/actions/recipes";
+import {
+  generateRecipesAction,
+  consumeIngredientsAction,
+  type Recipe,
+  type RecipeMode,
+} from "@/lib/actions/recipes";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
+import { RecipeEditorialMasthead } from "@/components/recipes/RecipeEditorialMasthead";
+import { RecipeModeSelector } from "@/components/recipes/RecipeModeSelector";
+import { EditorialRecipeCard } from "@/components/recipes/EditorialRecipeCard";
+import { KitchenCookingDrawer } from "@/components/recipes/KitchenCookingDrawer";
 
 type InventoryItem = {
   id: number;
@@ -31,38 +36,67 @@ interface RecipesViewProps {
   initialInventory: InventoryItem[];
 }
 
-const RECIPE_MODES: { value: RecipeMode; label: string; description: string }[] = [
-  {
-    value: "use_soon",
-    label: "Use Soon",
-    description: "Prioritize ingredients that should be used soon.",
-  },
-  {
-    value: "quick_meal",
-    label: "Quick Meal",
-    description: "Find something quick to prepare.",
-  },
-  {
-    value: "use_what_i_have",
-    label: "Use What I Have",
-    description: "Make a recipe mostly from your current inventory.",
-  },
+const CULINARY_LOADING_TIPS = [
+  "Pairing near-expiry herbs with hearty pantry grains...",
+  "Auditing pantry staples for balanced nutrition...",
+  "Calculating minimal-waste prep techniques...",
+  "Filtering out expired ingredients for kitchen safety...",
+  "Drafting step-by-step culinary instructions...",
 ];
 
 function RecipesViewInner({ initialInventory }: RecipesViewProps) {
   const router = useRouter();
   const { showToast } = useToast();
+
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingTipIndex, setLoadingTipIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [consuming, setConsuming] = useState(false);
-  const [consumeQuantities, setConsumeQuantities] = useState<Record<number, number>>({});
-  const [consumeSelected, setConsumeSelected] = useState<Record<number, boolean>>({});
   const [recipeMode, setRecipeMode] = useState<RecipeMode>("use_soon");
   const [excludedExpiredCount, setExcludedExpiredCount] = useState(0);
 
+  // Compute safe ingredients and urgency counts
+  const { candidateCount, expiringSoonCount } = useMemo(() => {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    let candidates = 0;
+    let expiringSoon = 0;
+
+    for (const item of initialInventory) {
+      if (!item.expiryDate) {
+        candidates++;
+        continue;
+      }
+      const expTime = new Date(item.expiryDate).getTime();
+      if (expTime >= startOfToday) {
+        candidates++;
+        const diffDays = Math.ceil((expTime - now.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 3 && diffDays >= 0) {
+          expiringSoon++;
+        }
+      }
+    }
+
+    return { candidateCount: candidates, expiringSoonCount: expiringSoon };
+  }, [initialInventory]);
+
+  // Rotate loading tips during AI generation
+  useEffect(() => {
+    if (!loading) return;
+    const timer = setInterval(() => {
+      setLoadingTipIndex((prev) => (prev + 1) % CULINARY_LOADING_TIPS.length);
+    }, 2400);
+    return () => clearInterval(timer);
+  }, [loading]);
+
   const handleGenerate = async () => {
+    if (initialInventory.length === 0) {
+      showToast("Please add items to your Inventory before generating recipes.", "error");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -71,54 +105,29 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
         setRecipes(res.recipes);
         setExcludedExpiredCount(res.excludedCount || 0);
       } else {
-        setError(res.error || "Failed to generate recipes.");
+        setError(res.error || "Failed to generate recipes. Please try again.");
         setExcludedExpiredCount(res.excludedCount || 0);
       }
     } catch (err: any) {
-      setError(err?.message || "An unexpected error occurred.");
+      setError(err?.message || "An unexpected culinary intelligence error occurred.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenRecipe = (recipe: Recipe) => {
+  const handleCookRecipe = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
-    
-    // Initialize consumption states
-    const quantities: Record<number, number> = {};
-    const selected: Record<number, boolean> = {};
-    
-    recipe.ingredients.forEach((ing) => {
-      if (ing.itemId) {
-        // Attempt to parse quantity from text or default to 1
-        const matchedItem = initialInventory.find((x) => x.id === ing.itemId);
-        const maxQty = matchedItem ? matchedItem.quantity : 1;
-        quantities[ing.itemId] = 1; // default to consume 1 unit
-        selected[ing.itemId] = true; // default checked
-      }
-    });
-
-    setConsumeQuantities(quantities);
-    setConsumeSelected(selected);
   };
 
-  const handleCloseRecipe = () => {
+  const handleCloseDrawer = () => {
     setSelectedRecipe(null);
   };
 
-  const handleMarkConsumed = async () => {
-    if (!selectedRecipe) return;
-
-    const itemsToConsume = Object.keys(consumeSelected)
-      .map(Number)
-      .filter((id) => consumeSelected[id] && consumeQuantities[id] > 0)
-      .map((id) => ({
-        itemId: id,
-        quantityUsed: consumeQuantities[id],
-      }));
-
+  const handleIngredientsDeducted = async (
+    itemsToConsume: { itemId: number; quantityUsed: number }[]
+  ) => {
     if (itemsToConsume.length === 0) {
-      showToast("No ingredients selected for consumption.", "error");
+      showToast("No pantry items selected to deduct.", "error");
       return;
     }
 
@@ -126,411 +135,230 @@ function RecipesViewInner({ initialInventory }: RecipesViewProps) {
     try {
       const res = await consumeIngredientsAction(itemsToConsume);
       if (res.success) {
-        showToast("Selected ingredients have been marked as consumed!", "success");
-        handleCloseRecipe();
+        showToast("Success! Used pantry items have been logged and deducted.", "success");
+        handleCloseDrawer();
         router.refresh();
-        // Update local list if we have it
-        handleGenerate(); // re-generate to update recipe lists based on new stock levels
       } else {
-        showToast(res.error || "Failed to mark ingredients as consumed.", "error");
+        showToast(res.error || "Failed to deduct ingredients.", "error");
       }
-    } catch (err: any) {
-      showToast("Failed to update inventory.", "error");
+    } catch {
+      showToast("Network error while updating pantry records.", "error");
     } finally {
       setConsuming(false);
     }
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      {/* Header */}
-      <div>
-        <p className="text-sm font-semibold text-[var(--shelf-forest)]">
-          AI Meal Planner
-        </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[var(--shelf-dark)] md:text-4xl">
-          Cook With What You Have
-        </h1>
-        <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-          Generate custom recipes using the ingredients closest to expiry in your fridge or pantry.
-        </p>
-      </div>
+    <div className="mx-auto max-w-6xl space-y-8 pb-16">
+      {/* 1. Food Editorial Masthead */}
+      <RecipeEditorialMasthead
+        candidateCount={candidateCount}
+        expiringSoonCount={expiringSoonCount}
+        onQuickGenerate={handleGenerate}
+        isGenerating={loading}
+      />
 
+      {/* 2. Recipe Mode Selector */}
+      <RecipeModeSelector
+        selectedMode={recipeMode}
+        onSelectMode={(mode: RecipeMode) => setRecipeMode(mode)}
+        disabled={loading}
+      />
+
+      {/* Safety & Error Feedback */}
       {error && (
-        <div role="alert" aria-live="assertive" className="rounded-xl border border-[var(--shelf-terracotta)]/20 bg-[var(--shelf-terracotta)]/10 p-4 text-sm text-[var(--shelf-terracotta)] flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 shrink-0 text-[var(--shelf-terracotta)] mt-0.5" />
-          <div>
-            <h4 className="font-semibold text-[var(--shelf-terracotta)]">Recipe Generation Failed</h4>
-            <p className="mt-1 text-[var(--shelf-terracotta)]">{error}</p>
-            {excludedExpiredCount > 0 && (
-              <p className="mt-2 text-xs text-[var(--shelf-terracotta)]">
-                <Info className="inline h-3.5 w-3.5 mr-1" />
-                {excludedExpiredCount} expired item{excludedExpiredCount !== 1 ? "s were" : " was"} excluded from recipe suggestions for your safety.
-              </p>
-            )}
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="rounded-2xl border border-[var(--shelf-terracotta)]/25 bg-[var(--shelf-terracotta)]/10 p-5 text-sm text-[var(--shelf-terracotta)] flex items-start gap-3.5 shadow-xs"
+        >
+          <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-[var(--shelf-terracotta)]" />
+          <div className="flex-1">
+            <h4 className="font-serif font-bold text-base text-[var(--shelf-terracotta)]">
+              Culinary Dispatch Interrupted
+            </h4>
+            <p className="mt-1 text-xs text-[var(--shelf-dark)] opacity-90">{error}</p>
+            <button
+              onClick={handleGenerate}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[var(--shelf-terracotta)]/30 bg-[var(--shelf-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--shelf-terracotta)] hover:bg-[var(--shelf-cream)] transition"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Retry Generation
+            </button>
           </div>
         </div>
       )}
 
-      {/* Main View */}
-      {recipes.length === 0 && !loading ? (
-        /* Empty / Prompt State */
-        <div className="space-y-6">
-          {/* Recipe Mode Selector */}
-          <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm">
-            <div>
-              <h3 className="text-sm font-bold text-[var(--shelf-dark)] uppercase tracking-wider">
-                How should ShelfLife help?
-              </h3>
-              <p className="mt-1 text-xs text-[var(--shelf-muted)]">
-                Choose a recipe mode to personalize your meal suggestions.
-              </p>
-            </div>
+      {/* Deterministic Safety Badge when expired items were excluded */}
+      {excludedExpiredCount > 0 && (
+        <div className="rounded-2xl border border-[var(--shelf-blue)]/20 bg-[var(--shelf-blue)]/5 p-4 text-xs sm:text-sm text-[var(--shelf-dark)] flex items-start gap-3">
+          <Info className="h-5 w-5 shrink-0 text-[var(--shelf-blue)] mt-0.5" />
+          <div className="space-y-0.5">
+            <span className="font-bold text-[var(--shelf-dark)]">
+              Kitchen Safety Guarantee Active:
+            </span>{" "}
+            <span className="text-[var(--shelf-muted)]">
+              {excludedExpiredCount} expired item{excludedExpiredCount !== 1 ? "s were" : " was"}{" "}
+              strictly excluded from recipe suggestions. ShelfLife ensures only safe, edible
+              ingredients are recommended.
+            </span>
+          </div>
+        </div>
+      )}
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {RECIPE_MODES.map((mode) => (
-                <button
-                  key={mode.value}
-                  onClick={() => setRecipeMode(mode.value)}
-                  aria-pressed={recipeMode === mode.value}
-                  className={`text-left rounded-xl border-2 p-4 transition ${
-                    recipeMode === mode.value
-                      ? "border-[var(--shelf-forest)] bg-[var(--shelf-cream)]/60 shadow-sm"
-                      : "border-[var(--shelf-border)] bg-[var(--shelf-surface)] hover:border-[var(--shelf-border)]"
-                  }`}
-                >
-                  <h4 className="font-bold text-[var(--shelf-dark)]">{mode.label}</h4>
-                  <p className="mt-1 text-xs text-[var(--shelf-muted)]">{mode.description}</p>
-                </button>
-              ))}
-            </div>
+      {/* 3. Main Content State (Empty / Loading / Recipe Grid) */}
+      {recipes.length === 0 && !loading ? (
+        /* Editorial Culinary Studio Empty State */
+        <div className="rounded-3xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-8 sm:p-14 text-center shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-radial from-[var(--shelf-forest)]/5 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-radial from-[var(--shelf-amber)]/5 to-transparent pointer-events-none" />
+
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--shelf-cream)] border border-[var(--shelf-border)] text-[var(--shelf-forest)] shadow-xs">
+            <Utensils className="h-9 w-9" />
           </div>
 
-          {/* Generate Button & Info */}
-          <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-12 text-center shadow-sm">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--shelf-cream)] text-[var(--shelf-forest)]">
-              <Utensils size={32} />
-            </div>
-            <h3 className="mt-4 text-xl font-bold text-[var(--shelf-dark)]">Ready to cook?</h3>
-            <p className="mt-2 text-sm text-[var(--shelf-muted)] max-w-md mx-auto">
-              ShelfLife will analyze your safe inventory and create customized recipes. Expired items are automatically excluded.
-            </p>
+          <h3 className="mt-5 font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[var(--shelf-dark)]">
+            Your Kitchen Studio Is Ready
+          </h3>
+          <p className="mt-2.5 text-xs sm:text-sm text-[var(--shelf-muted)] max-w-lg mx-auto leading-relaxed">
+            ShelfLife analyzes the ingredients in your safe inventory and drafts tailored, gourmet
+            home recipes designed to maximize flavor and minimize food waste.
+          </p>
 
-            <div className="mt-8 flex justify-center">
-              {initialInventory.length === 0 ? (
-                <div className="text-sm text-[var(--shelf-muted)]">
-                  Please add items to your <span className="font-bold">Inventory</span> first to unlock AI recipe generation.
-                </div>
-              ) : (
-                <button
-                  onClick={handleGenerate}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 shadow-sm"
-                >
-                  Generate Custom Recipes
-                </button>
-              )}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            {initialInventory.length === 0 ? (
+              <div className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40 px-5 py-3 text-xs text-[var(--shelf-muted)]">
+                Add fresh ingredients to your <span className="font-bold text-[var(--shelf-dark)]">Inventory</span> to unlock AI recipe generation.
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleGenerate}
+                className="inline-flex items-center gap-2.5 rounded-xl bg-[var(--shelf-forest)] px-7 py-3.5 text-sm font-bold text-white shadow-sm hover:opacity-95 transition cursor-pointer"
+              >
+                <Sparkles className="h-4 w-4" />
+                Draft Seasonal Recipes Now
+              </button>
+            )}
+          </div>
+
+          {/* Editorial Highlights Row */}
+          <div className="mt-12 pt-8 border-t border-[var(--shelf-border)]/60 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-lg bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] flex items-center justify-center shrink-0">
+                <ChefHat className="h-4 w-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--shelf-dark)]">
+                  Zero Waste Focus
+                </h4>
+                <p className="text-xs text-[var(--shelf-muted)] mt-1">
+                  Prioritizes ingredients within 48h of expiration before they spoil.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-lg bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] flex items-center justify-center shrink-0">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--shelf-dark)]">
+                  Pantry Ownership
+                </h4>
+                <p className="text-xs text-[var(--shelf-muted)] mt-1">
+                  Clearly marks owned ingredients versus pantry additions.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-lg bg-[var(--shelf-blue)]/10 text-[var(--shelf-blue)] flex items-center justify-center shrink-0">
+                <BookOpen className="h-4 w-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--shelf-dark)]">
+                  Kitchen Counter Mode
+                </h4>
+                <p className="text-xs text-[var(--shelf-muted)] mt-1">
+                  Countertop view with checkable steps and 1-click inventory deduction.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       ) : loading ? (
-        /* Loading state */
-        <div role="status" aria-live="polite" className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-[var(--shelf-forest)]" />
-          <h3 className="text-lg font-bold text-[var(--shelf-dark)]">Finding recipes...</h3>
-          <p className="text-sm text-[var(--shelf-muted)] max-w-xs">
-            Analyzing your safe ingredients and generating delicious meal ideas.
-          </p>
+        /* Warm Editorial Loading Animation */
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-3xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-6"
+        >
+          <div className="relative flex items-center justify-center h-20 w-20">
+            <div className="absolute inset-0 rounded-full border-2 border-dashed border-[var(--shelf-forest)]/30 animate-spin" />
+            <div className="h-14 w-14 rounded-full bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] flex items-center justify-center">
+              <ChefHat className="h-7 w-7 animate-pulse" />
+            </div>
+          </div>
+
+          <div className="space-y-2 max-w-md">
+            <h3 className="font-serif text-xl sm:text-2xl font-bold text-[var(--shelf-dark)]">
+              Consulting Culinary Archives
+            </h3>
+            <p className="text-xs sm:text-sm font-mono text-[var(--shelf-forest)] transition-all duration-300 min-h-5">
+              {CULINARY_LOADING_TIPS[loadingTipIndex]}
+            </p>
+          </div>
         </div>
       ) : (
-        /* Recipes Grid list */
+        /* Recipes Editorial Results Grid */
         <div className="space-y-6">
-          {excludedExpiredCount > 0 && (
-            <div className="rounded-xl border border-[var(--shelf-blue)]/20 bg-[var(--shelf-blue)]/10 p-4 text-sm text-[var(--shelf-blue)] flex items-start gap-3">
-              <Info className="h-5 w-5 shrink-0 text-[var(--shelf-blue)] mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-[var(--shelf-blue)]">Expired Items Excluded</h4>
-                <p className="mt-1 text-[var(--shelf-blue)]">
-                  {excludedExpiredCount} expired item{excludedExpiredCount !== 1 ? "s were" : " was"} excluded from recipe suggestions. ShelfLife protects you by never recommending expired food.
-                </p>
-              </div>
+          {/* Header Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+            <div>
+              <h2 className="font-serif text-xl font-bold text-[var(--shelf-dark)]">
+                Curated Recipe Collection
+              </h2>
+              <p className="text-xs text-[var(--shelf-muted)]">
+                {recipes.length} recipe{recipes.length !== 1 ? "s" : ""} tailored to your available pantry
+              </p>
             </div>
-          )}
 
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-[var(--shelf-muted)]">
-              We found {recipes.length} custom recipe{recipes.length !== 1 ? "s" : ""}:
-            </p>
             <button
+              type="button"
               onClick={handleGenerate}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--shelf-forest)] hover:underline"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-3.5 py-1.5 text-xs font-semibold text-[var(--shelf-forest)] hover:bg-[var(--shelf-cream)] transition"
             >
-              <RefreshCw size={14} />
-              Re-generate
+              <RefreshCw className="h-3.5 w-3.5" />
+              Re-generate Collection
             </button>
           </div>
 
-          <div aria-label="Generated recipe results" className="grid gap-6 md:grid-cols-2">
-            {recipes.map((recipe) => (
-              <div
-                key={recipe.name}
-                className="flex flex-col justify-between rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-6 shadow-sm hover:border-[var(--shelf-sage)] transition duration-250"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-4">
-                    <h3 className="text-lg font-bold text-[var(--shelf-dark)] leading-snug">
-                      {recipe.name}
-                    </h3>
-                    <span className="inline-flex items-center gap-1 shrink-0 rounded-lg bg-[var(--shelf-cream)] px-2.5 py-1 text-xs font-semibold text-[var(--shelf-forest)]">
-                      <Clock size={12} />
-                      {recipe.estimatedPrepTime} min
-                    </span>
-                  </div>
-
-                  <p className="mt-2 text-xs text-[var(--shelf-muted)] line-clamp-2">
-                    {recipe.description}
-                  </p>
-
-                  <div className="mt-4 rounded-xl bg-[var(--shelf-cream)]/40 border border-[var(--shelf-border)]/55 p-3 text-xs text-[var(--shelf-dark)]">
-                    <span className="font-bold text-[var(--shelf-forest)]">Why recommended:</span>{" "}
-                    {recipe.whyRecommended}
-                  </div>
-
-                  {/* Ingredient checklist preview */}
-                  <div className="mt-5 space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--shelf-muted)]">
-                      Key Ingredients:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {recipe.ingredients.slice(0, 5).map((ing, i) => {
-                        let statusIcon = <Check className="h-3 w-3 text-[var(--shelf-forest)]" />;
-                        let style = "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] border-[var(--shelf-forest)]/20";
-
-                        if (ing.status === "expiring_soon") {
-                          statusIcon = <AlertTriangle className="h-3 w-3 text-[var(--shelf-amber)]" />;
-                          style = "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] border-[var(--shelf-amber)]/20";
-                        } else if (ing.status === "pantry_item") {
-                          statusIcon = <HelpCircle className="h-3 w-3 text-[var(--shelf-muted)]" />;
-                          style = "bg-[var(--shelf-cream)] text-[var(--shelf-muted)] border-[var(--shelf-border)]";
-                        }
-
-                        return (
-                          <span
-                            key={i}
-                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${style}`}
-                          >
-                            {statusIcon}
-                            {ing.name}
-                          </span>
-                        );
-                      })}
-                      {recipe.ingredients.length > 5 && (
-                        <span className="text-xs text-[var(--shelf-muted)] py-0.5">
-                          +{recipe.ingredients.length - 5} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-[var(--shelf-border)]/50 flex justify-end">
-                  <button
-                    onClick={() => handleOpenRecipe(recipe)}
-                    className="inline-flex items-center gap-1 text-sm font-bold text-[var(--shelf-forest)] hover:underline"
-                  >
-                    View Recipe <ChevronRight size={16} />
-                  </button>
-                </div>
-              </div>
+          {/* Cards Grid */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {recipes.map((recipe, idx) => (
+              <EditorialRecipeCard
+                key={`${recipe.name}-${idx}`}
+                recipe={recipe}
+                inventory={initialInventory}
+                onCook={handleCookRecipe}
+              />
             ))}
           </div>
         </div>
       )}
 
-      {/* Recipe Detail Modal */}
+      {/* 4. Kitchen Cooking Drawer */}
       {selectedRecipe && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div role="dialog" aria-modal="true" aria-labelledby="recipe-detail-title" className="relative flex w-full max-w-2xl flex-col max-h-[85vh] overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-xl">
-            
-            {/* Modal Header */}
-            <div className="p-6 border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40 pr-12">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[var(--shelf-forest)]">
-                <Clock size={14} />
-                <span>{selectedRecipe.estimatedPrepTime} min preparation</span>
-              </div>
-              <h2 id="recipe-detail-title" className="mt-1 text-2xl font-bold text-[var(--shelf-dark)]">
-                {selectedRecipe.name}
-              </h2>
-              <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-                {selectedRecipe.description}
-              </p>
-              
-              <button
-                onClick={handleCloseRecipe}
-                aria-label="Close recipe details"
-                className="absolute top-6 right-6 text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)] rounded-lg p-1.5 hover:bg-[var(--shelf-cream)]"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              
-              {/* Recommendation advisory */}
-              <div className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 p-4">
-                <h4 className="text-sm font-semibold text-[var(--shelf-forest)] flex items-center gap-1.5">
-                  <CheckCircle className="h-4 w-4 text-[var(--shelf-forest)]" />
-                  ShelfLife Recommendation
-                </h4>
-                <p className="mt-1 text-sm text-[var(--shelf-forest)]">
-                  {selectedRecipe.whyRecommended}
-                </p>
-              </div>
-
-              {/* Ingredients Checklist */}
-              <div>
-                <h3 className="text-base font-bold text-[var(--shelf-dark)] mb-3">
-                  Ingredients Needed
-                </h3>
-                <div className="border border-[var(--shelf-border)] rounded-xl divide-y divide-[var(--shelf-border)]">
-                  {selectedRecipe.ingredients.map((ing, i) => {
-                    const matchedItem = ing.itemId ? initialInventory.find((x) => x.id === ing.itemId) : null;
-                    const stockText = matchedItem
-                      ? `(${matchedItem.quantity} ${matchedItem.unit} in stock)`
-                      : "";
-
-                    let badgeColor = "bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)] border-[var(--shelf-forest)]/20";
-                    let badgeLabel = "Available";
-
-                    if (ing.status === "expiring_soon") {
-                      badgeColor = "bg-[var(--shelf-amber)]/10 text-[var(--shelf-amber)] border-[var(--shelf-amber)]/20";
-                      badgeLabel = "Expiring soon";
-                    } else if (ing.status === "pantry_item") {
-                      badgeColor = "bg-[var(--shelf-cream)] text-[var(--shelf-muted)] border-[var(--shelf-border)]";
-                      badgeLabel = "Pantry Item";
-                    }
-
-                    return (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between p-3.5 text-sm hover:bg-[var(--shelf-cream)]/20"
-                      >
-                        <div className="flex items-center gap-3">
-                          {ing.itemId ? (
-                            <input
-                              type="checkbox"
-                              aria-label={`Use ${ing.name} from inventory`}
-                              checked={!!consumeSelected[ing.itemId]}
-                              onChange={(e) => {
-                                setConsumeSelected({
-                                  ...consumeSelected,
-                                  [ing.itemId!]: e.target.checked,
-                                });
-                              }}
-                              className="h-4.5 w-4.5 rounded-sm border-[var(--shelf-border)] text-[var(--shelf-forest)] focus:ring-[var(--shelf-forest)]"
-                            />
-                          ) : (
-                            <div className="h-4.5 w-4.5 rounded-full bg-[var(--shelf-cream)] border border-[var(--shelf-border)] flex items-center justify-center">
-                              <span className="text-[10px] font-bold text-[var(--shelf-muted)]">○</span>
-                            </div>
-                          )}
-
-                          <div>
-                            <span className="font-semibold text-[var(--shelf-dark)]">
-                              {ing.name}
-                            </span>
-                            {ing.quantityUsed && (
-                              <span className="text-[var(--shelf-muted)] ml-1.5">
-                                — {ing.quantityUsed}
-                              </span>
-                            )}
-                            {stockText && (
-                              <span className="text-xs text-[var(--shelf-muted)] block mt-0.5">
-                                {stockText}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badgeColor}`}
-                          >
-                            {badgeLabel}
-                          </span>
-
-                          {/* Editable consumption quantity if it's an inventory item */}
-                          {ing.itemId && consumeSelected[ing.itemId] && matchedItem && (
-                            <div className="flex items-center gap-1.5">
-                              <label className="text-[10px] text-[var(--shelf-muted)] font-medium">Use:</label>
-                              <input
-                                type="number"
-                                min={1}
-                                max={matchedItem.quantity}
-                                value={consumeQuantities[ing.itemId] || 1}
-                                onChange={(e) => {
-                                  const val = Math.min(
-                                    matchedItem.quantity,
-                                    Math.max(1, parseInt(e.target.value) || 1)
-                                  );
-                                  setConsumeQuantities({
-                                    ...consumeQuantities,
-                                    [ing.itemId!]: val,
-                                  });
-                                }}
-                                inputMode="numeric"
-                                aria-label={`Quantity of ${ing.name} to use`}
-                                className="sl-focus-ring w-12 rounded-lg border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/20 py-1 text-center text-xs font-bold"
-                              />
-                              <span className="text-xs text-[var(--shelf-muted)]">{matchedItem.unit}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Instructions steps */}
-              <div>
-                <h3 className="text-base font-bold text-[var(--shelf-dark)] mb-3">
-                  Instructions
-                </h3>
-                <ol className="space-y-3.5 list-decimal pl-5">
-                  {selectedRecipe.instructions.map((step, idx) => (
-                    <li key={idx} className="text-sm text-[var(--shelf-dark)] leading-relaxed pl-1">
-                      {step}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex flex-col-reverse gap-3 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-4 sm:flex-row sm:justify-between">
-              <button
-                onClick={handleCloseRecipe}
-                className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] px-5 py-2.5 text-sm font-semibold text-[var(--shelf-dark)] bg-[var(--shelf-surface)] hover:bg-[var(--shelf-cream)] transition"
-              >
-                Close
-              </button>
-
-              <button
-                onClick={handleMarkConsumed}
-                disabled={consuming}
-                className="sl-focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition shadow-xs"
-              >
-                {consuming && <Loader2 className="h-4.5 w-4.5 animate-spin" />}
-                Mark ingredients as used
-              </button>
-            </div>
-
-          </div>
-        </div>
+        <KitchenCookingDrawer
+          recipe={selectedRecipe}
+          inventory={initialInventory}
+          isOpen={Boolean(selectedRecipe)}
+          onClose={handleCloseDrawer}
+          onCooked={handleIngredientsDeducted}
+          consuming={consuming}
+        />
       )}
-
     </div>
   );
 }

@@ -69,6 +69,19 @@
   --shelf-info-bg: #e8f1f6;
   --shelf-info-border: #b9cfdd;
   --shelf-info-text: #365f7b;
+
+  /* Authenticated Workspace Tokens: Editorial Productivity / Intelligent Workspace (Light) */
+  --app-surface-base: #fbfbfa;
+  --app-surface-elevated: #ffffff;
+  --app-surface-overlay: #ffffff;
+  --app-border-subtle: #e8e6df;
+  --app-border-strong: #d5d2c7;
+  --app-text-display: #1a241d;
+  --app-text-body: #2c382f;
+  --app-text-muted: #69766b;
+  --app-accent-emerald: #15803d;
+  --app-accent-amber: #b45309;
+  --app-accent-terracotta: #b91c1c;
 }
 
 .dark {
@@ -113,6 +126,19 @@
   --shelf-info-bg: #1d2d38;
   --shelf-info-border: #3d6073;
   --shelf-info-text: #acd4eb;
+
+  /* Authenticated Workspace Tokens: Editorial Productivity / Intelligent Workspace (Dark) */
+  --app-surface-base: #0e120f;
+  --app-surface-elevated: #151a16;
+  --app-surface-overlay: #1c231e;
+  --app-border-subtle: #222a23;
+  --app-border-strong: #333f35;
+  --app-text-display: #f0f5ee;
+  --app-text-body: #d8e2d7;
+  --app-text-muted: #8f9e91;
+  --app-accent-emerald: #22c55e;
+  --app-accent-amber: #f59e0b;
+  --app-accent-terracotta: #ef4444;
 }
 
 /* Legacy filled actions used across existing screens. Keep accent text light,
@@ -132,33 +158,7 @@
   color: var(--sl-color-on-action) !important;
 }
 
-.auth-contrast-panel {
-  --auth-panel-text: #f2f7f1;
-  --auth-panel-muted: #dfeee0;
-  --auth-panel-soft: rgb(255 255 255 / 0.08);
-  background: linear-gradient(135deg, #10271a 0%, #163d2b 42%, #1d4d38 100%);
-  color: var(--auth-panel-text);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
-}
 
-.dark .auth-contrast-panel {
-  --auth-panel-text: #f1f7ed;
-  --auth-panel-muted: #d4e3d2;
-  --auth-panel-soft: rgb(255 255 255 / 0.08);
-  background: linear-gradient(135deg, #0d1d18 0%, #163b2b 42%, #214931 100%);
-}
-
-.auth-contrast-panel .auth-panel-muted {
-  color: var(--auth-panel-muted);
-}
-
-.auth-contrast-panel .auth-panel-soft {
-  background: var(--auth-panel-soft);
-}
-
-.auth-contrast-panel .auth-panel-border {
-  border-color: color-mix(in srgb, var(--auth-panel-text) 18%, transparent);
-}
 
 .shelf-card {
   background: var(--sl-color-surface);
@@ -168,6 +168,38 @@
 
 .dark .shelf-card {
   box-shadow: var(--sl-shadow-sm);
+}
+
+/* Editorial Productivity & Intelligent Workspace surface utilities */
+.sl-editorial-card {
+  background-color: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  transition: transform var(--sl-duration-fast) var(--sl-ease-emphasis), box-shadow var(--sl-duration-fast) var(--sl-ease-emphasis), border-color var(--sl-duration-fast) var(--sl-ease-emphasis);
+}
+
+.dark .sl-editorial-card {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+}
+
+.sl-editorial-card:hover {
+  border-color: var(--app-border-strong);
+}
+
+.sl-surface-panel {
+  background-color: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+}
+
+.sl-display-serif {
+  font-family: var(--font-shelf-display), Georgia, serif;
+  letter-spacing: -0.015em;
+}
+
+.sl-tabular-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 * {
@@ -260,6 +292,112 @@ a {
       color-mix(in srgb, var(--sl-color-info) 7%, transparent),
       transparent 52%);
   background-blend-mode: soft-light;
+}
+
+/* Page-level cinematic background integration for marketing landing page */
+.shelf-marketing-page {
+  position: relative;
+  isolation: isolate;
+  background: transparent !important;
+}
+
+.shelf-marketing-page section:not([class*="bg-[var(--sl-color-action)]"]) {
+  background-color: transparent !important;
+}
+
+/* Transparent CTA section so video is visible behind it */
+.shelf-marketing-page section[class*="bg-[var(--sl-color-action)]"] {
+  background-color: color-mix(in srgb, var(--sl-color-action) 30%, transparent) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* Glassmorphic transparent cards across all marketing page sections */
+.shelf-marketing-page :is(
+  article,
+  [class*="rounded-[var(--sl-radius-xl)]"],
+  [class*="rounded-[var(--sl-radius-lg)]"],
+  [class*="rounded-[2rem]"],
+  [class*="rounded-2xl"],
+  .shelf-card,
+  [class*="bg-[var(--sl-color-surface)]"],
+  [class*="bg-[var(--sl-color-canvas)]"],
+  [class*="bg-[var(--sl-color-surface-inset)]"],
+  [class*="bg-[var(--shelf-surface)]"],
+  [class*="bg-[var(--shelf-dark)]"],
+  [class*="bg-[var(--shelf-light)]"]
+):not(section):not(footer):not(button):not(a):not(span):not(svg):not(path):not(img):not(nav) {
+  background-color: color-mix(in srgb, var(--sl-color-surface) 22%, transparent) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-color: color-mix(in srgb, var(--sl-color-border) 35%, transparent) !important;
+}
+
+.dark .shelf-marketing-page :is(
+  article,
+  [class*="rounded-[var(--sl-radius-xl)]"],
+  [class*="rounded-[var(--sl-radius-lg)]"],
+  [class*="rounded-[2rem]"],
+  [class*="rounded-2xl"],
+  .shelf-card,
+  [class*="bg-[var(--sl-color-surface)]"],
+  [class*="bg-[var(--sl-color-canvas)]"],
+  [class*="bg-[var(--sl-color-surface-inset)]"],
+  [class*="bg-[var(--shelf-surface)]"],
+  [class*="bg-[var(--shelf-dark)]"],
+  [class*="bg-[var(--shelf-light)]"]
+):not(section):not(footer):not(button):not(a):not(span):not(svg):not(path):not(img):not(nav) {
+  background-color: color-mix(in srgb, var(--sl-color-surface) 20%, transparent) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-color: color-mix(in srgb, var(--sl-color-border) 35%, transparent) !important;
+}
+
+/* Business Pro Plan recommended card transparency */
+.shelf-marketing-page article[class*="bg-[var(--sl-color-action-soft)]"],
+.dark .shelf-marketing-page article[class*="bg-[var(--sl-color-action-soft)]"] {
+  background-color: color-mix(in srgb, var(--sl-color-action) 16%, transparent) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-color: color-mix(in srgb, var(--sl-color-action) 60%, transparent) !important;
+  box-shadow: 0 12px 40px 0 rgb(0 0 0 / 0.45) !important;
+}
+
+.shelf-marketing-page span[class*="bg-[var(--sl-color-surface)]"] {
+  background-color: color-mix(in srgb, var(--sl-color-surface) 40%, transparent) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.shelf-marketing-page [class*="bg-[var(--shelf-info-bg)]"] {
+  background-color: color-mix(in srgb, var(--shelf-info-bg) 35%, transparent) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Enhanced high-contrast typography across the marketing page */
+.shelf-marketing-page h1,
+.shelf-marketing-page h2,
+.shelf-marketing-page h3,
+.shelf-marketing-page h4 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
+}
+
+.shelf-marketing-page .sl-eyebrow {
+  color: #4ade80 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75);
+}
+
+.shelf-marketing-page p {
+  color: #e2e8f0 !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+}
+
+.shelf-marketing-page span:not([class*="bg-"]):not([class*="text-"]) {
+  color: #e2e8f0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 /* Fixed viewport-edge fog keeps every scrollable surface atmospheric without
@@ -461,4 +599,71 @@ a {
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+/* ==========================================================================
+   STAGE K: MOBILE-FIRST ERGONOMICS & ACCESSIBILITY TOKENS
+   ========================================================================== */
+
+/* Fast Tap & Touch Manipulation (Eliminates 300ms Mobile Delay) */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+[role="tab"] {
+  touch-action: manipulation;
+}
+
+/* Minimum 44x44px Touch Target Rule */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Safe-Area Inset Utilities (iOS Home Indicator & Notches) */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.bottom-safe {
+  bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+/* Visible Double-Ring Keyboard Focus Indicator (WCAG 2.2 AAA Standard) */
+*:focus-visible {
+  outline: 2px solid var(--shelf-forest) !important;
+  outline-offset: 2px !important;
+}
+
+/* Screen Reader Only Utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
 }

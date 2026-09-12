@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b70d5295c1bd97549f3e243febfb4d8089f4ecf243f67f8dd528a5430956032a'>;
+  StorageHashBase<'6059162589031ed870d8d501475ad224dde50213d4a1e4d0138c053dd1efbbb8'>;
 export type ExecutionHash =
   ExecutionHashBase<'7d80476c0bb076336617ca6c01539bf0d0e03bbce6eb7ad70ff49d188d7443cd'>;
 export type ProfileHash =
@@ -265,7 +265,7 @@ export type FieldOutputTypes = {
       readonly businessId: CodecTypes['pg/int4@1']['output'] | null;
       readonly inventoryItemId: CodecTypes['pg/int4@1']['output'];
       readonly productName: CodecTypes['pg/text@1']['output'];
-      readonly quantityUsed: CodecTypes['pg/int4@1']['output'];
+      readonly quantityUsed: CodecTypes['pg/float8@1']['output'];
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly normalizedQuantityUsed: CodecTypes['pg/float8@1']['output'] | null;
       readonly consumedAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -326,7 +326,7 @@ export type FieldInputTypes = {
       readonly businessId: CodecTypes['pg/int4@1']['input'] | null;
       readonly inventoryItemId: CodecTypes['pg/int4@1']['input'];
       readonly productName: CodecTypes['pg/text@1']['input'];
-      readonly quantityUsed: CodecTypes['pg/int4@1']['input'];
+      readonly quantityUsed: CodecTypes['pg/float8@1']['input'];
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly normalizedQuantityUsed: CodecTypes['pg/float8@1']['input'] | null;
       readonly consumedAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -388,7 +388,7 @@ export type StorageColumnTypes = {
       readonly inventoryItemId: CodecTypes['pg/int4@1']['output'];
       readonly normalizedQuantityUsed: CodecTypes['pg/float8@1']['output'] | null;
       readonly productName: CodecTypes['pg/text@1']['output'];
-      readonly quantityUsed: CodecTypes['pg/int4@1']['output'];
+      readonly quantityUsed: CodecTypes['pg/float8@1']['output'];
       readonly unit: CodecTypes['pg/text@1']['output'];
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
@@ -449,7 +449,7 @@ export type StorageColumnInputTypes = {
       readonly inventoryItemId: CodecTypes['pg/int4@1']['input'];
       readonly normalizedQuantityUsed: CodecTypes['pg/float8@1']['input'] | null;
       readonly productName: CodecTypes['pg/text@1']['input'];
-      readonly quantityUsed: CodecTypes['pg/int4@1']['input'];
+      readonly quantityUsed: CodecTypes['pg/float8@1']['input'];
       readonly unit: CodecTypes['pg/text@1']['input'];
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
@@ -674,8 +674,8 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly quantityUsed: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
                   readonly nullable: false;
                 };
                 readonly unit: {
@@ -1178,7 +1178,7 @@ type ContractBase = Omit<
               };
               readonly quantityUsed: {
                 readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
               };
               readonly unit: {
                 readonly nullable: false;

@@ -8,20 +8,24 @@ import Pricing from "@/components/Pricing";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
+import CinematicBackground from "@/components/CinematicBackground";
 
 export default function Home() {
   return (
-    <main className="shelf-background">
-      <Hero />
-      <ConsumerValue />
-      <BusinessValue />
-      <HowItWorks />
-      <AIApproach />
-      <WasteReduction />
-      <Pricing />
-      <FinalCTA />
-      <Footer />
-      <BackToTop />
-    </main>
+    <div className="relative isolate min-h-screen">
+      <CinematicBackground />
+      <main className="shelf-marketing-page relative z-10">
+        <Hero />
+        <ConsumerValue />
+        <BusinessValue />
+        <HowItWorks />
+        <AIApproach />
+        <WasteReduction />
+        <Pricing />
+        <FinalCTA />
+        <Footer />
+        <BackToTop />
+      </main>
+    </div>
   );
 }

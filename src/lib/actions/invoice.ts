@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { getInventory } from "@/lib/inventory";
 import { getBusinessInventory } from "@/lib/business-inventory";
 import { deriveExpiryDate } from "@/lib/expiry";
+import { normalizeProductName } from "@/lib/inventory-merge";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
@@ -57,7 +58,7 @@ export async function extractInvoiceAction(
     }
   }
 
-  const existingNames = currentInventory.map((x) => x.name.toLowerCase().trim());
+  const existingNames = currentInventory.map((x) => normalizeProductName(x.name));
 
   return {
     items: extraction.items.map((item) => ({

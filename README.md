@@ -1,10 +1,21 @@
-# ShelfLife (v1.0 Production Release)
+# ShelfLife (v1.0 Production Release & Post-1.0 Roadmap)
 
-ShelfLife is an AI-powered food inventory intelligence application built with Next.js 16 for consumers and commercial food businesses. It combines deterministic inventory, expiry, ownership, stock quantity, FIFO, waste analytics, and recipe-safety logic with AI-assisted extraction and recommendations.
+ShelfLife is an AI-powered food inventory intelligence platform built with Next.js 16 for consumers and commercial food businesses. It combines deterministic inventory, expiry, ownership, stock quantity, FIFO, waste analytics, and recipe-safety logic with AI-assisted extraction and recommendations.
 
 ---
 
-## 🌟 Key Features in v1.0 Production Release
+## 🌟 Visual Architecture & Brand Doctrine
+
+ShelfLife features a deliberate dual visual identity:
+
+- **Public Marketing Layer**: *"Cinematic / Editorial / Immersive"*
+  A scroll-controlled video narrative sequence (`shelflife-cinematic-sequence.mp4`), floating suspended capsule navbar, and dark-default artistic direction.
+- **Authenticated Application**: *"Editorial Productivity / Intelligent Workspace"*
+  A mature, tactile, high-density intelligence workspace featuring warm editorial typography, bento-box command centers, digital product dossiers, and clear activity streams. (The cinematic video background is strictly excluded from authenticated views).
+
+---
+
+## 🚀 Key Implemented Features
 
 - **Consumer & Business Workspaces**: Auth.js credentials sessions with isolated dashboard routes (`/dashboard` and `/business/dashboard`) and server-side ownership enforcement.
 - **Dynamic Inventory Intelligence**: Real-time tracking for *Fresh*, *Expiring Soon*, *Expired*, and *Low Stock* items with unit normalization across weight, volume, and count.
@@ -17,7 +28,16 @@ ShelfLife is an AI-powered food inventory intelligence application built with Ne
 - **Streamlined Action Toolbar**: Clean top header toolbar featuring `Export`, `Import`, `+ Add Product`, and a tooltip-enabled icon-only `Delete Expired` bin button.
 - **Time-Accurate Dynamic Greetings**: Automatically displays local browser time-based greetings (*Good morning*, *Good afternoon*, *Good evening*, *Good night*).
 - **Safety-First Recipe AI Generator**: Strictly filters out expired items before passing ingredients to Groq AI for recipe generation.
-- **Ambient UI Design System**: Persistent Light, Dark, and System theme support with dynamic mesh gradients, smooth micro-animations (`.hover-lift`, `.pulse-glow`), and marketing-isolated atmospheric fog effects.
+
+---
+
+## 🧭 Authenticated UI/UX Redesign & Master Specification
+
+The authenticated application and onboarding experiences have been redesigned and elevated under the design doctrine *"Editorial Productivity / Intelligent Workspace"*:
+
+- **All Stages (Stages A through L)**: 🟢 **100% Completed, Verified & Built**
+- **Master Specification**: [`ShelfLife-Final-Master-Specification.md`](specs/ShelfLife-Final-Master-Specification.md)
+- **Ergonomics & Design**: Unified dark editorial palette (`#0c120e` canvas, `#151a16` surfaces, `border-white/10`), `.sl-display-serif` typography, 44px mobile touch targets, and full isolation between Consumer Kitchen and Commercial Operations.
 
 ---
 
@@ -56,9 +76,7 @@ npm run build
 
 ---
 
-## ⚙️ Environment Variables & Deployment Runbook
-
-Configure the following variables in `.env.local` or hosting platform settings:
+## ⚙️ Environment Variables
 
 ```env
 DATABASE_URL="postgresql://..."
@@ -73,16 +91,6 @@ EMAIL_FROM="ShelfLife <no-reply@shelflife.app>"
 AUTH_TRUST_HOST=true
 ```
 
-### Prisma Production Migrations
-
-Run from the root directory with `DATABASE_URL` configured:
-
-```bash
-npx prisma migration check
-npx prisma migration status
-npx prisma db migrate
-```
-
 ---
 
 ## 🔒 Security & Engineering Rules
@@ -92,3 +100,5 @@ npx prisma db migrate
 3. **Recipe Expiry Exclusion**: Expired items are strictly omitted from AI recipe prompts and recommendations.
 4. **No Guessed Expiry Dates**: Missing or ambiguous expiry dates remain explicitly `Expiry not available` / `Not trackable`.
 5. **Account Type Isolation**: Consumer (`/dashboard`) and Business (`/business/dashboard`) routes, databases, and states must remain completely isolated.
+6. **Isolated Video Background**: The cinematic video background is strictly for the landing page; never inject it into authenticated workspace routes.
+7. **Landing Theme Toggle**: Intentionally removed to preserve art direction.

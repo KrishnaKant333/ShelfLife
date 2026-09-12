@@ -1,15 +1,103 @@
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Archive, Milk, Package, Wheat } from "lucide-react";
+import { ArrowLeft, PackageOpen } from "lucide-react";
 import { auth } from "@/auth";
 import { db } from "@/prisma/db";
-import { formatExpiry } from "@/lib/format-expiry";
 import { getInventoryStatus } from "@/lib/inventory-status";
+import ProductDossierView from "@/components/inventory/ProductDossierView";
+import type { ConsumptionRecord } from "@/lib/actions/recipes";
 
-export default async function ConsumerProductPage({ params }: { params: Promise<{ id: string }> }) {
+interface ConsumerProductPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function ConsumerProductPage({ params }: ConsumerProductPageProps) {
   const session = await auth();
-  if (!session?.user?.id) return <p className="p-8">Unauthorized.</p>;
-  const product = await db.orm.public.InventoryItem.first({ id: Number((await params).id), userId: Number(session.user.id) });
-  if (!product) return <main className="p-8"><h1>Product not found</h1><Link href="/dashboard/inventory">Back to inventory</Link></main>;
-  const Icon = product.category.toLowerCase().includes("dairy") ? Milk : product.category.toLowerCase().includes("grain") ? Wheat : Package;
-  return <main className="mx-auto max-w-4xl p-4 sm:p-6 md:p-10"><Link href="/dashboard/inventory" className="text-sm font-medium text-[var(--shelf-forest)]">Back to inventory</Link><div className="mt-5 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-5 sm:p-8"><div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--shelf-cream)] text-[var(--shelf-forest)] sm:h-20 sm:w-20"><Icon size={32} /></div><h1 className="mt-5 text-3xl font-bold text-[var(--shelf-dark)]">{product.name}</h1><p className="mt-2 text-[var(--shelf-muted)]">{product.category}</p><div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4"><div><p className="text-xs text-[var(--shelf-muted)]">Quantity</p><p className="font-semibold text-[var(--shelf-dark)]">{product.quantity} {product.unit}</p></div><div><p className="text-xs text-[var(--shelf-muted)]">Expiry</p><p className="font-semibold text-[var(--shelf-dark)]">{formatExpiry(product.expiryDate)}</p></div><div><p className="text-xs text-[var(--shelf-muted)]">Status</p><p className="font-semibold text-[var(--shelf-dark)]">{getInventoryStatus(product.quantity, product.expiryDate, product.unit)}</p></div></div><Link href={`/dashboard/inventory/${product.id}/edit`} className="mt-6 inline-flex rounded-xl bg-[var(--shelf-forest)] px-5 py-3 font-semibold text-white sm:mt-8">Edit product</Link></div></main>;
+
+  if (!session?.user?.id) {
+    redirect("/auth/signin");
+  }
+
+  const resolvedParams = await params;
+  const productId = Number(resolvedParams.id);
+
+  if (!productId || isNaN(productId)) {
+    notFound();
+  }
+
+  // Fetch product verified by ownership
+  const product = await db.orm.public.InventoryItem.first({
+    id: productId,
+    userId: Number(session.user.id),
+  });
+
+  if (!product) {
+    return (
+      <div className="sl-editorial-card p-12 text-center max-w-lg mx-auto my-12 space-y-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--app-surface-base)] border border-[var(--app-border-subtle)] text-[var(--app-text-muted)] mx-auto">
+          <PackageOpen size={30} />
+        </div>
+        <h2 className="sl-display-serif text-2xl font-bold text-[var(--app-text-display)]">
+          Product Dossier Not Found
+        </h2>
+        <p className="text-xs text-[var(--app-text-muted)] leading-relaxed">
+          The requested food item does not exist or may have been consumed or removed from your pantry.
+        </p>
+        <Link
+          href="/dashboard/inventory"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--app-accent-emerald)] px-4 py-2 text-xs font-bold text-white shadow-xs hover:brightness-105 transition"
+        >
+          <ArrowLeft size={14} />
+          <span>Return to Inventory</span>
+        </Link>
+      </div>
+    );
+  }
+
+  // Fetch historical consumption logs for this product
+  let consumptionRecords = await db.orm.public.InventoryConsumption.where({
+    userId: Number(session.user.id),
+    inventoryItemId: product.id,
+  }).all();
+
+  // If no direct ID match, fallback to product name match
+  if (consumptionRecords.length === 0) {
+    const allUserConsumptions = await db.orm.public.InventoryConsumption.where({
+      userId: Number(session.user.id),
+    }).all();
+
+    consumptionRecords = allUserConsumptions.filter(
+      (r) => r.productName.toLowerCase() === product.name.toLowerCase()
+    );
+  }
+
+  consumptionRecords.sort(
+    (a, b) => new Date(b.consumedAt).getTime() - new Date(a.consumedAt).getTime()
+  );
+
+  const formattedHistory: ConsumptionRecord[] = consumptionRecords.map((r) => ({
+    id: r.id,
+    productName: r.productName,
+    quantityUsed: r.quantityUsed,
+    unit: r.unit,
+    consumedAt: r.consumedAt,
+  }));
+
+  // Compute status
+  const status = getInventoryStatus(product.quantity, product.expiryDate, product.unit);
+  const itemWithStatus = {
+    ...product,
+    status,
+    createdAt: (product as any).createdAt ?? null,
+  };
+
+  return (
+    <div className="space-y-6">
+      <ProductDossierView
+        item={itemWithStatus}
+        history={formattedHistory}
+        isBusiness={false}
+      />
+    </div>
+  );
 }

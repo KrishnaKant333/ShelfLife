@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const navItems = [
   { label: "For Consumers", href: "#consumer" },
@@ -15,7 +14,18 @@ const navItems = [
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 30);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -33,15 +43,21 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)]/90 backdrop-blur-md">
-      <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-        <Link href="/" className="shrink-0">
+    <header className="sticky top-3 sm:top-4 z-50 mx-auto w-[calc(100%-1.5rem)] max-w-6xl transition-all duration-300">
+      <nav
+        className={`mx-auto flex h-16 sm:h-18 items-center justify-between px-5 sm:px-7 rounded-full border transition-all duration-300 ${
+          scrolled
+            ? "bg-black/50 border-white/20 backdrop-blur-xl shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
+            : "bg-black/30 border-white/10 backdrop-blur-md shadow-[0_8px_25px_rgba(0,0,0,0.35)]"
+        }`}
+      >
+        <Link href="/" className="shrink-0 flex items-center">
           <Image
             src="/logo/shelflife.png"
             alt="ShelfLife"
             width={150}
             height={150}
-            className="h-12 w-auto object-contain md:h-14"
+            className="h-10 w-auto object-contain sm:h-12 brightness-110"
             priority
           />
         </Link>
@@ -51,7 +67,7 @@ export default function Navbar() {
             <a
               key={item.label}
               href={item.href}
-              className="sl-focus-ring rounded-[var(--sl-radius-sm)] px-1 text-sm font-medium text-[var(--sl-color-action)] transition hover:text-[var(--sl-color-text)]"
+              className="sl-focus-ring rounded-full px-2 py-1 text-sm font-medium text-white/85 transition hover:text-white"
             >
               {item.label}
             </a>
@@ -59,19 +75,18 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <ThemeToggle />
           <Link
             href="/consumer/login"
-            className="sl-focus-ring rounded-[var(--sl-radius-pill)] px-4 py-2 text-sm font-medium text-[var(--sl-color-text)] transition hover:bg-[var(--sl-color-surface-inset)]"
+            className="sl-focus-ring rounded-full px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10 hover:text-white"
           >
             Sign In
           </Link>
           <Link
             href="/get-started"
-            className="sl-focus-ring inline-flex min-h-11 items-center gap-2 rounded-[var(--sl-radius-pill)] bg-[var(--sl-color-action)] px-5 py-2.5 text-sm font-semibold text-[var(--sl-color-on-action)] transition hover:bg-[var(--sl-color-action-hover)]"
+            className="sl-focus-ring inline-flex min-h-10 items-center gap-2 rounded-full bg-[#2d6042] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#36704d]"
           >
             Get Started
-            <ArrowRight size={16} />
+            <ArrowRight size={15} />
           </Link>
         </div>
 
@@ -81,7 +96,7 @@ export default function Navbar() {
           aria-label="Toggle navigation menu"
           aria-expanded={mobileOpen}
           aria-controls="public-mobile-navigation"
-          className="sl-focus-ring flex h-11 w-11 items-center justify-center rounded-[var(--sl-radius-md)] border border-[var(--sl-color-border)] bg-[var(--sl-color-surface)] text-[var(--sl-color-text)] md:hidden"
+          className="sl-focus-ring flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/20 md:hidden"
           onClick={() => setMobileOpen((open) => !open)}
         >
           {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -89,35 +104,37 @@ export default function Navbar() {
       </nav>
 
       {mobileOpen && (
-        <div id="public-mobile-navigation" className="border-t border-[var(--sl-color-border)] bg-[var(--sl-color-canvas)] md:hidden">
-          <div className="mx-auto flex max-w-7xl flex-col gap-1 px-6 py-4">
+        <div
+          id="public-mobile-navigation"
+          className="mt-2 rounded-2xl border border-white/15 bg-black/90 p-5 shadow-2xl backdrop-blur-2xl md:hidden"
+        >
+          <div className="flex flex-col gap-2">
             {navItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="sl-focus-ring rounded-[var(--sl-radius-md)] px-3 py-2.5 text-sm font-medium text-[var(--sl-color-text-muted)] transition hover:bg-[var(--sl-color-surface-inset)] hover:text-[var(--sl-color-text)]"
+                className="sl-focus-ring rounded-xl px-3 py-2.5 text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-white"
               >
                 {item.label}
               </a>
             ))}
-            <Link
-              href="/consumer/login"
-              onClick={() => setMobileOpen(false)}
-              className="sl-focus-ring mt-2 min-h-11 rounded-[var(--sl-radius-md)] border border-[var(--sl-color-border-strong)] px-3 py-2.5 text-center text-sm font-medium text-[var(--sl-color-text)]"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/get-started"
-              onClick={() => setMobileOpen(false)}
-              className="sl-focus-ring mt-1 inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--sl-radius-md)] bg-[var(--sl-color-action)] px-3 py-2.5 text-sm font-semibold text-[var(--sl-color-on-action)]"
-            >
-              Get Started
-              <ArrowRight size={16} />
-            </Link>
-            <div className="mt-3 flex justify-center">
-              <ThemeToggle />
+            <div className="mt-3 flex flex-col gap-2 border-t border-white/10 pt-3">
+              <Link
+                href="/consumer/login"
+                onClick={() => setMobileOpen(false)}
+                className="sl-focus-ring rounded-xl border border-white/20 px-3 py-2.5 text-center text-sm font-medium text-white transition hover:bg-white/10"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/get-started"
+                onClick={() => setMobileOpen(false)}
+                className="sl-focus-ring inline-flex items-center justify-center gap-2 rounded-xl bg-[#2d6042] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#36704d]"
+              >
+                Get Started
+                <ArrowRight size={16} />
+              </Link>
             </div>
           </div>
         </div>
