@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 
 import {
   updateBusinessInventoryItem,
   type BusinessInventoryState,
 } from "@/lib/actions/business-inventory";
+import { isIntegerUnit } from "@/lib/normalization";
 
 interface BusinessEditProductFormProps {
   product: {
@@ -33,6 +34,8 @@ export default function BusinessEditProductForm({
     updateAction,
     initialState,
   );
+  const [unit, setUnit] = useState(product.unit || "");
+  const isInt = isIntegerUnit(unit);
 
   return (
     <form
@@ -88,8 +91,9 @@ export default function BusinessEditProductForm({
             id="quantity"
             name="quantity"
             type="number"
-            min="1"
-            step="any"
+            min={isInt ? "1" : "0.0001"}
+            step={isInt ? "1" : "any"}
+            inputMode={isInt ? "numeric" : "decimal"}
             defaultValue={product.quantity}
             required
             className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] placeholder:text-[var(--shelf-muted)] px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
@@ -108,7 +112,8 @@ export default function BusinessEditProductForm({
             id="unit"
             name="unit"
             type="text"
-            defaultValue={product.unit}
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
             required
             className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] placeholder:text-[var(--shelf-muted)] px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />

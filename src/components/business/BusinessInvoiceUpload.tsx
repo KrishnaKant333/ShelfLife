@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 
 import { extractInvoiceAction } from "@/lib/actions/invoice";
 import { importBusinessInventory } from "@/lib/actions/business-inventory";
+import { isIntegerUnit } from "@/lib/normalization";
 
 type InvoiceItem = {
   name: string;
@@ -371,7 +372,9 @@ export default function BusinessInvoiceUpload() {
                     <td className="px-5 py-4">
                       <input
                         type="number"
-                        min="1"
+                        min={isIntegerUnit(item.unit) ? "1" : "0.0001"}
+                        step={isIntegerUnit(item.unit) ? "1" : "any"}
+                        inputMode={isIntegerUnit(item.unit) ? "numeric" : "decimal"}
                         value={item.quantity}
                         onChange={(event) =>
                           updateItem(

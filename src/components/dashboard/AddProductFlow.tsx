@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useActionState } from "react";
 import { extractLabelAction } from "@/lib/actions/label-scan";
 import { createInventoryItem, type CreateInventoryState } from "@/lib/actions/inventory";
+import { isIntegerUnit } from "@/lib/normalization";
 import { Camera, FileText, Upload, Plus, AlertCircle, Sparkles, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
@@ -415,12 +416,12 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                     id="quantity"
                     name="quantity"
                     type="number"
-                    min="1"
-                    step="any"
-                    inputMode="decimal"
+                    min={isIntegerUnit(unit) ? "1" : "0.0001"}
+                    step={isIntegerUnit(unit) ? "1" : "any"}
+                    inputMode={isIntegerUnit(unit) ? "numeric" : "decimal"}
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
-                    placeholder="e.g. 5"
+                    placeholder={isIntegerUnit(unit) ? "e.g. 5" : "e.g. 0.5"}
                     required
                     className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-transparent px-4 py-3 text-sm outline-none transition"
                   />

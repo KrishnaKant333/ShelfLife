@@ -12,11 +12,9 @@ import {
   Square,
 } from "lucide-react";
 import { getInventoryStatus } from "@/lib/inventory-status";
-import { normalizeQuantity } from "@/lib/normalization";
+import { normalizeQuantity, isIntegerUnit } from "@/lib/normalization";
 import {
   consumeIngredientsAction,
-  getRecentConsumptionAction,
-  type ConsumptionRecord,
 } from "@/lib/actions/recipes";
 import {
   bulkDeleteAction,
@@ -64,14 +62,13 @@ function InventoryViewInner({
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
 
   // Active Product Detail Drawer state
-  const [activeDrawerProduct, setActiveDrawerProduct] = useState<
-    (InventoryItem & { status: string; createdAt?: string }) | null
-  >(null);
+  const [activeDrawerId, setActiveDrawerId] = useState<number | null>(null);
 
   // Sync search parameters from top app header
   useEffect(() => {
     const q = searchParams.get("q") ?? searchParams.get("search");
     if (q !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchQuery(q);
     }
   }, [searchParams]);
@@ -103,18 +100,11 @@ function InventoryViewInner({
     }));
   }, [initialInventory]);
 
-  // Keep active drawer product synchronized if inventory revalidates
-  useEffect(() => {
-    if (activeDrawerProduct) {
-      const refreshed = itemsWithStatus.find((i) => i.id === activeDrawerProduct.id);
-      if (refreshed) {
-        setActiveDrawerProduct(refreshed);
-      } else {
-        // Item was consumed/deleted
-        setActiveDrawerProduct(null);
-      }
-    }
-  }, [itemsWithStatus]);
+  // Derive active drawer product synchronized with live inventory
+  const activeDrawerProduct = useMemo(() => {
+    if (activeDrawerId === null) return null;
+    return itemsWithStatus.find((i) => i.id === activeDrawerId) || null;
+  }, [activeDrawerId, itemsWithStatus]);
 
   // Compute live filter counts for pills
   const filterCounts = useMemo<Record<FilterType, number>>(() => {
@@ -212,20 +202,31 @@ function InventoryViewInner({
   // Quick consumption trigger
   const handleOpenConsume = (item: InventoryItem) => {
     setConsumeItem(item);
-    setConsumeQty(Math.min(1, item.quantity));
+    const isInt = isIntegerUnit(item.unit);
+    setConsumeQty(isInt ? Math.max(1, Math.min(1, Math.floor(item.quantity))) : Math.min(1, item.quantity));
   };
 
   // Confirm manual consumption
   const handleConfirmConsume = async () => {
     if (!consumeItem) return;
+    const isInt = isIntegerUnit(consumeItem.unit);
+    if (!Number.isFinite(consumeQty) || consumeQty <= 0 || consumeQty > consumeItem.quantity) {
+      showToast("Invalid quantity. Must be greater than 0 and not exceed current stock.", "error");
+      return;
+    }
+    if (isInt && !Number.isInteger(consumeQty)) {
+      showToast(`Quantity must be a whole number for unit "${consumeItem.unit}".`, "error");
+      return;
+    }
+    const cleanQty = isInt ? Math.round(consumeQty) : Math.round(consumeQty * 10000) / 10000;
     setIsConsuming(true);
     try {
       const res = await consumeIngredientsAction([
-        { itemId: consumeItem.id, quantityUsed: consumeQty },
+        { itemId: consumeItem.id, quantityUsed: cleanQty },
       ]);
       if (res.success) {
         showToast(
-          `Logged ${consumeQty} ${consumeItem.unit} of ${consumeItem.name} consumed.`,
+          `Logged ${cleanQty} ${consumeItem.unit} of ${consumeItem.name} consumed.`,
           "success"
         );
         setConsumeItem(null);
@@ -254,8 +255,8 @@ function InventoryViewInner({
           await deleteInventoryItem(id);
           showToast("Product deleted successfully.", "success");
           setSelectedIds((prev) => prev.filter((x) => x !== id));
-          if (activeDrawerProduct?.id === id) {
-            setActiveDrawerProduct(null);
+          if (activeDrawerId === id) {
+            setActiveDrawerId(null);
           }
           router.refresh();
         } catch {
@@ -507,7 +508,7 @@ function InventoryViewInner({
                 item={item}
                 isSelected={selectedIds.includes(item.id)}
                 isActiveInDrawer={activeDrawerProduct?.id === item.id}
-                onSelectProduct={(clickedItem) => setActiveDrawerProduct(clickedItem)}
+                onSelectProduct={(clickedItem) => setActiveDrawerId(clickedItem.id)}
                 onToggleSelect={handleToggleSelect}
                 onQuickUse={handleOpenConsume}
                 onDelete={handleDeleteSingle}
@@ -566,7 +567,7 @@ function InventoryViewInner({
                       isSelected={selectedIds.includes(item.id)}
                       isActiveInDrawer={activeDrawerProduct?.id === item.id}
                       onSelectProduct={(clickedItem) =>
-                        setActiveDrawerProduct(clickedItem)
+                        setActiveDrawerId(clickedItem.id)
                       }
                       onToggleSelect={handleToggleSelect}
                       onQuickUse={handleOpenConsume}
@@ -585,7 +586,7 @@ function InventoryViewInner({
       {/* Product Detail Slide-Over Drawer */}
       <ProductDetailDrawer
         item={activeDrawerProduct}
-        onClose={() => setActiveDrawerProduct(null)}
+        onClose={() => setActiveDrawerId(null)}
         onRefresh={() => router.refresh()}
         onEdit={(item) => router.push(`${prefix}/inventory/${item.id}/edit`)}
         onDelete={handleDeleteSingle}
@@ -593,64 +594,88 @@ function InventoryViewInner({
       />
 
       {/* Manual Consume Item Dialog */}
-      {consumeItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="relative flex flex-col w-full max-w-sm rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] p-6 shadow-2xl space-y-4">
-            <div>
-              <h3 className="sl-display-serif text-lg font-bold text-[var(--app-text-display)]">
-                Use {consumeItem.name}
-              </h3>
-              <p className="text-xs text-[var(--app-text-muted)] mt-1">
-                Record how much you are consuming. Stock will be adjusted accordingly.
-              </p>
-            </div>
+      {consumeItem && (() => {
+        const isInt = isIntegerUnit(consumeItem.unit);
+        const minVal = isInt ? 1 : Math.min(consumeItem.quantity, 0.001);
+        const stepVal = isInt ? "1" : "any";
+        const inputModeVal = isInt ? "numeric" : "decimal";
+        const remainingStock = Math.max(0, Math.round((consumeItem.quantity - consumeQty) * 10000) / 10000);
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--app-text-body)] block">
-                Quantity to use (Max: {consumeItem.quantity} {consumeItem.unit})
-              </label>
-              <div className="flex gap-2 items-center">
-                <input
-                  type="number"
-                  min={1}
-                  max={consumeItem.quantity}
-                  value={consumeQty}
-                  onChange={(e) =>
-                    setConsumeQty(
-                      Math.min(
-                        consumeItem.quantity,
-                        Math.max(1, parseInt(e.target.value) || 1)
-                      )
-                    )
-                  }
-                  className="sl-focus-ring flex-1 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-3.5 py-2 text-sm text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
-                />
-                <span className="text-sm font-semibold text-[var(--app-text-muted)]">
-                  {consumeItem.unit}
-                </span>
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+            <div className="relative flex flex-col w-full max-w-sm rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] p-6 shadow-2xl space-y-4">
+              <div>
+                <h3 className="sl-display-serif text-lg font-bold text-[var(--app-text-display)]">
+                  Use {consumeItem.name}
+                </h3>
+                <p className="text-xs text-[var(--app-text-muted)] mt-1">
+                  Record how much you are consuming. Stock will be adjusted accordingly.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[var(--app-text-body)] block">
+                  Quantity to use (Max: {consumeItem.quantity} {consumeItem.unit})
+                </label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="number"
+                    min={minVal}
+                    max={consumeItem.quantity}
+                    step={stepVal}
+                    inputMode={inputModeVal}
+                    value={consumeQty}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "") {
+                        setConsumeQty(minVal);
+                        return;
+                      }
+                      const val = isInt ? parseInt(raw, 10) : parseFloat(raw);
+                      if (Number.isFinite(val)) {
+                        if (val <= 0) {
+                          setConsumeQty(minVal);
+                        } else if (val > consumeItem.quantity) {
+                          setConsumeQty(consumeItem.quantity);
+                        } else {
+                          setConsumeQty(isInt ? Math.round(val) : Math.round(val * 10000) / 10000);
+                        }
+                      }
+                    }}
+                    className="sl-focus-ring flex-1 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-3.5 py-2 text-sm text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
+                  />
+                  <span className="text-sm font-semibold text-[var(--app-text-muted)]">
+                    {consumeItem.unit}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[var(--app-text-muted)] mt-1">
+                  {consumeQty >= consumeItem.quantity
+                    ? "Entire remaining stock will be consumed."
+                    : `Remaining stock: ${remainingStock} ${consumeItem.unit}`}
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setConsumeItem(null)}
+                  className="sl-focus-ring cursor-pointer rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-4 py-2 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-border-subtle)]/40 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmConsume}
+                  disabled={isConsuming || !Number.isFinite(consumeQty) || consumeQty <= 0 || consumeQty > consumeItem.quantity || (isInt && !Number.isInteger(consumeQty))}
+                  className="sl-focus-ring cursor-pointer rounded-xl bg-[var(--app-accent-emerald)] px-4 py-2 text-xs font-bold text-white shadow-xs hover:brightness-105 disabled:opacity-50 transition"
+                >
+                  {isConsuming ? "Recording..." : "Confirm Consumption"}
+                </button>
               </div>
             </div>
-
-            <div className="flex justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setConsumeItem(null)}
-                className="sl-focus-ring cursor-pointer rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-4 py-2 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-border-subtle)]/40 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmConsume}
-                disabled={isConsuming}
-                className="sl-focus-ring cursor-pointer rounded-xl bg-[var(--app-accent-emerald)] px-4 py-2 text-xs font-bold text-white shadow-xs hover:brightness-105 disabled:opacity-50 transition"
-              >
-                {isConsuming ? "Recording..." : "Confirm Consumption"}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Unified Confirm Dialog */}
       {confirmDialog && (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Utensils, Loader2, Check } from "lucide-react";
 import type { InventoryItem } from "@/lib/inventory";
+import { isIntegerUnit } from "@/lib/normalization";
 
 interface QuickConsumeModalProps {
   item: InventoryItem;
@@ -17,22 +18,40 @@ export default function QuickConsumeModal({
   onClose,
   onConfirm,
 }: QuickConsumeModalProps) {
-  const [quantity, setQuantity] = useState<number>(() => Math.min(1, item.quantity));
+  const isInt = isIntegerUnit(item?.unit || "");
+  const minVal = isInt ? 1 : Math.min(item?.quantity || 1, 0.001);
+  const stepVal = isInt ? "1" : "any";
+  const inputModeVal = isInt ? "numeric" : "decimal";
+
+  const [quantity, setQuantity] = useState<number>(() => {
+    if (!item) return 1;
+    if (isInt) {
+      return Math.max(1, Math.min(1, Math.floor(item.quantity)));
+    }
+    return Math.min(1, item.quantity);
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
   const handlePercentage = (percent: number) => {
-    const computed = Math.max(1, Math.round((item.quantity * percent) / 100));
-    setQuantity(Math.min(item.quantity, computed));
+    if (isInt) {
+      const computed = Math.max(1, Math.round((item.quantity * percent) / 100));
+      setQuantity(Math.min(item.quantity, computed));
+    } else {
+      const computed = Math.round(((item.quantity * percent) / 100) * 10000) / 10000;
+      setQuantity(Math.min(item.quantity, Math.max(minVal, computed)));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (quantity <= 0 || quantity > item.quantity) return;
+    if (!Number.isFinite(quantity) || quantity <= 0 || quantity > item.quantity) return;
+    if (isInt && !Number.isInteger(quantity)) return;
     setIsSubmitting(true);
     try {
-      await onConfirm(quantity);
+      const cleanQty = isInt ? Math.round(quantity) : Math.round(quantity * 10000) / 10000;
+      await onConfirm(cleanQty);
       onClose();
     } catch {
       // Error handled by parent toast
@@ -107,10 +126,16 @@ export default function QuickConsumeModal({
             <div className="pt-2">
               <input
                 type="range"
-                min={1}
+                min={minVal}
                 max={item.quantity}
+                step={isInt ? 1 : Math.min(0.01, item.quantity / 100 || 0.01)}
                 value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                onChange={(e) => {
+                  const val = isInt ? parseInt(e.target.value, 10) : parseFloat(e.target.value);
+                  if (Number.isFinite(val) && val > 0) {
+                    setQuantity(Math.min(item.quantity, isInt ? Math.round(val) : Math.round(val * 10000) / 10000));
+                  }
+                }}
                 className="w-full accent-[var(--app-accent-emerald)] cursor-pointer"
                 aria-label={`Quantity slider for ${item.name}`}
               />
@@ -120,14 +145,28 @@ export default function QuickConsumeModal({
             <div className="flex items-center gap-2 pt-1">
               <input
                 type="number"
-                min={1}
+                min={minVal}
                 max={item.quantity}
+                step={stepVal}
+                inputMode={inputModeVal}
                 value={quantity}
-                onChange={(e) =>
-                  setQuantity(
-                    Math.min(item.quantity, Math.max(1, parseInt(e.target.value) || 1))
-                  )
-                }
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw === "") {
+                    setQuantity(minVal);
+                    return;
+                  }
+                  const val = isInt ? parseInt(raw, 10) : parseFloat(raw);
+                  if (Number.isFinite(val)) {
+                    if (val <= 0) {
+                      setQuantity(minVal);
+                    } else if (val > item.quantity) {
+                      setQuantity(item.quantity);
+                    } else {
+                      setQuantity(isInt ? Math.round(val) : Math.round(val * 10000) / 10000);
+                    }
+                  }
+                }}
                 className="sl-focus-ring flex-1 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-3.5 py-2 text-sm font-semibold text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
                 aria-label={`Exact quantity for ${item.name}`}
               />
@@ -141,7 +180,7 @@ export default function QuickConsumeModal({
           <p className="text-[11px] text-[var(--app-text-muted)]">
             {quantity >= item.quantity
               ? "All remaining inventory of this item will be consumed and recorded in your historical ledger."
-              : `Remaining stock after deduction: ${item.quantity - quantity} ${item.unit}.`}
+              : `Remaining stock after deduction: ${Math.max(0, Math.round((item.quantity - quantity) * 10000) / 10000)} ${item.unit}.`}
           </p>
 
           {/* Actions */}

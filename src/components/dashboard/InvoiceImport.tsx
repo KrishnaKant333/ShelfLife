@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { extractInvoiceAction } from "@/lib/actions/invoice";
 import { importInventoryAction } from "@/lib/actions/inventory";
+import { isIntegerUnit } from "@/lib/normalization";
 
 type InvoiceItem = {
   name: string;
@@ -301,7 +302,9 @@ export default function InvoiceImport() {
                     <td className="px-5 py-4">
                       <input
                         type="number"
-                        min="1"
+                        min={isIntegerUnit(item.unit) ? "1" : "0.0001"}
+                        step={isIntegerUnit(item.unit) ? "1" : "any"}
+                        inputMode={isIntegerUnit(item.unit) ? "numeric" : "decimal"}
                         value={item.quantity}
                         onChange={(event) => updateItem(index, "quantity", event.target.value)}
                         className="w-24 rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--shelf-forest)]"
@@ -358,7 +361,15 @@ export default function InvoiceImport() {
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block text-xs font-semibold text-[var(--shelf-dark)]">
                     Quantity
-                    <input type="number" min="1" inputMode="decimal" value={item.quantity} onChange={(event) => updateItem(index, "quantity", event.target.value)} className="sl-focus-ring mt-1 w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2.5 text-sm" />
+                    <input
+                      type="number"
+                      min={isIntegerUnit(item.unit) ? "1" : "0.0001"}
+                      step={isIntegerUnit(item.unit) ? "1" : "any"}
+                      inputMode={isIntegerUnit(item.unit) ? "numeric" : "decimal"}
+                      value={item.quantity}
+                      onChange={(event) => updateItem(index, "quantity", event.target.value)}
+                      className="sl-focus-ring mt-1 w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2.5 text-sm"
+                    />
                   </label>
                   <label className="block text-xs font-semibold text-[var(--shelf-dark)]">
                     Unit

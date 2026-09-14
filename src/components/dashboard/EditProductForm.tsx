@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 
 import {
   updateInventoryItem,
   type CreateInventoryState,
 } from "@/lib/actions/inventory";
+import { isIntegerUnit } from "@/lib/normalization";
 
 interface EditProductFormProps {
   product: {
@@ -33,6 +34,8 @@ export default function EditProductForm({
     updateAction,
     initialState
   );
+  const [unit, setUnit] = useState(product.unit || "");
+  const isInt = isIntegerUnit(unit);
 
   return (
     <form
@@ -87,9 +90,9 @@ export default function EditProductForm({
             id="quantity"
             name="quantity"
             type="number"
-            min="1"
-            step="any"
-            inputMode="decimal"
+            min={isInt ? "1" : "0.0001"}
+            step={isInt ? "1" : "any"}
+            inputMode={isInt ? "numeric" : "decimal"}
             defaultValue={product.quantity}
             required
             className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
@@ -108,7 +111,8 @@ export default function EditProductForm({
             id="unit"
             name="unit"
             type="text"
-            defaultValue={product.unit}
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
             required
             className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
           />

@@ -1,0 +1,48 @@
+[
+  {
+    "id": "alterType.inventoryConsumption.quantityUsed",
+    "label": "Alter type of \"inventoryConsumption\".\"quantityUsed\" to float8",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "quantityUsed",
+        "table": "inventoryConsumption"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"quantityUsed\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryConsumption",
+          "quantityUsed"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "alter type of \"quantityUsed\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryConsumption\" ALTER COLUMN \"quantityUsed\" TYPE float8 USING \"quantityUsed\"::float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"quantityUsed\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryConsumption",
+          "quantityUsed",
+          "double precision"
+        ]
+      }
+    ],
+    "meta": {
+      "warning": "TABLE_REWRITE"
+    }
+  }
+]

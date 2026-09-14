@@ -29,6 +29,7 @@ import {
   getRecentConsumptionAction,
   type ConsumptionRecord,
 } from "@/lib/actions/recipes";
+import { isIntegerUnit } from "@/lib/normalization";
 import type { InventoryItem } from "@/lib/inventory";
 
 interface ProductDetailDrawerProps {
@@ -63,18 +64,7 @@ export default function ProductDetailDrawer({
     ? ["Overview", "History", "AI Insights"]
     : ["Overview", "History", "AI Insights", "Recipes"];
 
-  // Reset tab when item changes
-  useEffect(() => {
-    setActiveTab("Overview");
-    setShowPortionModal(false);
-    if (item) {
-      setConsumeQty(Math.min(1, item.quantity));
-      // Load real history for this product
-      void loadProductHistory(item.name, item.id);
-    }
-  }, [item?.id]);
-
-  const loadProductHistory = async (productName: string, itemId: number) => {
+  const loadProductHistory = async (productName: string) => {
     setLoadingHistory(true);
     try {
       const res = await getRecentConsumptionAction();
@@ -92,6 +82,20 @@ export default function ProductDetailDrawer({
     }
   };
 
+  // Reset tab when item changes
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveTab("Overview");
+    setShowPortionModal(false);
+    if (item) {
+      const isInt = isIntegerUnit(item.unit);
+      setConsumeQty(isInt ? Math.max(1, Math.min(1, Math.floor(item.quantity))) : Math.min(1, item.quantity));
+      // Load real history for this product
+      void loadProductHistory(item.name);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item?.id]);
+
   if (!item) return null;
 
   const days = getDaysUntilExpiry(item.expiryDate);
@@ -101,21 +105,30 @@ export default function ProductDetailDrawer({
   const isExpired = item.status === "Expired" || days < 0;
 
   const handleMarkAsUsed = async (quantityToUse: number) => {
+    if (!item) return;
+    const isInt = isIntegerUnit(item.unit);
+    if (!Number.isFinite(quantityToUse) || quantityToUse <= 0 || quantityToUse > item.quantity) {
+      return;
+    }
+    if (isInt && !Number.isInteger(quantityToUse)) {
+      return;
+    }
+    const cleanQty = isInt ? Math.round(quantityToUse) : Math.round(quantityToUse * 10000) / 10000;
     setIsConsuming(true);
     try {
       const res = await consumeIngredientsAction([
         {
           itemId: item.id,
-          quantityUsed: quantityToUse,
+          quantityUsed: cleanQty,
         },
       ]);
       if (res.success) {
         setShowPortionModal(false);
         onRefresh();
-        if (quantityToUse >= item.quantity) {
+        if (cleanQty >= item.quantity) {
           onClose();
         } else {
-          void loadProductHistory(item.name, item.id);
+          void loadProductHistory(item.name);
         }
       }
     } catch {
@@ -333,59 +346,84 @@ export default function ProductDetailDrawer({
 
               {/* Portion Selector & Primary Actions */}
               <div className="space-y-2.5 pt-1">
-                {showPortionModal ? (
-                  <div className="rounded-xl border border-[var(--app-border-strong)] bg-[var(--app-surface-base)] p-3.5 space-y-3">
-                    <div className="flex items-center justify-between text-xs font-semibold text-[var(--app-text-display)]">
-                      <span>Quantity to mark consumed:</span>
-                      <span className="text-[var(--app-accent-emerald)]">
-                        {consumeQty} / {item.quantity} {item.unit}
-                      </span>
-                    </div>
+                {showPortionModal ? (() => {
+                  const isInt = isIntegerUnit(item.unit);
+                  const minVal = isInt ? 1 : Math.min(item.quantity, 0.001);
+                  const stepVal = isInt ? "1" : "any";
+                  const inputModeVal = isInt ? "numeric" : "decimal";
+                  const remaining = Math.max(0, Math.round((item.quantity - consumeQty) * 10000) / 10000);
 
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        min={1}
-                        max={item.quantity}
-                        value={consumeQty}
-                        onChange={(e) =>
-                          setConsumeQty(
-                            Math.min(
-                              item.quantity,
-                              Math.max(1, parseInt(e.target.value) || 1)
-                            )
-                          )
-                        }
-                        className="flex-1 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-3 py-1.5 text-sm text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setConsumeQty(item.quantity)}
-                        className="rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-2.5 py-1.5 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] transition"
-                      >
-                        All
-                      </button>
-                    </div>
+                  return (
+                    <div className="rounded-xl border border-[var(--app-border-strong)] bg-[var(--app-surface-base)] p-3.5 space-y-3">
+                      <div className="flex items-center justify-between text-xs font-semibold text-[var(--app-text-display)]">
+                        <span>Quantity to mark consumed:</span>
+                        <span className="text-[var(--app-accent-emerald)]">
+                          {consumeQty} / {item.quantity} {item.unit}
+                        </span>
+                      </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowPortionModal(false)}
-                        className="flex-1 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] py-2 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] transition"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMarkAsUsed(consumeQty)}
-                        disabled={isConsuming}
-                        className="flex-1 rounded-lg bg-[var(--app-accent-emerald)] py-2 text-xs font-bold text-white hover:brightness-105 transition disabled:opacity-50"
-                      >
-                        {isConsuming ? "Logging..." : "Confirm Used"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={minVal}
+                          max={item.quantity}
+                          step={stepVal}
+                          inputMode={inputModeVal}
+                          value={consumeQty}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw === "") {
+                              setConsumeQty(minVal);
+                              return;
+                            }
+                            const val = isInt ? parseInt(raw, 10) : parseFloat(raw);
+                            if (Number.isFinite(val)) {
+                              if (val <= 0) {
+                                setConsumeQty(minVal);
+                              } else if (val > item.quantity) {
+                                setConsumeQty(item.quantity);
+                              } else {
+                                setConsumeQty(isInt ? Math.round(val) : Math.round(val * 10000) / 10000);
+                              }
+                            }
+                          }}
+                          className="flex-1 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-3 py-1.5 text-sm text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setConsumeQty(item.quantity)}
+                          className="rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-2.5 py-1.5 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] transition cursor-pointer"
+                        >
+                          All
+                        </button>
+                      </div>
+
+                      <p className="text-[11px] text-[var(--app-text-muted)]">
+                        {consumeQty >= item.quantity
+                          ? "All stock will be marked consumed."
+                          : `Remaining stock: ${remaining} ${item.unit}`}
+                      </p>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowPortionModal(false)}
+                          className="flex-1 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] py-2 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] transition cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMarkAsUsed(consumeQty)}
+                          disabled={isConsuming || !Number.isFinite(consumeQty) || consumeQty <= 0 || consumeQty > item.quantity || (isInt && !Number.isInteger(consumeQty))}
+                          className="flex-1 rounded-lg bg-[var(--app-accent-emerald)] py-2 text-xs font-bold text-white hover:brightness-105 transition disabled:opacity-50 cursor-pointer"
+                        >
+                          {isConsuming ? "Logging..." : "Confirm Used"}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
+                  );
+                })() : (
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
@@ -396,13 +434,14 @@ export default function ProductDetailDrawer({
                       <span>Mark as Used</span>
                     </button>
 
-                    <Link
-                      href={`${prefix}/inventory/${item.id}/edit`}
-                      className="sl-focus-ring flex items-center justify-center gap-1.5 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] py-2.5 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-surface-elevated)] transition"
+                    <button
+                      type="button"
+                      onClick={() => onEdit(item)}
+                      className="sl-focus-ring flex items-center justify-center gap-1.5 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] py-2.5 text-xs font-semibold text-[var(--app-text-body)] hover:bg-[var(--app-surface-elevated)] transition cursor-pointer"
                     >
                       <Edit2 size={13} />
                       <span>Edit</span>
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
