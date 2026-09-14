@@ -6,6 +6,10 @@ import { auth } from "@/auth";
 import { db } from "@/prisma/db";
 import { revalidatePath } from "next/cache";
 import { Temporal } from "@/lib/temporal";
+import {
+  parseItemImageUrls,
+  safeDeleteUnreferencedImages,
+} from "@/lib/storage-lifecycle";
 
 const consumerProfileSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters."),
@@ -45,15 +49,15 @@ export async function updateProfileNameAction(data: {
     return { error: "Authentication required." };
   }
 
+  const userId = Number(session.user.id);
   const isBusiness = session.user.accountType === "business";
+
   const schema = isBusiness ? businessProfileSchema : consumerProfileSchema;
   const result = schema.safeParse(data);
 
   if (!result.success) {
     return { error: result.error.issues[0]?.message ?? "Invalid profile data." };
   }
-
-  const userId = Number(session.user.id);
 
   try {
     await db.orm.public.User.where({ id: userId }).update({
@@ -73,9 +77,9 @@ export async function updateProfileNameAction(data: {
     revalidatePath("/dashboard/settings");
     revalidatePath("/business/dashboard/settings");
     return { success: true, message: "Profile updated successfully." };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed to update profile:", err);
-    return { error: err.message || "Failed to update profile." };
+    return { error: err instanceof Error ? err.message : "Failed to update profile." };
   }
 }
 
@@ -116,7 +120,7 @@ export async function updatePasswordAction(data: {
     });
 
     return { success: true, message: "Password updated successfully." };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed to update password:", err);
     return { error: "Failed to update password." };
   }
@@ -134,10 +138,19 @@ export async function purgeInventoryAction(): Promise<SettingsActionResult> {
   const businessId = session.user.businessId ? Number(session.user.businessId) : null;
 
   try {
+    const filter = isBusiness && businessId ? { businessId } : { userId };
+    const items = await db.orm.public.InventoryItem.where(filter).all();
+    const candidateUrls = items.flatMap(parseItemImageUrls);
+    const itemIds = items.map((i) => i.id);
+
     if (isBusiness && businessId) {
       await db.orm.public.InventoryItem.where({ businessId }).delete();
     } else {
       await db.orm.public.InventoryItem.where({ userId }).delete();
+    }
+
+    if (candidateUrls.length > 0) {
+      await safeDeleteUnreferencedImages(candidateUrls, itemIds);
     }
 
     revalidatePath("/dashboard");
@@ -150,7 +163,7 @@ export async function purgeInventoryAction(): Promise<SettingsActionResult> {
     revalidatePath("/business/dashboard/settings");
 
     return { success: true, message: "All inventory items have been purged." };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Failed to purge inventory:", err);
     return { error: "Failed to purge inventory." };
   }

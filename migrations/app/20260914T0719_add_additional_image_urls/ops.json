@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.inventoryItem.additionalImageUrls",
+    "label": "Add column \"additionalImageUrls\" to \"inventoryItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "additionalImageUrls",
+        "table": "inventoryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"additionalImageUrls\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "additionalImageUrls"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"additionalImageUrls\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryItem\" ADD COLUMN \"additionalImageUrls\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"additionalImageUrls\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "additionalImageUrls"
+        ]
+      }
+    ]
+  }
+]

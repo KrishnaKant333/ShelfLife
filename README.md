@@ -31,13 +31,30 @@ ShelfLife features a deliberate dual visual identity:
 
 ---
 
-## 🧭 Authenticated UI/UX Redesign & Master Specification
+## 🧭 Specifications & Active Roadmap
 
-The authenticated application and onboarding experiences have been redesigned and elevated under the design doctrine *"Editorial Productivity / Intelligent Workspace"*:
+ShelfLife is engineered using a structured **Context & Specification** architecture (`Context/` and `Specs/`):
 
-- **All Stages (Stages A through L)**: 🟢 **100% Completed, Verified & Built**
-- **Master Specification**: [`ShelfLife-Final-Master-Specification.md`](specs/ShelfLife-Final-Master-Specification.md)
-- **Ergonomics & Design**: Unified dark editorial palette (`#0c120e` canvas, `#151a16` surfaces, `border-white/10`), `.sl-display-serif` typography, 44px mobile touch targets, and full isolation between Consumer Kitchen and Commercial Operations.
+- **Master System Specification**: [`Specs/ShelfLife-Final-Master-Specification.md`](specs/ShelfLife-Final-Master-Specification.md)
+- **Active Improvement Roadmap**: [`Specs/00-Real-World-Usage-Master-Roadmap.md`](specs/00-Real-World-Usage-Master-Roadmap.md)
+
+### Improvement Cycle Status (P0–P3):
+1. **P0: Fractional Quantities & Database Parity (🟢 Completed)**:
+   - Synchronized `inventoryConsumption.quantityUsed` to `float8` (`double precision`) across development and production databases.
+   - Enforced continuous decimal units (`L`, `kg`, `ml`, `g`) vs. discrete integer units (`pcs`, `pack`).
+2. **P1: Multi-View Product Understanding (🟡 Queued / Spec Ready)**:
+   - Captures and merges Front, Back, and Expiry packaging panels into a single consolidated record.
+3. **P1: Intelligent Missing Expiry Hierarchy (🟡 Queued / Spec Ready)**:
+   - 5-tier freshness cascade providing transparent, editable category-based shelf-life estimates for items lacking printed dates.
+4. **P2: Mobile Inventory Default List View (🟡 Queued / Spec Ready)**:
+   - Purpose-built high-density touch-row layout defaulting on mobile (<768px) with persistent Grid toggle.
+5. **P2: Contextual Product Dossier Quick Actions (🟡 Queued / Spec Ready)**:
+   - Immediate contextual sub-sheets for Add Stock, Move Category, Expiry Reminders, and Safe Deletion.
+6. **P3: Real Product Thumbnails & Image Priority (🟡 Queued / Spec Ready)**:
+   - 6-tier image priority cascade with Open Food Facts open-data imagery and clean SVG fallbacks.
+7. **Cross-Cutting QA & Regression Matrix (🟡 Queued / Spec Ready)**:
+   - Immutable 8-scenario QA matrix verifying real-world pantry and commercial kitchen flows.
+
 
 ---
 
@@ -95,10 +112,14 @@ AUTH_TRUST_HOST=true
 
 ## 🔒 Security & Engineering Rules
 
-1. **Authoritative Server Sessions**: Server-side session validation is mandatory. Never trust client-side user or business IDs.
-2. **Deterministic Source of Truth**: Expiry dates, stock status, and FIFO calculations are strictly deterministic and override AI responses.
-3. **Recipe Expiry Exclusion**: Expired items are strictly omitted from AI recipe prompts and recommendations.
-4. **No Guessed Expiry Dates**: Missing or ambiguous expiry dates remain explicitly `Expiry not available` / `Not trackable`.
-5. **Account Type Isolation**: Consumer (`/dashboard`) and Business (`/business/dashboard`) routes, databases, and states must remain completely isolated.
-6. **Isolated Video Background**: The cinematic video background is strictly for the landing page; never inject it into authenticated workspace routes.
-7. **Landing Theme Toggle**: Intentionally removed to preserve art direction.
+1. **Authoritative Server Sessions**: Server-side session validation is mandatory on every server action. Never trust client-side user or business IDs.
+2. **Permanent Schema Parity**: Development and production databases must remain in 100% lockstep (`float8` for `quantityUsed` and `quantity`). Never use `prisma db push` or `prisma db reset` against production; all migrations must be versioned.
+3. **Continuous vs. Discrete Units**: Continuous units (`L`, `kg`, `ml`, `g`) accept decimals (`min="0.0001"`, `step="any"`). Discrete units (`pcs`, `pack`, `bottle`) enforce integers (`min="1"`, `step="1"`). Never use `parseInt` on continuous goods.
+4. **Deterministic Source of Truth**: Real dates, stock quantities, and FIFO queues are strictly deterministic and override AI responses.
+5. **5-Tier Expiry Discipline**: AI-estimated freshness dates must be explicitly labeled `Estimated ✦`, editable, and never passed off as manufacturer truth.
+6. **Strict Business Recipe Isolation**: Business workspaces (`/business/dashboard`) strictly omit all recipe UI, endpoints, tabs, and buttons; recipes are exclusive to consumer households.
+7. **Authentic Product Imagery**: Adhere to the 6-tier image priority cascade. Never scrape or inject random stock photos.
+8. **Deferred Features**: Barcode scanning remains deferred and hidden until a dedicated commercial EAN/UPC database integration is scheduled.
+9. **Isolated Video Background**: The cinematic video background is strictly for the landing page; never inject it into authenticated workspace routes.
+10. **Landing Theme Toggle**: Intentionally removed to preserve marketing art direction; authenticated workspaces support dynamic Light and Dark modes.
+

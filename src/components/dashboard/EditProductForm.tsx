@@ -17,6 +17,8 @@ interface EditProductFormProps {
     quantity: number;
     unit: string;
     expiryDate: string | null;
+    imageUrl?: string | null;
+    additionalImageUrls?: string | null;
   };
 }
 
@@ -42,6 +44,17 @@ export default function EditProductForm({
       action={formAction}
       className="rounded-2xl bg-[var(--shelf-surface)] p-4 shadow-2xl md:p-6"
     >
+      {/* Preserve existing product imagery during text updates */}
+      {product.imageUrl && (
+        <input type="hidden" name="imageUrl" value={product.imageUrl} />
+      )}
+      {product.additionalImageUrls && (
+        <input
+          type="hidden"
+          name="additionalImageUrls"
+          value={product.additionalImageUrls}
+        />
+      )}
       <div className="grid gap-4 md:grid-cols-2 md:gap-6">
         <div>
           <label

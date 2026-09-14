@@ -6,12 +6,15 @@
 - Keep routes thin and put domain logic in `src/lib`.
 - Server actions authenticate, derive ownership, validate input with Zod, mutate database, and revalidate caches.
 - Use strict TypeScript and domain types; avoid `any` and unsafe casts.
-- Keep Consumer (`/dashboard`) and Business (`/business/dashboard`) behavior isolated while sharing identical UI behavior where applicable.
+- **Continuous vs. Discrete Units**: Continuous units (`L`, `kg`, `ml`, `g`, `oz`, `lb`) must accept decimals (`min="0.0001"`, `step="any"`). Discrete units (`pcs`, `pack`, `can`, `bottle`) enforce integers (`min="1"`, `step="1"`). Never use `parseInt` on continuous items.
+- **Fractional Precision**: Round decimal operations to 4 decimal places (`Math.round(val * 10000) / 10000`) before saving to eliminate IEEE 754 float drift.
+- **Database Schema Parity**: Development and production databases must remain in 100% lockstep (`float8` for `quantityUsed` and `quantity`). Never use `prisma db push` or `prisma db reset` against production.
+- **5-Tier Expiry Provenance**: AI-estimated freshness must be visually distinguished (`Estimated ✦`), editable, and never passed off as manufacturer truth.
+- **Authentic Product Imagery**: Adhere to the 6-tier image hierarchy. Never scrape or inject random stock photos.
+- **Strict Business Recipe Isolation**: Business workspaces (`/business/dashboard`) strictly omit all recipe UI, endpoints, tabs, and buttons.
 - Deterministic expiry, unit, stock, ownership, FIFO, and recipe-safety logic outranks AI output.
-- Never invent missing expiry data. Model unknown expiry explicitly (`Expiry not available`).
-- Preserve original quantity/unit display while using normalized values only for compatible comparisons.
 - Run `npm run build` after each major phase and fix regressions before continuing.
-- Barcode scanning remains deferred/hidden.
+- Barcode scanning remains deferred and hidden from active entry flows.
 
 ---
 

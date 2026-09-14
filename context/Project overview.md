@@ -44,28 +44,31 @@ ShelfLife is a Next.js 16 application for consumers and commercial food business
 
 ---
 
-## 🧭 Queued Post-1.0 Roadmap (Stages A–L)
+## 🧭 Roadmap History & Active Real-World Usage Cycle
 
-1. **Stage A**: App Visual Foundation & Shared Shell (Prerequisite, Ready)
-2. **Stage B**: Dashboard Command Center
-3. **Stage C**: Inventory Product Catalog
-4. **Stage D**: Product Details Digital Dossier
-5. **Stage E**: Analytics Intelligence Report
-6. **Stage F**: Recipes Food Editorial Experience
-7. **Stage G**: Waste Impact & Environmental Report
-8. **Stage H**: Alerts vs Notifications Separation
-9. **Stage I**: Settings Polished Workspace
-10. **Stage J**: App Motion System & Micro-Interactions
-11. **Stage K**: Mobile-First Ergonomics & Accessibility Refinement
-12. **Stage L**: Performance & Final Visual QA Sign-off
+### Completed Milestones
+- **Cinematic Marketing Landing Page**: 100% Completed & Verified.
+- **Stages A–L Workspace Redesign**: 100% Completed, Verified & Built.
+- **Business Recipe Isolation**: 100% Purged from commercial workspace; recipes exclusive to Consumer.
+- **Get Started & Auth Modernization**: 100% Completed across `/get-started`, login, signup, verify email.
+- **P0: Fractional Quantities & Database Parity**: 100% Completed. Production and development databases synchronized on `float8` (`double precision`).
+
+### Active Cycle: Real-World Usage Improvements (P0–P3)
+1. **P0 Foundation (Completed)**: Continuous decimal vs. discrete integer arithmetic; strict production schema parity.
+2. **P1 Product Understanding (Queued)**: Multi-view packaging synthesis (front, back, bottom) and 5-tier intelligent missing expiry hierarchy.
+3. **P2 UX & Workflow Improvements (Queued)**: Mobile default list view (<768px) and contextual product dossier quick action sheets.
+4. **P3 Imagery & Polish (Queued)**: 6-tier authentic image hierarchy with Open Food Facts integration and deterministic SVG glyph fallbacks.
+5. **Cross-Cutting QA (Queued)**: 8-scenario real-world regression matrix.
 
 ---
 
-## 🔒 Safety Principles
+## 🔒 Safety & Architectural Invariants
 
 - Session-based ownership validation on every server action.
-- Expiry status is deterministic.
-- Expired products are never sent to AI recipe generation.
-- Missing expiry remains explicitly `Expiry not available`.
-- Barcode scanning remains deferred/hidden.
-- No application code or UI was modified during this planning pass.
+- Expiry status is deterministic; AI estimates are visibly labeled `Estimated` and editable.
+- Expired products are strictly excluded from AI recipe generation (Consumer only).
+- Business workspaces strictly omit all recipe routes, buttons, drawers, and tabs.
+- Barcode scanning remains deferred and hidden from active workflows.
+- No production database changes via `db push` or `reset`; migrations must be versioned.
+- The cinematic landing video background remains strictly isolated from authenticated workspaces.
+

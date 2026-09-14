@@ -164,7 +164,8 @@ export default function ProductImage({
   // Next.js Image with unoptimized flag fallback for external hosts or optimized for configured hosts
   const isConfiguredHost =
     src.startsWith("https://images.openfoodfacts.org") ||
-    src.startsWith("https://static.openfoodfacts.org");
+    src.startsWith("https://static.openfoodfacts.org") ||
+    src.includes(".public.blob.vercel-storage.com");
 
   return (
     <div

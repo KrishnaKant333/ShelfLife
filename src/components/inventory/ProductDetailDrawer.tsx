@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   X,
@@ -57,6 +58,26 @@ export default function ProductDetailDrawer({
   const [showPortionModal, setShowPortionModal] = useState(false);
   const [history, setHistory] = useState<ConsumptionRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const auxiliaryImages: string[] = (() => {
+    if (!item?.additionalImageUrls) return [];
+    if (Array.isArray(item.additionalImageUrls)) return item.additionalImageUrls;
+    try {
+      const parsed = JSON.parse(item.additionalImageUrls);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  const allImages: string[] = [];
+  if (item?.imageUrl) allImages.push(item.imageUrl);
+  auxiliaryImages.forEach((url) => {
+    if (!allImages.includes(url)) allImages.push(url);
+  });
+
+  const activeDisplayImage = selectedImage ?? item?.imageUrl ?? null;
 
   const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
 
@@ -194,15 +215,51 @@ export default function ProductDetailDrawer({
         {/* Scrollable Content Body */}
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6 space-y-5 scrollbar-thin">
           {/* Hero Product Stage */}
-          <div className="relative flex h-52 sm:h-56 w-full items-center justify-center rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] p-4 shadow-xs">
-            <ProductImage
-              src={item.imageUrl}
-              alt={item.name}
-              category={item.category}
-              className="h-full w-full"
-              size="lg"
-              priority
-            />
+          <div className="space-y-2">
+            <div className="relative flex h-52 sm:h-56 w-full items-center justify-center rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] p-4 shadow-xs">
+              <ProductImage
+                src={activeDisplayImage}
+                alt={item.name}
+                category={item.category}
+                className="h-full w-full"
+                size="lg"
+                priority
+              />
+            </div>
+
+            {/* Auxiliary View Thumbnails Carousel */}
+            {allImages.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {allImages.map((imgUrl, idx) => {
+                  const isCurrent = activeDisplayImage === imgUrl;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedImage(imgUrl)}
+                      className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                        isCurrent
+                          ? "border-[var(--shelf-forest)] ring-2 ring-[var(--shelf-forest)]/20 shadow-xs"
+                          : "border-[var(--app-border-subtle)] opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <Image
+                        src={imgUrl}
+                        alt={`Angle view ${idx + 1}`}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                      {idx === 0 && (
+                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] font-bold text-white text-center py-0.5">
+                          Main
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Freshness Tags */}

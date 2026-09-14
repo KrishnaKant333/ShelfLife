@@ -124,3 +124,18 @@ The application is architected around two fundamentally distinct, strictly isola
 - **Production Next.js Build**: 35/35 routes compile static and dynamic builds successfully (`npm run build`).
 - **Git Tree Cleanliness**: 0 whitespace or formatting anomalies (`git diff --check`).
 - **Route Status**: All auth, marketing, and dashboard entry points verified at HTTP 200.
+
+---
+
+## 7. Next Cycle: Real-World Usage Improvements (P0–P3)
+
+The project has entered its active real-world usage iteration cycle, fully documented under [`Specs/00-Real-World-Usage-Master-Roadmap.md`](./00-Real-World-Usage-Master-Roadmap.md):
+
+1. **P0: Fractional Quantities & Database Parity (Completed)**: Full support for continuous decimal units (`L`, `kg`, `ml`, `g`) vs. discrete whole-number units (`pcs`, `packs`). Production database migration applied; development and production schemas synchronized at `double precision` (`float8`) without data loss. [`Specs/01-Fractional-Quantities-And-Database-Parity.md`](./01-Fractional-Quantities-And-Database-Parity.md).
+2. **P1: Multi-View Product Understanding (Queued)**: Multi-angle packaging synthesis (front identity, back nutrition, bottom/rim expiry stamp) combining into one unified product record without duplication. [`Specs/02-Multi-View-Product-Understanding.md`](./02-Multi-View-Product-Understanding.md).
+3. **P1: Intelligent Missing Expiry Hierarchy (Queued)**: 5-tier freshness cascade providing transparent, editable category-based shelf-life estimates for receipt and cart items lacking printed dates. [`Specs/03-Intelligent-Missing-Expiry-Hierarchy.md`](./03-Intelligent-Missing-Expiry-Hierarchy.md).
+4. **P2: Mobile Inventory Default List View (Queued)**: High-density, one-handed touch-row default view on viewports <768px with persistent Grid toggle. [`Specs/04-Mobile-Inventory-Default-List-View.md`](./04-Mobile-Inventory-Default-List-View.md).
+5. **P2: Contextual Product Dossier Quick Actions (Queued)**: Inline sheets replacing generic full-page redirects for "Add More Stock", "Move Category", "Set Reminder", and "Delete". [`Specs/05-Contextual-Product-Dossier-Actions.md`](./05-Contextual-Product-Dossier-Actions.md).
+6. **P3: Real Product Thumbnails & Image Priority (Queued)**: 6-tier image priority cascade featuring user camera photos, multi-view thumbnails, Open Food Facts attribution, and deterministic SVG category glyph fallbacks. [`Specs/06-Product-Thumbnails-And-Image-Hierarchy.md`](./06-Product-Thumbnails-And-Image-Hierarchy.md).
+7. **Cross-Cutting QA & Regression Layer (Queued)**: Immutable 8-scenario QA matrix covering decimal consumption, volumetric cooking conversions, multi-view extraction, mobile list density, and Consumer/Business recipe boundaries. [`Specs/07-Real-World-Usage-QA-And-Regression.md`](./07-Real-World-Usage-QA-And-Regression.md).
+

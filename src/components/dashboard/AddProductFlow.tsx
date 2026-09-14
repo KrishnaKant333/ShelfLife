@@ -2,10 +2,28 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useActionState } from "react";
-import { extractLabelAction } from "@/lib/actions/label-scan";
+import Image from "next/image";
+import {
+  extractMultiViewLabelAction,
+  discardUploadedImagesAction,
+} from "@/lib/actions/label-scan";
 import { createInventoryItem, type CreateInventoryState } from "@/lib/actions/inventory";
+import { createBusinessInventoryItem } from "@/lib/actions/business-inventory";
 import { isIntegerUnit } from "@/lib/normalization";
-import { Camera, FileText, Upload, Plus, AlertCircle, Sparkles, RefreshCw } from "lucide-react";
+import {
+  Camera,
+  FileText,
+  Upload,
+  Plus,
+  AlertCircle,
+  Sparkles,
+  RefreshCw,
+  X,
+  Star,
+  Layers,
+  CheckCircle2,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 
 interface AddProductFlowProps {
@@ -14,6 +32,21 @@ interface AddProductFlowProps {
 
 const initialFormState: CreateInventoryState = {};
 type AddProductTab = "manual" | "label" | "import";
+
+interface ProductViewItem {
+  id: string;
+  file: File;
+  previewUrl: string;
+  angle: "front" | "back" | "rim" | "side";
+  isPrimary: boolean;
+}
+
+const ANGLE_LABELS: Record<string, string> = {
+  front: "Front (Brand & Name)",
+  back: "Back (Quantity & Ingredients)",
+  rim: "Rim/Cap (Stamped Expiry)",
+  side: "Side (Nutrition & Storage)",
+};
 
 export default function AddProductFlow({ isBusiness = false }: AddProductFlowProps) {
   const [activeTab, setActiveTab] = useState<AddProductTab>("manual");
@@ -27,17 +60,22 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
       }
     }
   }, []);
-  
-  // Manual Form States (these can be pre-filled by label extraction)
+
+  // Form Field States (pre-filled by multi-view AI extraction or edited manually)
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [unit, setUnit] = useState("pieces");
   const [expiryDate, setExpiryDate] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [additionalImageUrls, setAdditionalImageUrls] = useState<string[]>([]);
 
-  // Label scanning states
+  // Multi-View Image Collection States
+  const [views, setViews] = useState<ProductViewItem[]>([]);
   const [labelLoading, setLabelLoading] = useState(false);
   const [labelError, setLabelError] = useState("");
+
+  // Camera States
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -45,30 +83,113 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
 
   // Server Action for product creation
   const [state, formAction, pending] = useActionState(
-    createInventoryItem,
+    isBusiness ? createBusinessInventoryItem : createInventoryItem,
     initialFormState
   );
 
-  async function handleLabelFile(file: File) {
+  // Clean up object URLs on unmount
+  useEffect(() => {
+    return () => {
+      views.forEach((v) => URL.revokeObjectURL(v.previewUrl));
+    };
+  }, [views]);
+
+  function addFilesToViews(newFiles: File[]) {
+    setLabelError("");
+    const maxAvailable = 4 - views.length;
+    if (maxAvailable <= 0) {
+      setLabelError("Maximum 4 angles per product reached.");
+      return;
+    }
+
+    const filesToAdd = newFiles.slice(0, maxAvailable);
+    const defaultAngles: Array<"front" | "back" | "rim" | "side"> = ["front", "back", "rim", "side"];
+
+    const newViewItems: ProductViewItem[] = filesToAdd.map((file, idx) => {
+      const angleIndex = (views.length + idx) % defaultAngles.length;
+      return {
+        id: `view-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+        file,
+        previewUrl: URL.createObjectURL(file),
+        angle: defaultAngles[angleIndex],
+        isPrimary: views.length === 0 && idx === 0,
+      };
+    });
+
+    setViews((prev) => {
+      const updated = [...prev, ...newViewItems];
+      // Ensure at least one item is marked primary
+      if (!updated.some((v) => v.isPrimary) && updated.length > 0) {
+        updated[0].isPrimary = true;
+      }
+      return updated;
+    });
+  }
+
+  function removeView(id: string) {
+    setViews((prev) => {
+      const target = prev.find((v) => v.id === id);
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      const filtered = prev.filter((v) => v.id !== id);
+      if (filtered.length > 0 && !filtered.some((v) => v.isPrimary)) {
+        filtered[0].isPrimary = true;
+      }
+      return filtered;
+    });
+  }
+
+  function setPrimaryView(id: string) {
+    setViews((prev) =>
+      prev.map((v) => ({
+        ...v,
+        isPrimary: v.id === id,
+      }))
+    );
+  }
+
+  function updateViewAngle(id: string, angle: "front" | "back" | "rim" | "side") {
+    setViews((prev) =>
+      prev.map((v) => (v.id === id ? { ...v, angle } : v))
+    );
+  }
+
+  async function triggerMultiViewExtraction(viewsToExtract = views) {
+    if (viewsToExtract.length === 0) {
+      setLabelError("Please provide at least one product photo.");
+      return;
+    }
+
     setLabelError("");
     setLabelLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      // Clean up previous unconfirmed images if user is rescanning
+      const prevPending = [imageUrl, ...additionalImageUrls].filter(Boolean);
+      if (prevPending.length > 0) {
+        void discardUploadedImagesAction(prevPending);
+      }
 
-      const result = await extractLabelAction(formData);
+      const formData = new FormData();
+      // Ensure primary view is first in the payload
+      const sorted = [...viewsToExtract].sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
+      sorted.forEach((view) => {
+        formData.append("files", view.file);
+      });
+
+      const result = await extractMultiViewLabelAction(formData);
 
       if (result.name) setName(result.name);
       if (result.category) setCategory(result.category);
-      if (result.quantity) setQuantity(String(result.quantity));
+      if (result.quantity != null) setQuantity(String(result.quantity));
       if (result.unit) setUnit(result.unit);
       if (result.expiryDate) setExpiryDate(result.expiryDate);
+      if (result.imageUrl) setImageUrl(result.imageUrl);
+      if (result.additionalImageUrls) setAdditionalImageUrls(result.additionalImageUrls);
 
       setLabelError("");
       setActiveTab("manual");
     } catch (err) {
-      setLabelError(err instanceof Error ? err.message : "Label scan failed.");
+      setLabelError(err instanceof Error ? err.message : "Multi-view product extraction failed.");
     } finally {
       setLabelLoading(false);
     }
@@ -141,21 +262,26 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
   }
 
   async function captureCameraFrame() {
+    if (views.length >= 4) {
+      setCameraError("Maximum 4 angles captured. Tap 'Extract & Review' to proceed.");
+      return;
+    }
+
     const video = videoRef.current;
     if (!video) {
-      setCameraError("The camera preview is unavailable. Try again or use Upload image.");
+      setCameraError("The camera preview is unavailable.");
       return;
     }
 
     try {
       await video.play();
     } catch {
-      setCameraError("The camera preview could not start. Check browser camera permission and try again.");
+      setCameraError("Camera preview could not start.");
       return;
     }
 
     if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) {
-      setCameraError("The camera is still starting. Try again in a moment.");
+      setCameraError("The camera is still focusing. Try again in a moment.");
       return;
     }
 
@@ -165,21 +291,29 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
     canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", 0.9),
+      canvas.toBlob(resolve, "image/jpeg", 0.9)
     );
 
     if (!blob) {
-      setCameraError("Unable to capture the camera image. Try again or use Upload image.");
+      setCameraError("Unable to capture frame. Please try again.");
       return;
     }
 
-    stopCamera();
-    await handleLabelFile(new File([blob], `shelflife-label-${Date.now()}.jpg`, { type: "image/jpeg" }));
+    const file = new File([blob], `camera-angle-${views.length + 1}-${Date.now()}.jpg`, {
+      type: "image/jpeg",
+    });
+
+    addFilesToViews([file]);
+    setCameraError("");
   }
 
-  function handleLabelFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) void handleLabelFile(file);
+  function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const fileList = e.target.files;
+    if (fileList && fileList.length > 0) {
+      addFilesToViews(Array.from(fileList));
+    }
+    // reset input value so identical files can be re-selected if removed
+    e.target.value = "";
   }
 
   const inventoryPath = isBusiness ? "/business/dashboard/inventory" : "/dashboard/inventory";
@@ -195,7 +329,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
           Add New Product
         </h1>
         <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-          Add single items manually, scan labels, or import lists.
+          Add single items manually, scan multiple product angles, or import lists.
         </p>
       </div>
 
@@ -211,7 +345,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
             }`}
           >
             <Plus size={16} />
-            Manual Form
+            Review & Edit Form
           </button>
           <button
             onClick={() => setActiveTab("label")}
@@ -222,7 +356,7 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
             }`}
           >
             <Camera size={16} />
-            Scan Label (AI)
+            Multi-View Scan (AI)
           </button>
           <button
             onClick={() => setActiveTab("import")}
@@ -239,46 +373,50 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
 
         {/* Tab Content Box */}
         <div className="p-6 md:p-8">
-          {/* LABEL SCAN TAB */}
+          {/* MULTI-VIEW LABEL SCAN TAB */}
           {activeTab === "label" && (
-            <div className="space-y-6 text-center max-w-md mx-auto py-4">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]">
-                <Sparkles size={28} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-[var(--shelf-dark)]">Scan Label with Groq AI</h3>
-                <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-                  Upload an image of a food packaging or product label to automatically extract name, quantity, category, and expiry details.
+            <div className="space-y-6 max-w-xl mx-auto py-2">
+              <div className="text-center space-y-2">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--shelf-forest)]/10 text-[var(--shelf-forest)]">
+                  <Sparkles size={28} />
+                </div>
+                <h3 className="text-xl font-bold text-[var(--shelf-dark)]">Multi-Angle Product Scanner</h3>
+                <p className="text-sm text-[var(--shelf-muted)]">
+                  Upload or snap multiple panels of one item (front brand, back nutrition/weight, rim expiry stamp).
+                  ShelfLife synthesizes all views into <strong>one comprehensive product record</strong>.
                 </p>
               </div>
 
-              <div className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => void openCamera()}
-                    disabled={labelLoading || cameraOpen}
-                    className="sl-focus-ring inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <Camera size={17} />
-                    Capture with camera
-                  </button>
+              {/* Angle Action Buttons */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => void openCamera()}
+                  disabled={labelLoading || cameraOpen}
+                  className="sl-focus-ring inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Camera size={17} />
+                  {views.length > 0 ? "Add Camera View" : "Capture with Camera"}
+                </button>
 
-                  <label className="sl-focus-ring inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-5 py-3 text-center text-sm font-semibold text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]">
-                    <Upload size={17} />
-                    Upload image
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLabelFileChange}
-                      disabled={labelLoading}
-                      className="sr-only"
-                    />
-                  </label>
-                </div>
+                <label className="sl-focus-ring inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-5 py-3 text-center text-sm font-semibold text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]">
+                  <Upload size={17} />
+                  {views.length > 0 ? "Add More Photos" : "Upload Photos (1–4)"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileInputChange}
+                    disabled={labelLoading}
+                    className="sr-only"
+                  />
+                </label>
+              </div>
 
-                {cameraOpen && (
-                  <div className="space-y-3 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40 p-3 text-left">
+              {/* PROGRESSIVE CAMERA VIEWFINDER */}
+              {cameraOpen && (
+                <div className="space-y-3 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40 p-3 text-left">
+                  <div className="relative">
                     <video
                       ref={videoRef}
                       autoPlay
@@ -287,49 +425,188 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                       aria-label="Live camera preview"
                       className="aspect-[4/3] w-full rounded-xl bg-black object-cover"
                     />
-                    <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="absolute top-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-xs flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                      Angle {views.length + 1} of 4
+                    </div>
+                  </div>
+
+                  {/* Camera Controls & Hint */}
+                  <div className="p-1 space-y-2">
+                    <p className="text-xs text-[var(--shelf-muted)]">
+                      {views.length === 0 && "Point at front brand panel and tap Snap."}
+                      {views.length === 1 && "Front captured! Now snap the back for ingredients & quantity, or rim for expiry."}
+                      {views.length === 2 && "2 angles captured! Snap rim/cap for stamped expiry date, or finish now."}
+                      {views.length >= 3 && "All key angles covered. Tap 'Extract Product' to synthesize with AI."}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => void captureCameraFrame()}
-                        className="sl-focus-ring inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-[var(--shelf-forest)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                        disabled={views.length >= 4}
+                        className="sl-focus-ring inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
                       >
-                        Capture photo
+                        <Camera size={16} />
+                        Snap Angle ({views.length}/4)
                       </button>
+
+                      {views.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            stopCamera();
+                            void triggerMultiViewExtraction();
+                          }}
+                          disabled={labelLoading}
+                          className="sl-focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                        >
+                          <Sparkles size={16} />
+                          Extract ({views.length})
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={stopCamera}
                         className="sl-focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
                       >
-                        Cancel
+                        Close Camera
                       </button>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {cameraError && (
-                  <p role="alert" aria-live="polite" className="text-sm font-medium text-red-600">
-                    {cameraError}
-                  </p>
-                )}
-
-                <p className="text-center text-xs text-[var(--shelf-muted)]">
-                  Capture a fresh label or choose an existing image. Extracted details will remain editable before saving.
+              {cameraError && (
+                <p role="alert" aria-live="polite" className="text-sm font-medium text-red-600">
+                  {cameraError}
                 </p>
+              )}
 
-                {labelLoading && (
-                  <div className="flex items-center justify-center gap-2 text-sm text-[var(--shelf-forest)] font-medium">
-                    <RefreshCw size={16} className="animate-spin" />
-                    Extracting inventory attributes via AI...
+              {/* SELECTED VIEWS TRAY / STRIP */}
+              {views.length > 0 && (
+                <div className="space-y-3 rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 text-left shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--shelf-dark)]">
+                      <Layers size={16} className="text-[var(--shelf-forest)]" />
+                      <span>Captured Product Angles ({views.length}/4)</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setViews([])}
+                      className="text-xs font-semibold text-red-600 hover:underline flex items-center gap-1"
+                    >
+                      <Trash2 size={12} /> Clear all
+                    </button>
                   </div>
-                )}
 
-                {labelError && (
-                  <p role="alert" aria-live="polite" className="text-sm font-medium text-red-600 flex items-center justify-center gap-1">
-                    <AlertCircle size={15} />
-                    {labelError}
-                  </p>
-                )}
-              </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {views.map((view, idx) => (
+                      <div
+                        key={view.id}
+                        className={`group relative flex flex-col rounded-xl border p-2 transition ${
+                          view.isPrimary
+                            ? "border-[var(--shelf-forest)] bg-[var(--shelf-forest)]/5 shadow-xs"
+                            : "border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 hover:border-[var(--shelf-muted)]"
+                        }`}
+                      >
+                        <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-black/5">
+                          <Image
+                            src={view.previewUrl}
+                            alt={`Product view angle ${idx + 1}`}
+                            fill
+                            unoptimized
+                            className="object-cover"
+                          />
+
+                          {/* Primary indicator badge */}
+                          {view.isPrimary && (
+                            <div className="absolute top-1.5 left-1.5 rounded-md bg-[var(--shelf-forest)] px-1.5 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                              Primary
+                            </div>
+                          )}
+
+                          {/* Delete button */}
+                          <button
+                            type="button"
+                            onClick={() => removeView(view.id)}
+                            aria-label={`Remove view ${idx + 1}`}
+                            className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-red-600 transition"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+
+                        {/* Angle selector & set primary control */}
+                        <div className="mt-2 space-y-1.5">
+                          <select
+                            value={view.angle}
+                            onChange={(e) =>
+                              updateViewAngle(
+                                view.id,
+                                e.target.value as "front" | "back" | "rim" | "side"
+                              )
+                            }
+                            className="w-full rounded-md border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-1.5 py-1 text-[11px] font-medium text-[var(--shelf-dark)] outline-none"
+                          >
+                            <option value="front">{ANGLE_LABELS.front}</option>
+                            <option value="back">{ANGLE_LABELS.back}</option>
+                            <option value="rim">{ANGLE_LABELS.rim}</option>
+                            <option value="side">{ANGLE_LABELS.side}</option>
+                          </select>
+
+                          {!view.isPrimary && (
+                            <button
+                              type="button"
+                              onClick={() => setPrimaryView(view.id)}
+                              className="flex w-full items-center justify-center gap-1 rounded-md border border-[var(--shelf-border)] bg-[var(--shelf-surface)] py-1 text-[10px] font-semibold text-[var(--shelf-muted)] hover:text-[var(--shelf-dark)] hover:border-[var(--shelf-forest)] transition"
+                            >
+                              <Star size={10} /> Make Primary
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Extract Action Button */}
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => void triggerMultiViewExtraction()}
+                      disabled={labelLoading}
+                      className="sl-focus-ring flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {labelLoading ? (
+                        <>
+                          <RefreshCw size={17} className="animate-spin" />
+                          Synthesizing {views.length} Angles with AI...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={17} />
+                          Extract Single Product from {views.length} View{views.length > 1 ? "s" : ""}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {labelLoading && (
+                <div className="flex items-center justify-center gap-2 text-sm text-[var(--shelf-forest)] font-medium">
+                  <RefreshCw size={16} className="animate-spin" />
+                  Merging product identity, net quantity, and stamped dates...
+                </div>
+              )}
+
+              {labelError && (
+                <p role="alert" aria-live="polite" className="text-sm font-medium text-red-600 flex items-center justify-center gap-1">
+                  <AlertCircle size={15} />
+                  {labelError}
+                </p>
+              )}
             </div>
           )}
 
@@ -373,6 +650,106 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
           {/* MANUAL FORM & PRE-FILLED CONFIRMATION */}
           {activeTab === "manual" && (
             <form action={formAction} className="space-y-6">
+              {/* Product Imagery Banner if images were extracted */}
+              {imageUrl && (
+                <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-cream)]/40 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[var(--shelf-forest)] flex items-center gap-1.5">
+                      <CheckCircle2 size={14} /> Associated Product Imagery
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const urlsToDiscard = [imageUrl, ...additionalImageUrls].filter(Boolean);
+                        setImageUrl("");
+                        setAdditionalImageUrls([]);
+                        if (urlsToDiscard.length > 0) {
+                          void discardUploadedImagesAction(urlsToDiscard);
+                        }
+                      }}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Remove imagery
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Primary Image Thumbnail */}
+                    <div className="relative flex items-center gap-3 rounded-xl border border-[var(--shelf-forest)] bg-[var(--shelf-surface)] p-2 shadow-xs">
+                      <div className="relative h-14 w-14 overflow-hidden rounded-lg bg-black/10">
+                        <Image
+                          src={imageUrl}
+                          alt="Primary product thumbnail"
+                          fill
+                          unoptimized
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <span className="inline-block rounded-md bg-[var(--shelf-forest)] px-2 py-0.5 text-[10px] font-bold text-white">
+                          Primary Thumbnail
+                        </span>
+                        <p className="text-xs text-[var(--shelf-muted)] mt-0.5">Front product identity</p>
+                      </div>
+                    </div>
+
+                    {/* Auxiliary Image Thumbnails */}
+                    {additionalImageUrls.map((auxUrl, idx) => (
+                      <div
+                        key={idx}
+                        className="group relative h-14 w-14 overflow-hidden rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-1 hover:border-[var(--shelf-forest)] transition"
+                      >
+                        <Image
+                          src={auxUrl}
+                          alt={`Auxiliary view ${idx + 1}`}
+                          fill
+                          unoptimized
+                          className="object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Swap primary and this auxiliary image
+                            const newAux = [...additionalImageUrls];
+                            newAux[idx] = imageUrl;
+                            setImageUrl(auxUrl);
+                            setAdditionalImageUrls(newAux);
+                          }}
+                          title="Set as primary thumbnail"
+                          className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 text-[9px] font-bold text-white transition"
+                        >
+                          Make Primary
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const removed = auxUrl;
+                            setAdditionalImageUrls((prev) => prev.filter((_, i) => i !== idx));
+                            if (removed && removed !== imageUrl) {
+                              void discardUploadedImagesAction([removed]);
+                            }
+                          }}
+                          title="Remove view"
+                          aria-label={`Remove auxiliary view ${idx + 1}`}
+                          className="absolute top-0.5 right-0.5 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 hover:bg-rose-600 transition"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Hidden Inputs for Stored Images */}
+              <input type="hidden" name="imageUrl" value={imageUrl} />
+              <input
+                type="hidden"
+                name="additionalImageUrls"
+                value={additionalImageUrls.length > 0 ? JSON.stringify(additionalImageUrls) : ""}
+              />
+
               <div className="grid gap-4 md:grid-cols-2 md:gap-6">
                 <div>
                   <label htmlFor="name" className="mb-2 block text-sm font-semibold text-[var(--shelf-dark)]">
@@ -457,7 +834,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                     className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-transparent px-4 py-3 text-sm outline-none transition font-mono"
                   />
                 </div>
-
               </div>
 
               {state.error && (
@@ -469,6 +845,12 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
               <div className="sticky bottom-3 z-10 -mx-1 mt-6 flex justify-end gap-3 border-t border-[var(--shelf-border)] bg-[var(--shelf-surface)]/95 px-1 pt-4 backdrop-blur-sm md:static md:mx-0 md:mt-8 md:bg-transparent md:px-0 md:pt-6 md:backdrop-blur-none">
                 <Link
                   href={inventoryPath}
+                  onClick={() => {
+                    const urlsToDiscard = [imageUrl, ...additionalImageUrls].filter(Boolean);
+                    if (urlsToDiscard.length > 0) {
+                      void discardUploadedImagesAction(urlsToDiscard);
+                    }
+                  }}
                   className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-5 py-3 text-sm font-semibold text-[var(--shelf-dark)] transition hover:bg-[var(--shelf-cream)]"
                 >
                   Cancel

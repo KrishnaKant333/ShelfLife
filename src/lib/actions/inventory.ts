@@ -14,6 +14,10 @@ const optionalExpiryDate = z.preprocess(
 
 import { redirect } from "next/navigation";
 import { planInventoryMerge } from "@/lib/inventory-merge";
+import {
+  parseItemImageUrls,
+  safeDeleteUnreferencedImages,
+} from "@/lib/storage-lifecycle";
 
 const inventorySchema = z.object({
   name: z
@@ -43,8 +47,12 @@ const inventorySchema = z.object({
   imageUrl: z
     .string()
     .trim()
-    .url("Image URL must be valid.")
-    .max(500, "Image URL is too long.")
+    .max(1000, "Image URL is too long.")
+    .optional()
+    .or(z.literal("")),
+  additionalImageUrls: z
+    .string()
+    .trim()
     .optional()
     .or(z.literal("")),
 });
@@ -71,15 +79,28 @@ export async function createInventoryItem(
   _previousState: CreateInventoryState,
   formData: FormData
 ): Promise<CreateInventoryState> {
+  const rawImageUrl = formData.get("imageUrl") as string | null;
+  const rawAdditionalImageUrls = formData.get("additionalImageUrls") as string | null;
+
   const result = inventorySchema.safeParse({
     name: formData.get("name"),
     category: formData.get("category"),
     quantity: formData.get("quantity"),
     unit: formData.get("unit"),
     expiryDate: formData.get("expiryDate"),
+    imageUrl: rawImageUrl,
+    additionalImageUrls: rawAdditionalImageUrls,
   });
 
   if (!result.success) {
+    // If validation fails, clean up any unreferenced uploaded images in this form payload
+    const formUrls = parseItemImageUrls({
+      imageUrl: rawImageUrl,
+      additionalImageUrls: rawAdditionalImageUrls,
+    });
+    if (formUrls.length > 0) {
+      await safeDeleteUnreferencedImages(formUrls, []);
+    }
     return {
       error: result.error.issues[0]?.message ?? "Invalid product data.",
     };
@@ -88,21 +109,41 @@ export async function createInventoryItem(
   const session = await getCurrentUserSession();
 
   if (!session) {
+    const formUrls = parseItemImageUrls({
+      imageUrl: result.data.imageUrl,
+      additionalImageUrls: result.data.additionalImageUrls,
+    });
+    if (formUrls.length > 0) {
+      await safeDeleteUnreferencedImages(formUrls, []);
+    }
     return {
       error: "You must be logged in to manage inventory.",
     };
   }
 
-  await db.orm.public.InventoryItem.create({
-    userId: session.userId,
-    businessId: session.businessId,
-    name: result.data.name,
-    category: result.data.category,
-    quantity: result.data.quantity,
-    unit: result.data.unit,
-    expiryDate: result.data.expiryDate?.toISOString() ?? null,
-    imageUrl: result.data.imageUrl || null,
-  });
+  try {
+    await db.orm.public.InventoryItem.create({
+      userId: session.userId,
+      businessId: session.businessId,
+      name: result.data.name,
+      category: result.data.category,
+      quantity: result.data.quantity,
+      unit: result.data.unit,
+      expiryDate: result.data.expiryDate?.toISOString() ?? null,
+      imageUrl: result.data.imageUrl || null,
+      additionalImageUrls: result.data.additionalImageUrls || null,
+    });
+  } catch (createError) {
+    // Clean up uploaded images if DB insertion fails
+    const formUrls = parseItemImageUrls({
+      imageUrl: result.data.imageUrl,
+      additionalImageUrls: result.data.additionalImageUrls,
+    });
+    if (formUrls.length > 0) {
+      await safeDeleteUnreferencedImages(formUrls, []);
+    }
+    throw createError;
+  }
 
   if (session.accountType === "business") {
     revalidatePath("/business/dashboard");
@@ -128,6 +169,8 @@ export async function updateInventoryItem(
     quantity: formData.get("quantity"),
     unit: formData.get("unit"),
     expiryDate: formData.get("expiryDate"),
+    imageUrl: formData.get("imageUrl"),
+    additionalImageUrls: formData.get("additionalImageUrls"),
   });
 
   if (!result.success) {
@@ -150,15 +193,49 @@ export async function updateInventoryItem(
     ? { id, businessId: session.businessId }
     : { id, userId: session.userId };
 
+  const existingItem = await db.orm.public.InventoryItem.first(filter);
+  const oldUrls = existingItem ? parseItemImageUrls(existingItem) : [];
+
+  const updateData: {
+    name: string;
+    category: string;
+    quantity: number;
+    unit: string;
+    expiryDate: string | null;
+    imageUrl?: string | null;
+    additionalImageUrls?: string | null;
+  } = {
+    name: result.data.name,
+    category: result.data.category,
+    quantity: result.data.quantity,
+    unit: result.data.unit,
+    expiryDate: result.data.expiryDate?.toISOString() ?? null,
+  };
+
+  // Only update image columns if explicitly provided in the form payload,
+  // preventing accidental erasure of existing product imagery during text edits.
+  if (formData.has("imageUrl")) {
+    updateData.imageUrl = result.data.imageUrl || null;
+  }
+  if (formData.has("additionalImageUrls")) {
+    updateData.additionalImageUrls = result.data.additionalImageUrls || null;
+  }
+
   await db.orm.public.InventoryItem
     .where(filter)
-    .update({
-      name: result.data.name,
-      category: result.data.category,
-      quantity: result.data.quantity,
-      unit: result.data.unit,
-      expiryDate: result.data.expiryDate?.toISOString() ?? null,
+    .update(updateData);
+
+  // If images were updated, clean up any removed unreferenced images
+  if (formData.has("imageUrl") || formData.has("additionalImageUrls")) {
+    const updatedUrls = parseItemImageUrls({
+      imageUrl: updateData.imageUrl !== undefined ? updateData.imageUrl : existingItem?.imageUrl,
+      additionalImageUrls: updateData.additionalImageUrls !== undefined ? updateData.additionalImageUrls : existingItem?.additionalImageUrls,
     });
+    const removedUrls = oldUrls.filter((u) => !updatedUrls.includes(u));
+    if (removedUrls.length > 0) {
+      await safeDeleteUnreferencedImages(removedUrls, [id]);
+    }
+  }
 
   if (session.accountType === "business") {
     revalidatePath("/business/dashboard");
@@ -186,9 +263,18 @@ export async function deleteInventoryItem(
     ? { id, businessId: session.businessId }
     : { id, userId: session.userId };
 
+  const existingItem = await db.orm.public.InventoryItem.first(filter);
+  const candidateUrls = existingItem ? parseItemImageUrls(existingItem) : [];
+
+  // Database deletion is authoritative and runs first
   await db.orm.public.InventoryItem
     .where(filter)
     .delete();
+
+  // Storage cleanup of unreferenced owned images follows
+  if (candidateUrls.length > 0) {
+    await safeDeleteUnreferencedImages(candidateUrls, [id]);
+  }
 
   if (session.accountType === "business") {
     revalidatePath("/business/dashboard");
@@ -274,7 +360,10 @@ export async function bulkDeleteAction(
       return { success: false, error: "Unauthorized" };
     }
 
-    // Verify ownership of every item and delete
+    const candidateUrls: string[] = [];
+    const deletedIds: number[] = [];
+
+    // Verify ownership of every item and collect candidate URLs
     for (const id of ids) {
       const dbItem = await db.orm.public.InventoryItem.first({ id });
       if (!dbItem) continue;
@@ -289,7 +378,14 @@ export async function bulkDeleteAction(
         }
       }
 
+      candidateUrls.push(...parseItemImageUrls(dbItem));
+      deletedIds.push(id);
       await db.orm.public.InventoryItem.where({ id }).delete();
+    }
+
+    // Storage cleanup of unreferenced owned images
+    if (candidateUrls.length > 0) {
+      await safeDeleteUnreferencedImages(candidateUrls, deletedIds);
     }
 
     if (session.accountType === "business") {
@@ -324,19 +420,19 @@ export async function discardExpiredItemsAction(): Promise<{
       ? { businessId: session.businessId }
       : { userId: session.userId };
     const items = await db.orm.public.InventoryItem.where(filter).all();
-    const expiredIds = items
-      .filter((item) =>
-        getInventoryStatus(
-          item.quantity,
-          typeof item.expiryDate === "string"
-            ? item.expiryDate
-            : item.expiryDate
-              ? new Date(item.expiryDate).toISOString()
-              : null,
-          item.unit,
-        ) === "Expired"
-      )
-      .map((item) => item.id);
+    const expiredItems = items.filter((item) =>
+      getInventoryStatus(
+        item.quantity,
+        typeof item.expiryDate === "string"
+          ? item.expiryDate
+          : item.expiryDate
+            ? new Date(item.expiryDate).toISOString()
+            : null,
+        item.unit,
+      ) === "Expired"
+    );
+    const expiredIds = expiredItems.map((item) => item.id);
+    const candidateUrls = expiredItems.flatMap(parseItemImageUrls);
 
     await Promise.all(
       expiredIds.map((id) =>
@@ -358,6 +454,11 @@ export async function discardExpiredItemsAction(): Promise<{
       ),
     );
 
+    // Storage cleanup of unreferenced owned images
+    if (candidateUrls.length > 0) {
+      await safeDeleteUnreferencedImages(candidateUrls, expiredIds);
+    }
+
     if (session.accountType === "business") {
       revalidatePath("/business/dashboard");
       revalidatePath("/business/dashboard/inventory");
@@ -373,5 +474,56 @@ export async function discardExpiredItemsAction(): Promise<{
   } catch (error) {
     console.error("Discard expired items failed:", error);
     return { success: false, error: "Failed to discard expired items." };
+  }
+}
+
+/**
+ * Removes an auxiliary image from an existing inventory item.
+ * Cleans up the image from storage if unreferenced by any other product.
+ */
+export async function removeAuxiliaryImageAction(
+  itemId: number,
+  imageUrlToRemove: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const filter =
+      session.accountType === "business"
+        ? { id: itemId, businessId: session.businessId }
+        : { id: itemId, userId: session.userId };
+
+    const item = await db.orm.public.InventoryItem.first(filter);
+    if (!item) {
+      return { success: false, error: "Product not found." };
+    }
+
+    const currentAux = parseItemImageUrls({ additionalImageUrls: item.additionalImageUrls });
+    const targetUrl = imageUrlToRemove.trim();
+    const updatedAux = currentAux.filter((u) => u !== targetUrl);
+
+    await db.orm.public.InventoryItem.where(filter).update({
+      additionalImageUrls: updatedAux.length > 0 ? JSON.stringify(updatedAux) : null,
+    });
+
+    // Clean up from storage if ShelfLife-owned and unreferenced
+    await safeDeleteUnreferencedImages([targetUrl], [itemId]);
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to remove auxiliary image:", error);
+    return { success: false, error: "Failed to remove image." };
   }
 }

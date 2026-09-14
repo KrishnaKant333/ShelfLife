@@ -61,12 +61,13 @@ model InventoryItem {
   business   Business?  @relation(fields: [businessId], references: [id])
   name       String
   category   String
-  imageUrl   String?
-  quantity   Float
-  unit       String
-  expiryDate TimestamptzString?
-  createdAt  TimestamptzString          @default(now())
-  updatedAt  temporal.updatedAtString()
+  imageUrl            String?
+  additionalImageUrls String?
+  quantity            Float
+  unit                String
+  expiryDate          TimestamptzString?
+  createdAt           TimestamptzString          @default(now())
+  updatedAt           temporal.updatedAtString()
 }
 
 model InventoryConsumption {

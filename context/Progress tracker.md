@@ -69,13 +69,64 @@
 
 ---
 
+## 🧭 Active Roadmap: Real-World Usage Improvements (P0–P3)
+
+- [x] **P0 — Fractional Quantities & Database Parity** (🟢 **100% Completed & Verified**)
+  - [x] Unit categorization (`isIntegerUnit`) enforcing continuous decimals vs discrete integers.
+  - [x] Replaced `parseInt` and hardcoded `min="1"` across Quick Consume modal, Product Drawer, inline consume dialog, and manual/invoice add forms.
+  - [x] Rounding sanitize to 4 decimal places (`Math.round(val * 10000) / 10000`) preventing floating-point artifacts.
+  - [x] Checked-in versioned Prisma Next migration `20260913T1748_alter_quantity_used_to_float8`.
+  - [x] Successfully applied migration to production database; verified zero schema drift and 0 row loss.
+- [x] **P1-A — Multi-View Product Understanding** (🟢 **100% Completed & Verified**)
+  - [x] Multi-image intake: file dropzone (1–4 images) and progressive camera viewfinder with continuous snapping and bottom thumbnail tray.
+  - [x] Groq AI vision synthesis (`qwen/qwen3.6-27b`) merging front (brand/category), back (quantity/nutrition), and rim/cap (stamped expiry date) into **one single inventory item**.
+  - [x] Conflict resolution & confidence weighting: stamped expiry and net content declarations outrank ambiguous marketing claims.
+  - [x] Image persistence: migrated to Vercel Blob (`@vercel/blob`) persistent object storage in production returning permanent global CDN HTTPS URLs, with transparent local filesystem fallback (`public/uploads/products/`) for offline development.
+  - [x] Removed corrupt base64 fallbacks upon storage failure; verified image preservation during product text edits.
+  - [x] Database schema: added `additionalImageUrls text NULL` to `InventoryItem` with checked-in versioned migration `20260914T0719_add_additional_image_urls` applied to dev database.
+  - [x] Confirmation UX: interactive Review & Edit screen with Product Imagery summary banner (shows primary thumbnail, auxiliary angles, swap/remove controls).
+  - [x] Product Detail Digital Dossier: interactive multi-view thumbnail carousel enabling inspection of packaging panels, nutrition, and expiry stamps.
+  - [x] Consumer & Business parity: both `/dashboard/inventory/new` and `/business/dashboard/inventory/new` support multi-view photo intake and persistence.
+  - [x] Automated test suite: 23/23 assertions passed (`scratch/test-multi-view.ts`). Typecheck, lint, and production build 100% clean.
+- [x] **P1-A.1 — Product Image Storage Lifecycle & Orphan Cleanup** (🟢 **100% Completed & Verified**)
+  - [x] Storage deletion abstraction in `src/lib/storage.ts`: `deleteProductImage`, `deleteProductImages`, and `isShelfLifeOwnedImage`.
+  - [x] Dual-backend deletion dispatch: `@vercel/blob` `del()` when token configured; path-traversal-guarded `fs.unlink()` for local development.
+  - [x] External image protection: Open Food Facts and external CDN assets strictly shielded from storage deletion operations.
+  - [x] Reference-aware shared asset protection (`src/lib/storage-lifecycle.ts`): queries existing products to prevent deleting images shared across multiple records.
+  - [x] Product deletion cleanup: `deleteInventoryItem`, `deleteBusinessInventoryItem`, `bulkDeleteAction`, and `discardExpiredItemsAction` authoritatively delete DB records first, then clean up unreferenced owned images.
+  - [x] Pre-confirmation & Review cleanup: `discardUploadedImagesAction()` cleans up unconfirmed assets on "Remove imagery", single auxiliary removal, "Cancel", or re-scanning.
+  - [x] AI inference & storage failure cleanup: `extractMultiViewLabelAction()` cleans up saved assets in try/catch upon Groq/JSON parsing failure.
+  - [x] Product creation failure cleanup: `createInventoryItem` and `createBusinessInventoryItem` prune unreferenced uploaded images if validation or DB transaction fails.
+  - [x] Auxiliary image removal: `removeAuxiliaryImageAction()` safely updates database references and deletes unreferenced storage objects.
+  - [x] Deliberate zero-quantity decision: images deliberately preserved when quantity reaches zero for consumption history, activity audit trails, and restocking.
+  - [x] Automated test suite: 29/29 assertions passed across local filesystem and live Vercel Blob object storage.
+- [ ] **P1-B — Intelligent Missing Expiry Hierarchy (Spec 03)** (🟡 **Queued / Next Task**)
+  - 5-tier freshness cascade (Manufacturer -> Best Before -> Mfg+ShelfLife -> AI Category Estimate -> Unknown).
+  - Explicit visual `Estimated ✦` badge with full manual override capability.
+  - Anti-confusion date filter preventing billing/delivery timestamps from becoming product expiration dates.
+- [ ] **P2-A — Mobile Inventory Default List View** (🟡 **Queued / Spec Ready**)
+  - Viewport-aware layout defaulting to high-density 68px touch rows on mobile screens (<768px).
+  - Persistent Grid ↔ List switcher with `localStorage` preference memory.
+  - Displays thumbnail, title, remaining quantity, and countdown status chip above the fold for 7–8 items.
+- [ ] **P2-B — Contextual Product Dossier Quick Actions** (🟡 **Queued / Spec Ready**)
+  - Focused slide-up sheets replacing generic redirects: Add More Stock (with live balance math), Move Category (with inline creator), Item-Specific Expiry Reminder (1d/2d/3d/1w), and Reason-Aware Safe Deletion.
+- [ ] **P3 — Real Product Thumbnails & Image Priority Hierarchy** (🟡 **Queued / Spec Ready**)
+  - Authoritative 6-tier image priority cascade.
+  - Scan label image retention as persistent product thumbnail.
+  - Open Food Facts ODbL integration and resilient category SVG glyph fallback component.
+- [ ] **Cross-Cutting QA & Regression Suite** (🟡 **Queued / Spec Ready**)
+  - 8-part real-world usage validation matrix covering decimal math, volumetric cooking deductions, and Consumer/Business boundaries.
+
+---
+
 ## 🛡️ Core Architectural Principles
 
 - Server-side session ownership is authoritative.
 - Business workspaces strictly omit recipe functionality; recipes are exclusive to consumer households.
 - Deterministic expiry, quantity normalization, and stock status override AI recommendations.
-- Missing expiry remains explicitly unknown (`Expiry not available`).
+- Missing expiry remains explicitly unknown (`Expiry not available`) or visually badged as `Estimated`.
 - Barcode scanning is deferred and hidden from active entry flows.
 - Marketing cinematic video background remains strictly isolated to marketing (`(marketing)/layout.tsx`).
 - Landing page theme toggle remains removed.
 - Authenticated app preserves dynamic Light and Dark mode options.
+
