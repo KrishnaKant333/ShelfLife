@@ -325,3 +325,181 @@ export function getCulinaryVolumeEquivalent(quantity: number, unit: string): str
   const cleanMl = Math.round(ml * 100) / 100;
   return `≈${cleanMl} ml`;
 }
+
+export type CulinaryProductContext = {
+  name?: string;
+  category?: string;
+};
+
+export type CulinaryConversionResult = {
+  value: number;
+  isEstimated: boolean;
+};
+
+/**
+ * Determines an approximate culinary weight-to-volume ratio (g/ml)
+ * based on intuitive culinary product classification without scientific terminology.
+ * Standard culinary kitchen baselines:
+ * - Syrups / Honey / Molasses: ~1.4 g/ml (1 tbsp ≈ 21 g)
+ * - Heavy Pastes / Nut Butters / Spreads: ~1.15 g/ml (1 tbsp ≈ 17 g)
+ * - Oils and fats: ~0.92 g/ml (1 tbsp ≈ 14 g)
+ * - Flours and light powders: ~0.55 g/ml (1 tbsp ≈ 8 g, 1 cup ≈ 130 g)
+ * - Sugars: ~0.85 g/ml (1 tbsp ≈ 13 g, 1 cup ≈ 200 g)
+ * - Condiments, Sauces, Chutneys, Dairy, Liquids, General food: 1.0 g/ml (1 tbsp ≈ 15 g)
+ */
+export function getCulinaryVolumeToWeightRatio(context?: CulinaryProductContext): number {
+  if (!context) return 1.0;
+  const name = (context.name || "").toLowerCase();
+  const category = (context.category || "").toLowerCase();
+
+  // Dense Syrups, Honey, Molasses (~1.4 g/ml)
+  if (
+    name.includes("honey") ||
+    name.includes("molasses") ||
+    name.includes("syrup") ||
+    name.includes("agave") ||
+    name.includes("condensed milk")
+  ) {
+    return 1.4;
+  }
+
+  // Heavy Pastes, Nut Butters, Spreads (~1.15 g/ml)
+  if (
+    name.includes("peanut butter") ||
+    name.includes("almond butter") ||
+    name.includes("tahini") ||
+    name.includes("nutella") ||
+    name.includes("tomato paste") ||
+    name.includes("paste") ||
+    name.includes("mayo") ||
+    name.includes("mayonnaise")
+  ) {
+    return 1.15;
+  }
+
+  // Oils and liquid fats (~0.92 g/ml)
+  if (
+    name.includes("oil") ||
+    name.includes("ghee") ||
+    name.includes("butter") ||
+    category.includes("oil") ||
+    category.includes("fat")
+  ) {
+    return 0.92;
+  }
+
+  // Flours and light powders (~0.55 g/ml)
+  if (
+    name.includes("flour") ||
+    name.includes("cocoa") ||
+    name.includes("starch") ||
+    name.includes("baking powder") ||
+    name.includes("baking soda") ||
+    name.includes("cornstarch")
+  ) {
+    return 0.55;
+  }
+
+  // Sugars (~0.85 g/ml)
+  if (name.includes("sugar")) {
+    return 0.85;
+  }
+
+  // Baseline standard for sauces, chutneys, condiments, liquids, dairy, general food:
+  // 1 ml = 1 g (1 tbsp = 15 g, 1 tsp = 5 g, 1 cup = 240 g)
+  return 1.0;
+}
+
+/**
+ * Intelligent culinary unit conversion.
+ * - If units are in the same category (volume<->volume, weight<->weight, count<->count),
+ *   delegates to exact convertQuantity (isEstimated: false).
+ * - If converting between volume and weight, uses product/ingredient context
+ *   to determine an appropriate culinary equivalent (isEstimated: true).
+ * - Returns null if units are genuinely incompatible (e.g. pieces vs weight/volume).
+ */
+export function convertCulinaryQuantity(
+  quantity: number,
+  fromUnit: string,
+  toUnit: string,
+  context?: CulinaryProductContext
+): CulinaryConversionResult | null {
+  if (!Number.isFinite(quantity) || quantity <= 0) return null;
+  const f = fromUnit.toLowerCase().trim();
+  const t = toUnit.toLowerCase().trim();
+  if (f === t) {
+    return { value: quantity, isEstimated: false };
+  }
+
+  // 1. Check exact same-category conversion first
+  const exact = convertQuantity(quantity, f, t);
+  if (exact !== null) {
+    return { value: exact, isEstimated: false };
+  }
+
+  const catFrom = getUnitCategory(f);
+  const catTo = getUnitCategory(t);
+
+  // 2. Volume to Weight
+  if (catFrom === "volume" && catTo === "weight") {
+    const ml = convertQuantity(quantity, f, "ml");
+    if (ml === null) return null;
+    const ratio = getCulinaryVolumeToWeightRatio(context);
+    const grams = ml * ratio;
+    const targetVal = convertQuantity(grams, "g", t);
+    if (targetVal === null) return null;
+    return { value: targetVal, isEstimated: true };
+  }
+
+  // 3. Weight to Volume
+  if (catFrom === "weight" && catTo === "volume") {
+    const grams = convertQuantity(quantity, f, "g");
+    if (grams === null) return null;
+    const ratio = getCulinaryVolumeToWeightRatio(context);
+    const ml = grams / ratio;
+    const targetVal = convertQuantity(ml, "ml", t);
+    if (targetVal === null) return null;
+    return { value: targetVal, isEstimated: true };
+  }
+
+  // Incompatible (e.g. count vs weight/volume)
+  return null;
+}
+
+/**
+ * Generates user-friendly approximate equivalent string for culinary displays.
+ * Example: 1, "tbsp", "g", { name: "Schezwan Chutney" } -> "≈15 g"
+ * Example: 1, "tbsp", "L", { name: "Olive Oil" } -> "≈15 ml"
+ */
+export function getCulinaryEquivalentDisplay(
+  quantity: number,
+  fromUnit: string,
+  targetPantryUnit: string,
+  context?: CulinaryProductContext
+): string | null {
+  if (!Number.isFinite(quantity) || quantity <= 0) return null;
+  const f = fromUnit.toLowerCase().trim();
+  const t = targetPantryUnit.toLowerCase().trim();
+
+  // If already the exact same unit, no secondary equivalent needed
+  if (f === t) return null;
+
+  const conv = convertCulinaryQuantity(quantity, f, t, context);
+  if (!conv) {
+    // If culinary conversion to pantry unit is not possible, but fromUnit is a volume unit,
+    // fallback to standard ml volume equivalent if pantry isn't volume
+    if (isCulinaryVolumeUnit(f)) {
+      return getCulinaryVolumeEquivalent(quantity, f);
+    }
+    return null;
+  }
+
+  // If both are volume units (e.g. tbsp and L), display as ml equivalent for user clarity (e.g. "≈15 ml")
+  if (getUnitCategory(f) === "volume" && getUnitCategory(t) === "volume") {
+    return getCulinaryVolumeEquivalent(quantity, f);
+  }
+
+  // Otherwise, display equivalent in target pantry unit (e.g. "≈15 g")
+  const rounded = conv.value >= 10 ? Math.round(conv.value) : Math.round(conv.value * 10) / 10;
+  return `≈${rounded} ${targetPantryUnit}`;
+}

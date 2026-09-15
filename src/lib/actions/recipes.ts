@@ -194,7 +194,7 @@ Generate 2 to 4 recipes.
    - "expiring_soon": Item is in inventory and expires in 3 days or fewer.
    - "pantry_item": Common household staple (salt, pepper, oil, spices, water, basic pasta/rice) NOT in inventory. Use sparingly.
 4. For each ingredient, if it matches an inventory item, return its exact "itemId". If it's a "pantry_item", set "itemId" to null.
-5. Do NOT invent quantities or items.
+5. Do NOT invent quantities or items. Use culinary sensible measurements (e.g. 1 tbsp, 1 tsp, 2 cups, or appropriate grams/pieces) suited for the recipe.
 
 Return ONLY a JSON object matching this schema:
 {

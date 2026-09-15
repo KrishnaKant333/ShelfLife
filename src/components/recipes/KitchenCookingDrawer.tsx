@@ -16,11 +16,10 @@ import {
 } from "lucide-react";
 import type { Recipe } from "@/lib/actions/recipes";
 import {
-  convertQuantity,
+  convertCulinaryQuantity,
+  getCulinaryEquivalentDisplay,
   isIntegerUnit,
   parseRecipeQuantityAndUnit,
-  isCulinaryVolumeUnit,
-  getCulinaryVolumeEquivalent,
 } from "@/lib/normalization";
 
 type InventoryItem = {
@@ -80,26 +79,34 @@ export function KitchenCookingDrawer({
       let defaultVal = isIntegerUnit(matchedItem.unit)
         ? Math.min(matchedItem.quantity, 1)
         : Math.min(matchedItem.quantity, 1);
+      let error: string | undefined = undefined;
 
       if (parsed) {
-        // Check if recipe unit is compatible with pantry unit
-        const inPantry = convertQuantity(parsed.quantity, parsed.unit, matchedItem.unit);
-        if (inPantry !== null) {
-          // Compatible: prefer displaying in recipe's natural unit
+        // First check culinary conversion (exact or intelligent culinary equivalent)
+        const conversion = convertCulinaryQuantity(
+          parsed.quantity,
+          parsed.unit,
+          matchedItem.unit,
+          { name: matchedItem.name, category: matchedItem.category }
+        );
+
+        if (conversion !== null) {
+          // Compatible: prefer displaying in recipe's natural unit so user sees e.g. "1 tbsp"
           activeUnit = parsed.unit;
           defaultVal = parsed.quantity;
         } else {
-          // If incompatible or no unit, use pantry unit with parsed quantity capped
+          // Genuinely incompatible (e.g. volume vs count/pieces):
+          // Never silently assume 1 pantry unit. Clearly signal that equivalent is unavailable.
           activeUnit = matchedItem.unit;
-          if (parsed.quantity > 0 && parsed.quantity <= matchedItem.quantity) {
-            defaultVal = parsed.quantity;
-          }
+          defaultVal = 0;
+          error = `Equivalent unavailable — specify ${matchedItem.unit} to deduct`;
         }
       }
 
       initialStates[ing.itemId] = {
         activeUnit,
-        inputValue: String(defaultVal),
+        inputValue: defaultVal > 0 ? String(defaultVal) : "",
+        error,
       };
     });
 
@@ -170,10 +177,15 @@ export function KitchenCookingDrawer({
           if (isInt && !Number.isInteger(parsed)) {
             error = "Whole number required";
           } else {
-            const inPantry = convertQuantity(parsed, current.activeUnit, matchedItem.unit);
-            if (inPantry === null) {
-              error = "Incompatible unit";
-            } else if (inPantry > matchedItem.quantity) {
+            const conversion = convertCulinaryQuantity(
+              parsed,
+              current.activeUnit,
+              matchedItem.unit,
+              { name: matchedItem.name, category: matchedItem.category }
+            );
+            if (conversion === null) {
+              error = `Incompatible unit conversion to ${matchedItem.unit}`;
+            } else if (conversion.value > matchedItem.quantity) {
               error = `Max ${matchedItem.quantity} ${matchedItem.unit}`;
             }
           }
@@ -198,11 +210,13 @@ export function KitchenCookingDrawer({
       if (!current || !matchedItem) return prev;
 
       // Determine target unit
+      const parsedRecipe = parseRecipeQuantityAndUnit(
+        recipe.ingredients.find((i) => i.itemId === itemId)?.quantityUsed || ""
+      );
+      const recipeUnit = parsedRecipe?.unit || matchedItem.unit;
       const targetUnit =
         current.activeUnit.toLowerCase() === matchedItem.unit.toLowerCase()
-          ? parseRecipeQuantityAndUnit(
-              recipe.ingredients.find((i) => i.itemId === itemId)?.quantityUsed || ""
-            )?.unit || matchedItem.unit
+          ? recipeUnit
           : matchedItem.unit;
 
       const currentNum = parseFloat(current.inputValue);
@@ -212,14 +226,24 @@ export function KitchenCookingDrawer({
           [itemId]: {
             ...current,
             activeUnit: targetUnit,
+            error: undefined,
           },
         };
       }
 
-      const converted = convertQuantity(currentNum, current.activeUnit, targetUnit);
-      if (converted === null) return prev;
+      const conversion = convertCulinaryQuantity(
+        currentNum,
+        current.activeUnit,
+        targetUnit,
+        { name: matchedItem.name, category: matchedItem.category }
+      );
+      if (conversion === null) return prev;
 
-      const cleanConverted = Math.round(converted * 10000) / 10000;
+      const cleanConverted =
+        conversion.value >= 10
+          ? Math.round(conversion.value * 10) / 10
+          : Math.round(conversion.value * 100) / 100;
+
       return {
         ...prev,
         [itemId]: {
@@ -263,17 +287,22 @@ export function KitchenCookingDrawer({
         continue;
       }
 
-      const inPantry = convertQuantity(parsed, state.activeUnit, matchedItem.unit);
-      if (inPantry === null) {
+      const conversion = convertCulinaryQuantity(
+        parsed,
+        state.activeUnit,
+        matchedItem.unit,
+        { name: matchedItem.name, category: matchedItem.category }
+      );
+      if (conversion === null) {
         hasError = true;
         setUsageStates((prev) => ({
           ...prev,
-          [itemId]: { ...prev[itemId], error: "Incompatible unit conversion" },
+          [itemId]: { ...prev[itemId], error: `Incompatible unit conversion to ${matchedItem.unit}` },
         }));
         continue;
       }
 
-      if (inPantry > matchedItem.quantity) {
+      if (conversion.value > matchedItem.quantity) {
         hasError = true;
         setUsageStates((prev) => ({
           ...prev,
@@ -285,7 +314,7 @@ export function KitchenCookingDrawer({
         continue;
       }
 
-      const cleanQty = Math.round(inPantry * 10000) / 10000;
+      const cleanQty = Math.round(conversion.value * 10000) / 10000;
       itemsToDeduct.push({
         itemId,
         quantityUsed: cleanQty,
@@ -429,6 +458,7 @@ export function KitchenCookingDrawer({
 
                 // Check if unit conversion to pantry unit is active
                 let equivalentInPantry: number | null = null;
+                let isEstimatedInPantry = false;
                 let culinaryEquivalent: string | null = null;
                 let canToggleUnit = false;
                 let otherUnit = "";
@@ -436,21 +466,36 @@ export function KitchenCookingDrawer({
                 if (matchedItem && usageState) {
                   const numVal = parseFloat(usageState.inputValue);
                   if (!isNaN(numVal) && numVal > 0) {
-                    const converted = convertQuantity(
+                    const conversion = convertCulinaryQuantity(
                       numVal,
                       usageState.activeUnit,
-                      matchedItem.unit
+                      matchedItem.unit,
+                      { name: matchedItem.name, category: matchedItem.category }
                     );
-                    if (converted !== null) {
-                      equivalentInPantry = Math.round(converted * 10000) / 10000;
+                    if (conversion !== null) {
+                      equivalentInPantry =
+                        conversion.value >= 10
+                          ? Math.round(conversion.value * 10) / 10
+                          : Math.round(conversion.value * 100) / 100;
+                      isEstimatedInPantry = conversion.isEstimated;
                     }
 
-                    culinaryEquivalent = getCulinaryVolumeEquivalent(numVal, usageState.activeUnit);
+                    culinaryEquivalent = getCulinaryEquivalentDisplay(
+                      numVal,
+                      usageState.activeUnit,
+                      matchedItem.unit,
+                      { name: matchedItem.name, category: matchedItem.category }
+                    );
                   }
 
                   const parsedRecipe = parseRecipeQuantityAndUnit(ing.quantityUsed);
                   if (parsedRecipe && parsedRecipe.unit) {
-                    const testConv = convertQuantity(1, parsedRecipe.unit, matchedItem.unit);
+                    const testConv = convertCulinaryQuantity(
+                      1,
+                      parsedRecipe.unit,
+                      matchedItem.unit,
+                      { name: matchedItem.name, category: matchedItem.category }
+                    );
                     if (testConv !== null && parsedRecipe.unit.toLowerCase() !== matchedItem.unit.toLowerCase()) {
                       canToggleUnit = true;
                       otherUnit =
@@ -561,6 +606,7 @@ export function KitchenCookingDrawer({
                               onChange={(e) =>
                                 handleQuantityChange(ing.itemId!, e.target.value)
                               }
+                              placeholder={usageState.error ? "Qty" : undefined}
                               className="w-16 text-center font-mono text-xs font-bold text-[var(--shelf-dark)] bg-transparent outline-hidden"
                               aria-label={`Quantity of ${ing.name} to deduct`}
                             />
@@ -580,11 +626,11 @@ export function KitchenCookingDrawer({
                               </span>
                             )}
 
-                            {/* Dual representation for culinary volume units e.g. "· ≈30 ml" */}
+                            {/* Dual representation for culinary volume/weight units e.g. "· ≈15 g" or "· ≈15 ml" */}
                             {culinaryEquivalent && (
                               <span
                                 className="text-[10px] font-mono font-semibold text-[var(--shelf-forest)] border-l border-[var(--shelf-border)] pl-1.5"
-                                title="Normalized culinary volume equivalent"
+                                title="Approximate equivalent"
                               >
                                 · {culinaryEquivalent}
                               </span>
@@ -600,7 +646,7 @@ export function KitchenCookingDrawer({
                               matchedItem.unit.toLowerCase() &&
                             equivalentInPantry !== null ? (
                             <span className="text-[10px] font-mono text-[var(--shelf-muted)]">
-                              (= {equivalentInPantry} {matchedItem.unit} from {matchedItem.quantity} {matchedItem.unit} stock)
+                              (={isEstimatedInPantry ? " ≈" : " "}{equivalentInPantry} {matchedItem.unit} from {matchedItem.quantity} {matchedItem.unit} stock)
                             </span>
                           ) : (
                             <span className="text-[10px] font-mono text-[var(--shelf-muted)]">

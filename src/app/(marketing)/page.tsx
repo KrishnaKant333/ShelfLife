@@ -4,7 +4,7 @@ import BusinessValue from "@/components/BusinessValue";
 import HowItWorks from "@/components/HowItWorks";
 import AIApproach from "@/components/AIApproach";
 import WasteReduction from "@/components/WasteReduction";
-import Pricing from "@/components/Pricing";
+import PricingSection from "@/components/PricingSection";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
@@ -21,7 +21,7 @@ export default function Home() {
         <HowItWorks />
         <AIApproach />
         <WasteReduction />
-        <Pricing />
+        <PricingSection />
         <FinalCTA />
         <Footer />
         <BackToTop />
