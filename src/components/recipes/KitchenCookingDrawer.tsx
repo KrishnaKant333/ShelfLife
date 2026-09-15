@@ -91,9 +91,16 @@ export function KitchenCookingDrawer({
         );
 
         if (conversion !== null) {
-          // Compatible: prefer displaying in recipe's natural unit so user sees e.g. "1 tbsp"
-          activeUnit = parsed.unit;
-          defaultVal = parsed.quantity;
+          if (conversion.value > matchedItem.quantity) {
+            // Upper boundary: if estimated/requested amount exceeds present stock,
+            // populate directly with the present stock in the pantry unit so the user doesn't have to manually type it.
+            activeUnit = matchedItem.unit;
+            defaultVal = matchedItem.quantity;
+          } else {
+            // Compatible and stock is sufficient: display in recipe's natural unit so user sees e.g. "1 tbsp"
+            activeUnit = parsed.unit;
+            defaultVal = parsed.quantity;
+          }
         } else {
           // Genuinely incompatible (e.g. volume vs count/pieces):
           // Never silently assume 1 pantry unit. Clearly signal that equivalent is unavailable.
@@ -101,6 +108,10 @@ export function KitchenCookingDrawer({
           defaultVal = 0;
           error = `Equivalent unavailable — specify ${matchedItem.unit} to deduct`;
         }
+      } else {
+        // No parseable quantity/unit: cap default at available stock
+        activeUnit = matchedItem.unit;
+        defaultVal = Math.min(matchedItem.quantity, 1);
       }
 
       initialStates[ing.itemId] = {
@@ -239,10 +250,37 @@ export function KitchenCookingDrawer({
       );
       if (conversion === null) return prev;
 
-      const cleanConverted =
+      let cleanConverted =
         conversion.value >= 10
           ? Math.round(conversion.value * 10) / 10
           : Math.round(conversion.value * 100) / 100;
+
+      // Ensure converted value does not exceed available stock
+      const inPantry = convertCulinaryQuantity(
+        cleanConverted,
+        targetUnit,
+        matchedItem.unit,
+        { name: matchedItem.name, category: matchedItem.category }
+      );
+
+      if (inPantry && inPantry.value > matchedItem.quantity) {
+        if (targetUnit.toLowerCase() === matchedItem.unit.toLowerCase()) {
+          cleanConverted = matchedItem.quantity;
+        } else {
+          const maxInTarget = convertCulinaryQuantity(
+            matchedItem.quantity,
+            matchedItem.unit,
+            targetUnit,
+            { name: matchedItem.name, category: matchedItem.category }
+          );
+          if (maxInTarget) {
+            cleanConverted =
+              maxInTarget.value >= 10
+                ? Math.round(maxInTarget.value * 10) / 10
+                : Math.round(maxInTarget.value * 100) / 100;
+          }
+        }
+      }
 
       return {
         ...prev,
@@ -639,9 +677,23 @@ export function KitchenCookingDrawer({
 
                           {/* Inline Conversion / Error Notice */}
                           {usageState.error ? (
-                            <span className="text-[10px] font-mono text-[var(--shelf-terracotta)] font-semibold">
-                              {usageState.error}
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUsageStates((prev) => ({
+                                  ...prev,
+                                  [ing.itemId!]: {
+                                    activeUnit: matchedItem.unit,
+                                    inputValue: String(matchedItem.quantity),
+                                    error: undefined,
+                                  },
+                                }));
+                              }}
+                              title="Click to use available stock"
+                              className="text-[10px] font-mono text-[var(--shelf-terracotta)] hover:underline font-semibold cursor-pointer text-right"
+                            >
+                              {usageState.error} · Use {matchedItem.quantity} {matchedItem.unit}
+                            </button>
                           ) : usageState.activeUnit.toLowerCase() !==
                               matchedItem.unit.toLowerCase() &&
                             equivalentInPantry !== null ? (
