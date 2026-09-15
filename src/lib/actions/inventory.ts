@@ -6,10 +6,11 @@ import { z } from "zod";
 
 import { db } from "@/prisma/db";
 import { getInventoryStatus } from "@/lib/inventory-status";
+import { parseFlexibleDate } from "@/lib/normalization";
 
 const optionalExpiryDate = z.preprocess(
-  (value) => (value === "" || value == null ? null : value),
-  z.coerce.date().nullable(),
+  (value) => parseFlexibleDate(value),
+  z.date({ message: "Please enter a valid expiry date" }).nullable(),
 );
 
 import { redirect } from "next/navigation";
@@ -47,19 +48,16 @@ const inventorySchema = z.object({
   expiryType: z
     .string()
     .trim()
-    .optional()
-    .or(z.literal("")),
+    .nullish(),
   imageUrl: z
     .string()
     .trim()
     .max(1000, "Image URL is too long.")
-    .optional()
-    .or(z.literal("")),
+    .nullish(),
   additionalImageUrls: z
     .string()
     .trim()
-    .optional()
-    .or(z.literal("")),
+    .nullish(),
 });
 
 async function getCurrentUserSession() {

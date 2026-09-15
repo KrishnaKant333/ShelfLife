@@ -503,3 +503,70 @@ export function getCulinaryEquivalentDisplay(
   const rounded = conv.value >= 10 ? Math.round(conv.value) : Math.round(conv.value * 10) / 10;
   return `≈${rounded} ${targetPantryUnit}`;
 }
+
+/**
+ * Flexibly parses date values from various formats (ISO, DD-MM-YYYY, DD/MM/YYYY, etc.)
+ * Returns a valid Date object, null for empty/falsy inputs, or an Invalid Date for malformed inputs.
+ */
+export function parseFlexibleDate(value: unknown): Date | null {
+  if (value === "" || value == null) return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? new Date(NaN) : value;
+  }
+  if (typeof value !== "string") return new Date(NaN);
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  // DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY
+  const ddmmyyyy = trimmed.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);
+  if (ddmmyyyy) {
+    const day = parseInt(ddmmyyyy[1], 10);
+    const month = parseInt(ddmmyyyy[2], 10);
+    const year = parseInt(ddmmyyyy[3], 10);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const d = new Date(Date.UTC(year, month - 1, day));
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+  }
+
+  // YYYY-MM-DD or YYYY/MM/DD
+  const yyyymmdd = trimmed.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+  if (yyyymmdd) {
+    const year = parseInt(yyyymmdd[1], 10);
+    const month = parseInt(yyyymmdd[2], 10);
+    const day = parseInt(yyyymmdd[3], 10);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const d = new Date(Date.UTC(year, month - 1, day));
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+  }
+
+  const parsed = new Date(trimmed);
+  return Number.isNaN(parsed.getTime()) ? new Date(NaN) : parsed;
+}
+
+/**
+ * Formats a stored date string into HTML5 date input format (YYYY-MM-DD).
+ */
+export function formatDateForInput(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const trimmed = dateStr.trim();
+  // Standard HTML5 input format YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  // ISO format YYYY-MM-DDTHH:mm:ss.sssZ
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) return trimmed.slice(0, 10);
+  // DD-MM-YYYY or DD/MM/YYYY
+  const ddmmyyyy = trimmed.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/);
+  if (ddmmyyyy) {
+    const day = ddmmyyyy[1].padStart(2, "0");
+    const month = ddmmyyyy[2].padStart(2, "0");
+    const year = ddmmyyyy[3];
+    return `${year}-${month}-${day}`;
+  }
+  const d = new Date(trimmed);
+  if (!Number.isNaN(d.getTime())) {
+    return d.toISOString().slice(0, 10);
+  }
+  return "";
+}
+

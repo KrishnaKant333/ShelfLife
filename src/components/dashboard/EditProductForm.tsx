@@ -8,7 +8,7 @@ import {
   updateInventoryItem,
   type CreateInventoryState,
 } from "@/lib/actions/inventory";
-import { isIntegerUnit } from "@/lib/normalization";
+import { isIntegerUnit, formatDateForInput } from "@/lib/normalization";
 
 interface EditProductFormProps {
   product: {
@@ -39,7 +39,7 @@ export default function EditProductForm({
     initialState
   );
   const [unit, setUnit] = useState(product.unit || "");
-  const [expiryDateValue, setExpiryDateValue] = useState(product.expiryDate?.slice(0, 10) ?? "");
+  const [expiryDateValue, setExpiryDateValue] = useState(formatDateForInput(product.expiryDate));
   const [expiryTypeState, setExpiryTypeState] = useState(product.expiryType ?? (product.expiryDate ? "MANUFACTURER_EXPIRY" : "UNKNOWN"));
   const isInt = isIntegerUnit(unit);
   const isEstimated = expiryTypeState === "AI_ESTIMATED";

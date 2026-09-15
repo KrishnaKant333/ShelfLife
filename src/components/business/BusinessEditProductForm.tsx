@@ -7,7 +7,7 @@ import {
   updateBusinessInventoryItem,
   type BusinessInventoryState,
 } from "@/lib/actions/business-inventory";
-import { isIntegerUnit } from "@/lib/normalization";
+import { isIntegerUnit, formatDateForInput } from "@/lib/normalization";
 
 interface BusinessEditProductFormProps {
   product: {
@@ -17,6 +17,8 @@ interface BusinessEditProductFormProps {
     quantity: number;
     unit: string;
     expiryDate: string | null;
+    imageUrl?: string | null;
+    additionalImageUrls?: string | null;
   };
 }
 
@@ -42,6 +44,17 @@ export default function BusinessEditProductForm({
       action={formAction}
       className="rounded-2xl bg-[var(--shelf-surface)] border border-[var(--shelf-border)] p-6 shadow-sm"
     >
+      {/* Preserve existing product imagery during text updates */}
+      {product.imageUrl && (
+        <input type="hidden" name="imageUrl" value={product.imageUrl} />
+      )}
+      {product.additionalImageUrls && (
+        <input
+          type="hidden"
+          name="additionalImageUrls"
+          value={product.additionalImageUrls}
+        />
+      )}
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <label
@@ -131,7 +144,7 @@ export default function BusinessEditProductForm({
             id="expiryDate"
             name="expiryDate"
             type="date"
-            defaultValue={product.expiryDate?.slice(0, 10) ?? ""}
+            defaultValue={formatDateForInput(product.expiryDate)}
             className="w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] text-[var(--shelf-dark)] px-4 py-3 outline-none transition focus:border-[var(--shelf-forest)]"
           />
         </div>

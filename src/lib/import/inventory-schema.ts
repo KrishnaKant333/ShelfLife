@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { parseFlexibleDate } from "@/lib/normalization";
 
 const optionalExpiryDate = z.preprocess(
-  (value) => (value === "" || value == null ? null : value),
-  z.coerce.date().nullable(),
+  (value) => parseFlexibleDate(value),
+  z.date({ message: "Please enter a valid expiry date" }).nullable(),
 );
 
 export const inventoryImportSchema = z.object({

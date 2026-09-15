@@ -8,14 +8,15 @@ import { z } from "zod";
 import { db } from "@/prisma/db";
 import { InventoryImportItem } from "../import/inventory-schema";
 import { planInventoryMerge } from "@/lib/inventory-merge";
+import { parseFlexibleDate } from "@/lib/normalization";
 import {
   parseItemImageUrls,
   safeDeleteUnreferencedImages,
 } from "@/lib/storage-lifecycle";
 
 const optionalExpiryDate = z.preprocess(
-  (value) => (value === "" || value == null ? null : value),
-  z.coerce.date().nullable(),
+  (value) => parseFlexibleDate(value),
+  z.date({ message: "Please enter a valid expiry date" }).nullable(),
 );
 
 const businessInventorySchema = z.object({
@@ -46,19 +47,16 @@ const businessInventorySchema = z.object({
   expiryType: z
     .string()
     .trim()
-    .optional()
-    .or(z.literal("")),
+    .nullish(),
   imageUrl: z
     .string()
     .trim()
     .max(1000, "Image URL is too long.")
-    .optional()
-    .or(z.literal("")),
+    .nullish(),
   additionalImageUrls: z
     .string()
     .trim()
-    .optional()
-    .or(z.literal("")),
+    .nullish(),
 });
 
 async function getBusinessUser() {
