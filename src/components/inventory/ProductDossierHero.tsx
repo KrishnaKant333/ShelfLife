@@ -11,7 +11,6 @@ import {
   Layers,
   Package,
   Calendar,
-  Building2,
   BadgePercent,
   Clock,
 } from "lucide-react";
@@ -139,12 +138,23 @@ export default function ProductDossierHero({
               </div>
 
               <div className="rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] p-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)] block">
-                  Expiration
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)] block">
+                    Expiration
+                  </span>
+                  {item.expiryType === "AI_ESTIMATED" && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                      title="Estimated shelf life"
+                    >
+                      <Sparkles size={9} className="shrink-0" />
+                      Estimated ✦
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 text-sm sm:text-base font-bold text-[var(--app-text-display)] truncate flex items-center gap-1.5">
                   <Calendar size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                  <span>{formatExpiry(item.expiryDate)}</span>
+                  <span>{item.expiryDate ? formatExpiry(item.expiryDate) : "Date Not Available"}</span>
                 </p>
               </div>
 

@@ -30,6 +30,7 @@ export const inventoryImportSchema = z.object({
     .max(30, "Unit is too long"),
 
   expiryDate: optionalExpiryDate,
+  expiryType: z.string().trim().nullable().optional(),
 });
 
 export type InventoryImportItem = z.infer<

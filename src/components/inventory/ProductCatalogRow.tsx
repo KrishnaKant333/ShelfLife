@@ -137,6 +137,14 @@ export default function ProductCatalogRow({
         <span className="sl-tabular-num inline-flex items-center gap-1.5 font-medium">
           <Clock size={12} className="text-[var(--app-text-muted)]" />
           {formatExpiry(item.expiryDate)}
+          {item.expiryType === "AI_ESTIMATED" && (
+            <span
+              className="text-[10px] font-semibold text-amber-600 dark:text-amber-400"
+              title="Estimated freshness date"
+            >
+              (Est.)
+            </span>
+          )}
         </span>
       </td>
 

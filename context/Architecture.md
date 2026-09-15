@@ -6,7 +6,7 @@
 - **Authentication**: Auth.js credentials with JWT sessions
 - **Database & ORM**: PostgreSQL with Prisma-next migration graph
 - **Object Storage**: Vercel Blob (`@vercel/blob`) persistent storage in production with automatic fallback to local filesystem (`public/uploads/products/`) during local development
-- **AI Intelligence**: Groq SDK (`llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `qwen/qwen3.6-27b`) with JSON schema enforcement
+- **AI Intelligence**: Groq SDK (`llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `qwen/qwen3.8-27b`) with JSON schema enforcement
 - **Styling Architecture**: Theme-aware CSS custom properties (`globals.css`) + Tailwind CSS utility classes
 
 ---
@@ -52,7 +52,18 @@ ShelfLife enforces a deliberate architectural separation between public marketin
 ## 📊 Core Data Flows
 
 1. **Manual & Multi-View Entry**: Form / Camera input (up to 4 packaging angles) -> multi-image Groq vision synthesis -> Zod validation -> interactive review table -> server action -> ownership check -> persistent image storage (Vercel Blob / local fallback) -> Prisma mutation.
-2. **Dynamic Expiry Derivation**: 5-tier freshness cascade (Manufacturer -> Best Before -> Mfg+ShelfLife -> AI Category Estimate [labeled] -> Unknown).
+2. **Dynamic Expiry Derivation & 5-Tier Intelligence Hierarchy (`src/lib/expiry.ts`)**:
+   - Eliminates missing-expiry blockers on invoice/receipt import and label scanning without creating artificial manufacturer claims.
+   - **5 Tiers**:
+     - Tier 1: `MANUFACTURER_EXPIRY` (explicit printed expiry / use-by date).
+     - Tier 2: `BEST_BEFORE` (explicit best-before date).
+     - Tier 3: `MFG_PLUS_SHELF_LIFE` (manufacturing date + printed packaging shelf life duration).
+     - Tier 4: `AI_ESTIMATED` (category/commodity shelf-life heuristics calculated from receipt reference date / baseline). Rendered with amber `Estimated ✦` badge and tooltip; fully editable; promoted to `MANUFACTURER_EXPIRY` upon user edit.
+     - Tier 5: `UNKNOWN` (non-perishable pantry staples like salt, dry rice, vinegar or unestimated items). Represented by `expiryDate = null` and `expiryType = "UNKNOWN"`. Never blocks saving, rendered as `Date Not Available`, never triggers false expired alerts, and included as safe ingredients in recipe generation.
+   - Database schema: `InventoryItem.expiryType` (`text`, nullable).
+   - Merge resolution (`resolveMergedExpiry`): Preserves existing if incoming is empty, adopts incoming if existing is empty, and chooses the earlier date (FIFO food-safety principle) if both exist.
+   - Strict Anti-Confusion Safeguards: Invoice/billing/delivery timestamps are never misclassified as manufacturer product expiries.
+   - Recipe Safety: Pantry staples without expiry (`expiryDate === null`) are included safely; AI-estimated items expiring in >48h are safely suggested.
 3. **Deterministic Portion Consumption**: User delta input -> unit classification (`isIntegerUnit`) -> 4-decimal precision calculation -> inventory balance deduction -> immutable `InventoryConsumption` & `InventoryActivity` ledger logging.
 4. **Invoice / Label AI Extraction**: Image upload/capture -> Groq AI extraction (`max_tokens: 4096`, `finish_reason` truncation guard) -> client preview review table -> dynamic intelligence stats calculation -> bulk insert.
 5. **Dedicated Export Flow**: Dedicated export page (`/dashboard/inventory/export`) -> client status/category filter state -> live preview table with image thumbnails -> CSV trigger or print-window PDF rendering.
@@ -107,8 +118,9 @@ ShelfLife implements an explicit, deterministic storage lifecycle architecture a
   - Upload (up to 4 images) and progressive viewfinder capture with field accumulation.
   - Persistent product image storage migrated to Vercel Blob with local filesystem fallback.
   - Image preservation on edit verified; corrupt base64 fallbacks completely removed.
-- **P1: Intelligent Missing Expiry Hierarchy** (🟡 **Queued / Next Task**)
+- **P1: Intelligent Missing Expiry Hierarchy** (🟢 **100% Completed & Verified**)
   - 5-tier freshness hierarchy resolving missing receipt/cart dates without blocking submission.
+  - Category heuristics table (USDA FoodKeeper aligned), amber `Estimated ✦` badges, `expiryType` DB persistence, and pantry staple recipe inclusion.
 - **P2: Mobile Inventory Default List View** (🟡 **Queued**)
   - Dedicated 68px touch-row default layout for viewports <768px with persistent Grid toggle.
 - **P2: Contextual Product Dossier Quick Actions** (🟡 **Queued**)

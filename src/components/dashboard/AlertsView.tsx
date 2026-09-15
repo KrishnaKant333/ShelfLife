@@ -7,12 +7,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   Trash2,
-  Utensils,
   Sparkles,
-  Clock,
-  TrendingDown,
   X,
-  Filter,
 } from "lucide-react";
 import { getInventoryStatus } from "@/lib/inventory-status";
 import { formatExpiry } from "@/lib/format-expiry";
@@ -29,6 +25,7 @@ export interface RawInventoryItem {
   quantity: number;
   unit: string;
   expiryDate: string | null;
+  expiryType?: string | null;
 }
 
 interface AlertsViewProps {
@@ -56,6 +53,9 @@ function AlertsViewInner({ inventory, isBusiness = false }: AlertsViewProps) {
     const alerts: AlertCardData[] = [];
     inventory.forEach((item) => {
       const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
+      const isEst = item.expiryType === "AI_ESTIMATED";
+      const estSuffix = isEst ? " (Est.)" : "";
+
       if (status === "Expired") {
         alerts.push({
           id: item.id,
@@ -65,7 +65,7 @@ function AlertsViewInner({ inventory, isBusiness = false }: AlertsViewProps) {
           unit: item.unit,
           expiryDate: item.expiryDate,
           status: "Expired",
-          urgencyText: `Expired ${formatExpiry(item.expiryDate)}`,
+          urgencyText: `Expired ${formatExpiry(item.expiryDate)}${estSuffix}`,
         });
       } else if (status === "Expiring") {
         alerts.push({
@@ -76,7 +76,7 @@ function AlertsViewInner({ inventory, isBusiness = false }: AlertsViewProps) {
           unit: item.unit,
           expiryDate: item.expiryDate,
           status: "Expiring",
-          urgencyText: `Expires in ${formatExpiry(item.expiryDate)}`,
+          urgencyText: `Expires in ${formatExpiry(item.expiryDate)}${estSuffix}`,
         });
       } else if (status === "Low Stock") {
         alerts.push({

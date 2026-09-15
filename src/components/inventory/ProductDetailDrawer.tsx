@@ -348,9 +348,20 @@ export default function ProductDetailDrawer({
 
                 {/* Expiration */}
                 <div className="rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] p-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--app-text-muted)] block">
-                    Expiration
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--app-text-muted)] block">
+                      Expiration
+                    </span>
+                    {item.expiryType === "AI_ESTIMATED" && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20 cursor-help"
+                        title={`Estimated based on standard grocery shelf life for ${item.category}. Tap Edit to adjust.`}
+                      >
+                        <Sparkles size={10} className="shrink-0" />
+                        Estimated ✦
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-1 text-xs font-bold text-[var(--app-text-display)] truncate flex items-center gap-1.5">
                     <Calendar size={14} className="text-amber-600 dark:text-amber-400 shrink-0" />
                     <span>
@@ -360,12 +371,16 @@ export default function ProductDetailDrawer({
                             day: "numeric",
                             year: "numeric",
                           })
-                        : "No Date"}
+                        : "Date Not Available"}
                     </span>
                   </p>
-                  {Number.isFinite(days) && (
+                  {Number.isFinite(days) ? (
                     <span className="text-[10px] font-medium text-[var(--app-text-muted)] block mt-0.5">
-                      {days < 0 ? "Expired" : `${days} days left`}
+                      {days < 0 ? "Expired" : `${days} days left`}{item.expiryType === "AI_ESTIMATED" ? " (Est.)" : ""}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium text-[var(--app-text-muted)] block mt-0.5">
+                      Expiry not tracked
                     </span>
                   )}
                 </div>

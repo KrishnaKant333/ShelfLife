@@ -1,4 +1,4 @@
-import { groq } from "@/lib/groq";
+import { groq, GROQ_MODEL } from "@/lib/groq";
 
 import {
   invoiceExtractionSchema,
@@ -9,14 +9,12 @@ export async function extractInvoiceFromImage(
   base64Image: string,
   mimeType: string,
 ): Promise<InvoiceExtraction> {
-  const response =
-    await groq.chat.completions.create({
-      model: "qwen/qwen3.6-27b",
-
-      messages: [
-        {
-          role: "system",
-          content: `
+  const response = (await groq.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: [
+      {
+        role: "system",
+        content: `
 You are an expert invoice understanding and inventory extraction engine for ShelfLife.
 
 Your task is to analyze the provided business/grocery invoice image and extract all inventory products into structured JSON.
@@ -33,13 +31,6 @@ Before extracting quantities and dates, analyze the document structure, table co
 - MONETARY VALUES & IDENTIFIERS: Unit prices, line amounts, totals, subtotals, tax/GST/VAT, discounts, item numbers, HSN/SAC codes, SKUs, or barcodes. NEVER use monetary values or identifiers as inventory quantity!
 
 2. CALCULATING THE FINAL SHELFLIFE QUANTITY:
-The extracted "quantity" must represent the TOTAL INVENTORY AMOUNT whenever the invoice provides enough information:
-- Case A (Package Size + Package Count):
-  When one field/text indicates the per-package size and another indicates the count of packages purchased (e.g., Size = 400 g, Count = 2; or 400 g x 2 units; or Net Weight: 500 g, No. of Packs: 3; or Unit Size: 750 ml, Quantity: 4):
-  Multiply (Package Count) × (Package Size) to get the total inventory amount.
-  Examples:
-  - 400 g per pack × 2 packs = quantity: 800, unit: "g"
-  - 250 g per pack × 1 pack = quantity: 250, unit: "g"
   - 750 ml per bottle × 4 bottles = quantity: 3000, unit: "ml"
   - 500 g × 3 packs = quantity: 1500, unit: "g"
 - Case B (Direct Total Quantity):
@@ -53,18 +44,30 @@ NEVER assume the first numeric column is quantity.
 NEVER use price or amount as quantity.
 NEVER multiply values unless one is package size and the other is package count.
 
-3. PRODUCT LIFECYCLE DATES (EXPIRY / BEST BEFORE / MANUFACTURING):
+3. PRODUCT LIFECYCLE DATES & INVOICE DATE DISCRIMINATION:
 Do NOT assume every invoice contains expiry information. Expiry is strictly optional. A successful extraction must succeed even if no expiry dates exist.
-Distinguish product lifecycle dates from invoice/document dates (invoice date, billing date, order date, delivery date, due date). NEVER use document or invoice dates as product expiry.
+
+Document-Level Date ("invoiceDate"):
+- If an invoice issue date, bill date, order date, or delivery date is visible anywhere on the document (header, footer, metadata), extract it as the top-level "invoiceDate" in "YYYY-MM-DD" format.
+- If not visible, return null for "invoiceDate".
+
+Product Line-Item Expiry (Semantic Column Interpretation):
+- Understand any column header or row text variants for expiry (e.g., "Expiry", "Exp Date", "Exp", "EXP", "Use By", "UB", "Best Before", "BB", "Best By", "B.B.", "Consumir Antes de", "MHD").
+- Understand manufacturing header variants (e.g., "MFG", "MFD", "PRD", "Packed", "PKD", "Production Date").
+- Understand stated shelf-life variants (e.g., "Shelf Life: 180 days", "Best within 6 months").
+
+CRITICAL ANTI-CONFUSION SAFEGUARDS:
+- NEVER confuse or assign document-level dates (invoice date, billing date, order date, delivery timestamp, payment authorization date) as an item's expiry date!
+- NEVER confuse SKU numbers, barcode digits, or batch/lot codes (e.g., "20260914" as batch number) with expiration dates!
+- If an item does not have an explicit printed expiry, best before, or manufacturing date in its row or description, return null for those fields.
+- NEVER guess or extrapolate dates based on food type; ShelfLife's deterministic engine handles missing dates.
 
 For each product row:
-- If an explicit expiry / expiration / use-by / consume-by date is visible (in a column or description): extract as "expiryDate" in "YYYY-MM-DD" format.
-- If an explicit Best Before / BB date is visible: extract as "bestBeforeDate" in "YYYY-MM-DD" format.
-- If a manufacturing / production date (MFG, MFD, PRD) is visible: extract as "manufacturingDate" in "YYYY-MM-DD" format.
-- If a numeric shelf-life duration is explicitly stated (e.g., "Shelf Life: 180 days"): extract as numeric days in "shelfLifeDays".
-- If no expiry or lifecycle date is present for an item, return null for those date fields.
-- Dates may appear in various formats (DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY, YYYY-MM-DD, or textual e.g. "14 Sep 2026"). Normalize them accurately to "YYYY-MM-DD".
-- NEVER invent, extrapolate, or guess dates based on product type or general food knowledge.
+- If an explicit expiry / expiration / use-by date is stated for this item: extract as "expiryDate" in "YYYY-MM-DD" format.
+- If an explicit Best Before / BB date is stated: extract as "bestBeforeDate" in "YYYY-MM-DD" format.
+- If a manufacturing / production date (MFG, MFD, PRD, PKD) is stated: extract as "manufacturingDate" in "YYYY-MM-DD" format.
+- If a numeric shelf-life duration is explicitly stated for this item (e.g., "Shelf Life: 180 days"): extract as numeric days in "shelfLifeDays".
+- If no explicit date is present for an item, return null for those date fields.
 
 4. CATEGORIES:
 Infer an appropriate food category: "Dairy", "Produce", "Meat", "Seafood", "Bakery", "Grains", "Pantry", "Beverages", "Frozen", "Snacks".
@@ -72,6 +75,7 @@ Infer an appropriate food category: "Dairy", "Produce", "Meat", "Seafood", "Bake
 5. OUTPUT FORMAT:
 Return ONLY valid JSON matching this schema:
 {
+  "invoiceDate": string | null,
   "items": [
     {
       "name": string,
@@ -112,9 +116,8 @@ CRITICAL: Return ONLY the JSON object. Do not output any thinking process, reaso
 
       temperature: 0,
       max_tokens: 4096,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       reasoning_effort: "none",
-    } as any);
+    } as unknown as Parameters<typeof groq.chat.completions.create>[0])) as import("groq-sdk/resources/chat/completions").ChatCompletion;
 
   const choice = response.choices[0];
 

@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
 
 import {
   updateInventoryItem,
@@ -17,6 +18,7 @@ interface EditProductFormProps {
     quantity: number;
     unit: string;
     expiryDate: string | null;
+    expiryType?: string | null;
     imageUrl?: string | null;
     additionalImageUrls?: string | null;
   };
@@ -37,7 +39,10 @@ export default function EditProductForm({
     initialState
   );
   const [unit, setUnit] = useState(product.unit || "");
+  const [expiryDateValue, setExpiryDateValue] = useState(product.expiryDate?.slice(0, 10) ?? "");
+  const [expiryTypeState, setExpiryTypeState] = useState(product.expiryType ?? (product.expiryDate ? "MANUFACTURER_EXPIRY" : "UNKNOWN"));
   const isInt = isIntegerUnit(unit);
+  const isEstimated = expiryTypeState === "AI_ESTIMATED";
 
   return (
     <form
@@ -55,6 +60,7 @@ export default function EditProductForm({
           value={product.additionalImageUrls}
         />
       )}
+      <input type="hidden" name="expiryType" value={expiryTypeState} />
       <div className="grid gap-4 md:grid-cols-2 md:gap-6">
         <div>
           <label
@@ -132,20 +138,44 @@ export default function EditProductForm({
         </div>
 
         <div className="md:col-span-2">
-          <label
-            htmlFor="expiryDate"
-            className="mb-2 block text-sm font-medium"
-          >
-            Expiry date
-          </label>
+          <div className="mb-2 flex items-center justify-between">
+            <label
+              htmlFor="expiryDate"
+              className="block text-sm font-medium text-[var(--shelf-dark)]"
+            >
+              Expiry date
+            </label>
+            {isEstimated && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20 cursor-help"
+                title={`Estimated based on standard grocery shelf life for ${product.category}. Adjusting date confirms it as manufacturer date.`}
+              >
+                <Sparkles size={12} className="shrink-0" />
+                Estimated ✦
+              </span>
+            )}
+          </div>
 
           <input
             id="expiryDate"
             name="expiryDate"
             type="date"
-            defaultValue={product.expiryDate?.slice(0, 10) ?? ""}
-            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
+            value={expiryDateValue}
+            onChange={(e) => {
+              setExpiryDateValue(e.target.value);
+              setExpiryTypeState(e.target.value ? "MANUFACTURER_EXPIRY" : "UNKNOWN");
+            }}
+            className={`sl-focus-ring w-full rounded-xl border bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition ${
+              isEstimated
+                ? "border-amber-400/80 bg-amber-500/5 focus:border-amber-500"
+                : "border-[var(--shelf-border)]"
+            }`}
           />
+          {isEstimated && (
+            <p className="mt-1.5 text-xs text-amber-700/80 dark:text-amber-300/80">
+              AI category estimate. Adjusting this date confirms it as manufacturer expiry.
+            </p>
+          )}
         </div>
       </div>
 

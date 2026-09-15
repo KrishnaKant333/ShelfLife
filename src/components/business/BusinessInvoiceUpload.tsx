@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Sparkles } from "lucide-react";
 
 import { extractInvoiceAction } from "@/lib/actions/invoice";
 import { importBusinessInventory } from "@/lib/actions/business-inventory";
@@ -12,6 +13,9 @@ type InvoiceItem = {
   quantity: number;
   unit: string;
   expiryDate: string | null;
+  expiryType?: string | null;
+  isEstimated?: boolean;
+  daysEstimated?: number;
 };
 
 export default function BusinessInvoiceUpload() {
@@ -41,20 +45,15 @@ export default function BusinessInvoiceUpload() {
       if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
         const [day, month, year] = dateStr.split("-").map(Number);
         dateObj = new Date(year, month - 1, day);
-      } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        const [year, month, day] = dateStr.split("-").map(Number);
-        dateObj = new Date(year, month - 1, day);
       } else {
         dateObj = new Date(dateStr);
       }
 
-      if (!dateObj || isNaN(dateObj.getTime())) return false;
-
-      const threshold = new Date();
-      threshold.setDate(threshold.getDate() + 7);
-      threshold.setHours(23, 59, 59, 999);
-
-      return dateObj <= threshold;
+      if (!dateObj || Number.isNaN(dateObj.getTime())) return false;
+      const now = new Date();
+      const diffMs = dateObj.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      return diffDays <= 3;
     }).length;
 
     return {
@@ -66,28 +65,28 @@ export default function BusinessInvoiceUpload() {
   }, [items, existingNames]);
 
   async function handleExtract() {
-    if (!file) return;
+    if (!file) {
+      setError("Please select an invoice image first.");
+      return;
+    }
 
-    setLoading(true);
     setError("");
     setSuccess("");
-    setItems([]);
-    setExistingNames([]);
+    setLoading(true);
 
     try {
       const formData = new FormData();
       formData.append("file", file);
 
       const result = await extractInvoiceAction(formData);
-
       setItems(result.items);
       if (result.existingNames) {
         setExistingNames(result.existingNames);
       }
-    } catch (error) {
+    } catch (err) {
       setError(
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : "Invoice extraction failed.",
       );
     } finally {
@@ -102,14 +101,21 @@ export default function BusinessInvoiceUpload() {
   ) {
     setItems((current) =>
       current.map((item, itemIndex) => {
-        if (itemIndex !== index) {
-          return item;
-        }
+        if (itemIndex !== index) return item;
 
         if (field === "quantity") {
           return {
             ...item,
             quantity: Number(value),
+          };
+        }
+
+        if (field === "expiryDate") {
+          return {
+            ...item,
+            expiryDate: value ? value : null,
+            expiryType: value ? "MANUFACTURER_EXPIRY" : "UNKNOWN",
+            isEstimated: false,
           };
         }
 
@@ -133,17 +139,6 @@ export default function BusinessInvoiceUpload() {
 
     if (items.length === 0) {
       setError("There are no products to import.");
-      return;
-    }
-
-    const missingExpiry = items.some(
-      (item) => !item.expiryDate,
-    );
-
-    if (missingExpiry) {
-      setError(
-        "Please add an expiry date to every product before importing.",
-      );
       return;
     }
 
@@ -172,7 +167,8 @@ export default function BusinessInvoiceUpload() {
           category: item.category.trim(),
           quantity: item.quantity,
           unit: item.unit.trim(),
-          expiryDate: new Date(item.expiryDate!),
+          expiryDate: item.expiryDate ? new Date(item.expiryDate) : null,
+          expiryType: item.expiryType ?? (item.expiryDate ? (item.isEstimated ? "AI_ESTIMATED" : "MANUFACTURER_EXPIRY") : "UNKNOWN"),
         })),
       );
 
@@ -182,10 +178,10 @@ export default function BusinessInvoiceUpload() {
 
       setItems([]);
       setFile(null);
-    } catch (error) {
+    } catch (err) {
       setError(
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : "Unable to import products.",
       );
     } finally {
@@ -402,24 +398,46 @@ export default function BusinessInvoiceUpload() {
                     </td>
 
                     <td className="px-5 py-4">
-                      <input
-                        type="date"
-                        value={item.expiryDate ?? ""}
-                        onChange={(event) =>
-                          updateItem(
-                            index,
-                            "expiryDate",
-                            event.target.value,
-                          )
-                        }
-                        className="rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--shelf-forest)]"
-                      />
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="date"
+                            value={item.expiryDate ?? ""}
+                            onChange={(event) =>
+                              updateItem(
+                                index,
+                                "expiryDate",
+                                event.target.value,
+                              )
+                            }
+                            className={`rounded-lg border bg-transparent px-3 py-2 text-sm outline-none transition ${
+                              item.isEstimated
+                                ? "border-amber-400/80 bg-amber-500/5 focus:border-amber-500"
+                                : "border-[var(--shelf-border)] focus:border-[var(--shelf-forest)]"
+                            }`}
+                          />
 
-                      {!item.expiryDate && (
-                        <p className="mt-1 text-xs text-[var(--shelf-amber)]">
-                          Required
-                        </p>
-                      )}
+                          {item.isEstimated && (
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap cursor-help"
+                              title={`Commercial advisory: Estimated based on standard shelf life for ${item.category || "this product"}. Sensory check before prep.`}
+                            >
+                              <Sparkles size={11} className="shrink-0" />
+                              Estimated
+                            </span>
+                          )}
+                        </div>
+
+                        {!item.expiryDate ? (
+                          <p className="text-[11px] font-medium text-[var(--shelf-muted)]">
+                            Date Not Available
+                          </p>
+                        ) : item.isEstimated ? (
+                          <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80">
+                            Commercial estimate (+{item.daysEstimated ?? 7}d). Sensory check before prep.
+                          </p>
+                        ) : null}
+                      </div>
                     </td>
 
                     <td className="px-5 py-4">
@@ -440,8 +458,7 @@ export default function BusinessInvoiceUpload() {
           {/* Footer */}
           <div className="flex flex-col gap-4 border-t border-[var(--shelf-border)] p-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-[var(--shelf-muted)]">
-              AI-generated information should be reviewed
-              before importing.
+              AI-generated information should be reviewed before importing. Estimated shelf lives require standard sensory checks before prep.
             </p>
 
             <button

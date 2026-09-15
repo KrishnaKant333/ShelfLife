@@ -66,6 +66,7 @@ model InventoryItem {
   quantity            Float
   unit                String
   expiryDate          TimestamptzString?
+  expiryType          String?
   createdAt           TimestamptzString          @default(now())
   updatedAt           temporal.updatedAtString()
 }

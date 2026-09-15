@@ -7,6 +7,7 @@ export type BaseExistingItem = {
   quantity: number;
   unit: string;
   expiryDate: string | Date | null;
+  expiryType?: string | null;
 };
 
 export type BaseIncomingItem = {
@@ -15,6 +16,7 @@ export type BaseIncomingItem = {
   quantity: number;
   unit: string;
   expiryDate: Date | string | null;
+  expiryType?: string | null;
 };
 
 /**
@@ -34,14 +36,16 @@ export function normalizeProductName(name: string): string {
 }
 
 /**
- * Resolves expiry date between an existing record and incoming item.
+ * Resolves expiry date and type between an existing record and incoming item.
  * Preserves existing expiry if incoming has none, adopts incoming if existing has none,
  * and picks the earlier date (FIFO food-safety principle) if both are present.
  */
-export function resolveMergedExpiryDate(
+export function resolveMergedExpiry(
   existingExpiry: string | Date | null | undefined,
-  incomingExpiry: string | Date | null | undefined
-): string | null {
+  existingType: string | null | undefined,
+  incomingExpiry: string | Date | null | undefined,
+  incomingType: string | null | undefined
+): { expiryDate: string | null; expiryType: string | null } {
   const parseDate = (d: string | Date | null | undefined): Date | null => {
     if (!d) return null;
     const date = typeof d === "string" ? new Date(d) : d;
@@ -51,13 +55,29 @@ export function resolveMergedExpiryDate(
   const existing = parseDate(existingExpiry);
   const incoming = parseDate(incomingExpiry);
 
-  if (!existing && !incoming) return null;
-  if (!existing && incoming) return incoming.toISOString();
-  if (existing && !incoming) return existing.toISOString();
+  if (!existing && !incoming) {
+    return { expiryDate: null, expiryType: existingType || incomingType || "UNKNOWN" };
+  }
+  if (!existing && incoming) {
+    return { expiryDate: incoming.toISOString(), expiryType: incomingType || "MANUFACTURER_EXPIRY" };
+  }
+  if (existing && !incoming) {
+    return { expiryDate: existing.toISOString(), expiryType: existingType || "MANUFACTURER_EXPIRY" };
+  }
 
   // Both exist: choose the earlier expiry date (safest for inventory/consumption)
-  const earlierTime = Math.min(existing!.getTime(), incoming!.getTime());
-  return new Date(earlierTime).toISOString();
+  if (existing!.getTime() <= incoming!.getTime()) {
+    return { expiryDate: existing!.toISOString(), expiryType: existingType || "MANUFACTURER_EXPIRY" };
+  } else {
+    return { expiryDate: incoming!.toISOString(), expiryType: incomingType || "MANUFACTURER_EXPIRY" };
+  }
+}
+
+export function resolveMergedExpiryDate(
+  existingExpiry: string | Date | null | undefined,
+  incomingExpiry: string | Date | null | undefined
+): string | null {
+  return resolveMergedExpiry(existingExpiry, null, incomingExpiry, null).expiryDate;
 }
 
 export type WorkingInventoryItem = {
@@ -67,6 +87,7 @@ export type WorkingInventoryItem = {
   quantity: number;
   unit: string;
   expiryDate: string | null;
+  expiryType: string | null;
   isNew: boolean;
   dirty: boolean;
 };
@@ -78,6 +99,7 @@ export type MergePlanResult = {
     quantity: number;
     unit: string;
     expiryDate: string | null;
+    expiryType: string | null;
   }>;
   itemsToCreate: Array<{
     name: string;
@@ -85,6 +107,7 @@ export type MergePlanResult = {
     quantity: number;
     unit: string;
     expiryDate: string | null;
+    expiryType: string | null;
   }>;
   workingList: WorkingInventoryItem[];
 };
@@ -108,6 +131,7 @@ export function planInventoryMerge(
     quantity: item.quantity,
     unit: item.unit,
     expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString() : null,
+    expiryType: item.expiryType ?? (item.expiryDate ? "MANUFACTURER_EXPIRY" : "UNKNOWN"),
     isNew: false,
     dirty: false,
   }));
@@ -128,7 +152,14 @@ export function planInventoryMerge(
       const converted = convertQuantity(item.quantity, item.unit, candidate.unit)!;
       // Add quantity without double-multiplying
       candidate.quantity = Math.round((candidate.quantity + converted) * 10000) / 10000;
-      candidate.expiryDate = resolveMergedExpiryDate(candidate.expiryDate, item.expiryDate);
+      const mergedExpiry = resolveMergedExpiry(
+        candidate.expiryDate,
+        candidate.expiryType,
+        item.expiryDate,
+        item.expiryType
+      );
+      candidate.expiryDate = mergedExpiry.expiryDate;
+      candidate.expiryType = mergedExpiry.expiryType;
       candidate.dirty = true;
     } else {
       // Create new working item
@@ -141,6 +172,7 @@ export function planInventoryMerge(
         expiryDate: item.expiryDate
           ? (typeof item.expiryDate === "string" ? new Date(item.expiryDate) : item.expiryDate).toISOString()
           : null,
+        expiryType: item.expiryType ?? (item.expiryDate ? "MANUFACTURER_EXPIRY" : "UNKNOWN"),
         isNew: true,
         dirty: false,
       });
@@ -155,6 +187,7 @@ export function planInventoryMerge(
       quantity: item.quantity,
       unit: item.unit,
       expiryDate: item.expiryDate,
+      expiryType: item.expiryType,
     }));
 
   const itemsToCreate = workingList
@@ -165,6 +198,7 @@ export function planInventoryMerge(
       quantity: item.quantity,
       unit: item.unit,
       expiryDate: item.expiryDate,
+      expiryType: item.expiryType,
     }));
 
   return {

@@ -4,7 +4,7 @@ import { extractInvoiceFromImage } from "@/lib/invoice/extract-invoice";
 import { auth } from "@/auth";
 import { getInventory } from "@/lib/inventory";
 import { getBusinessInventory } from "@/lib/business-inventory";
-import { deriveExpiryDate } from "@/lib/expiry";
+import { resolveExpiryProvenance } from "@/lib/expiry";
 import { normalizeProductName } from "@/lib/inventory-merge";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -49,7 +49,7 @@ export async function extractInvoiceAction(
 
   // Fetch current inventory for session
   const session = await auth();
-  let currentInventory: any[] = [];
+  let currentInventory: Array<{ name: string; category?: string | null }> = [];
   if (session?.user) {
     if (session.user.accountType === "business") {
       currentInventory = await getBusinessInventory();
@@ -60,11 +60,30 @@ export async function extractInvoiceAction(
 
   const existingNames = currentInventory.map((x) => normalizeProductName(x.name));
 
+  const refDate = extraction.invoiceDate || new Date().toISOString().slice(0, 10);
+
   return {
-    items: extraction.items.map((item) => ({
-      ...item,
-      expiryDate: deriveExpiryDate(item),
-    })),
+    invoiceDate: extraction.invoiceDate ?? null,
+    items: extraction.items.map((item) => {
+      const resolved = resolveExpiryProvenance(
+        {
+          name: item.name,
+          category: item.category,
+          expiryDate: item.expiryDate,
+          bestBeforeDate: item.bestBeforeDate,
+          manufacturingDate: item.manufacturingDate,
+          shelfLifeDays: item.shelfLifeDays,
+        },
+        refDate
+      );
+      return {
+        ...item,
+        expiryDate: resolved.expiryDate,
+        expiryType: resolved.expiryType,
+        isEstimated: resolved.isEstimated,
+        daysEstimated: resolved.daysEstimated,
+      };
+    }),
     existingNames,
   };
 }

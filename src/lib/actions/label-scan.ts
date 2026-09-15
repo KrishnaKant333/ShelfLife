@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import { groq } from "@/lib/groq";
-import { deriveExpiryDate } from "@/lib/expiry";
+import { groq, GROQ_MODEL } from "@/lib/groq";
+import { resolveExpiryProvenance } from "@/lib/expiry";
 import { saveProductImage, deleteProductImages } from "@/lib/storage";
 import { safeDeleteUnreferencedImages } from "@/lib/storage-lifecycle";
 import {
@@ -19,7 +19,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /**
  * Extracts product details from 1 to 4 product views (front, back, bottom/rim, side)
- * using Groq vision model (qwen/qwen3.6-27b), synthesizing all angles into ONE unified record.
+ * using Groq vision model (GROQ_MODEL: qwen/qwen3.8-27b), synthesizing all angles into ONE unified record.
  */
 export async function extractMultiViewLabelAction(formData: FormData): Promise<MultiViewExtraction> {
   // Collect all files: check for "files" (multiple) or "file" (single fallback)
@@ -150,7 +150,7 @@ You MUST respond with ONLY a valid JSON object matching this schema:
 
     const callGroq = async (useJsonMode: boolean) => {
       return await groq.chat.completions.create({
-        model: "qwen/qwen3.6-27b",
+        model: GROQ_MODEL,
         messages: [
           {
             role: "system",
@@ -214,9 +214,14 @@ You MUST respond with ONLY a valid JSON object matching this schema:
     const primaryImageUrl = savedImageUrls[primaryIdx] ?? null;
     const additionalImageUrls = savedImageUrls.filter((_, idx) => idx !== primaryIdx);
 
+    const resolvedExpiry = resolveExpiryProvenance(result);
+
     return {
       ...result,
-      expiryDate: deriveExpiryDate(result),
+      expiryDate: resolvedExpiry.expiryDate,
+      expiryType: resolvedExpiry.expiryType,
+      isEstimated: resolvedExpiry.isEstimated,
+      daysEstimated: resolvedExpiry.daysEstimated,
       primaryImageIndex: primaryIdx,
       imageUrl: primaryImageUrl,
       additionalImageUrls,

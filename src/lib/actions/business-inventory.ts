@@ -43,6 +43,11 @@ const businessInventorySchema = z.object({
     .max(30, "Unit is too long"),
 
   expiryDate: optionalExpiryDate,
+  expiryType: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal("")),
   imageUrl: z
     .string()
     .trim()
@@ -90,6 +95,7 @@ export async function createBusinessInventoryItem(
     quantity: formData.get("quantity"),
     unit: formData.get("unit"),
     expiryDate: formData.get("expiryDate"),
+    expiryType: formData.get("expiryType"),
     imageUrl: rawImageUrl,
     additionalImageUrls: rawAdditionalImageUrls,
   });
@@ -125,6 +131,10 @@ export async function createBusinessInventoryItem(
     };
   }
 
+  const determinedExpiryType = result.data.expiryDate
+    ? (result.data.expiryType || "MANUFACTURER_EXPIRY")
+    : "UNKNOWN";
+
   try {
     await db.orm.public.InventoryItem.create({
       userId: business.userId,
@@ -134,6 +144,7 @@ export async function createBusinessInventoryItem(
       quantity: result.data.quantity,
       unit: result.data.unit,
       expiryDate: result.data.expiryDate?.toISOString() ?? null,
+      expiryType: determinedExpiryType,
       imageUrl: result.data.imageUrl || null,
       additionalImageUrls: result.data.additionalImageUrls || null,
     });
@@ -190,12 +201,18 @@ export async function updateBusinessInventoryItem(
   const existingItem = await db.orm.public.InventoryItem.first(filter);
   const oldUrls = existingItem ? parseItemImageUrls(existingItem) : [];
 
+  const rawExpiryType = formData.get("expiryType") as string | null;
+  const determinedExpiryType = result.data.expiryDate
+    ? (rawExpiryType || "MANUFACTURER_EXPIRY")
+    : "UNKNOWN";
+
   const updateData: {
     name: string;
     category: string;
     quantity: number;
     unit: string;
     expiryDate: string | null;
+    expiryType: string | null;
     imageUrl?: string | null;
     additionalImageUrls?: string | null;
   } = {
@@ -204,6 +221,7 @@ export async function updateBusinessInventoryItem(
     quantity: result.data.quantity,
     unit: result.data.unit,
     expiryDate: result.data.expiryDate?.toISOString() ?? null,
+    expiryType: determinedExpiryType,
   };
 
   if (formData.has("imageUrl")) {
@@ -296,6 +314,7 @@ export async function importBusinessInventory(
         .update({
           quantity: item.quantity,
           expiryDate: item.expiryDate,
+          expiryType: item.expiryType,
         })
     ),
     ...itemsToCreate.map((item) =>
@@ -307,6 +326,7 @@ export async function importBusinessInventory(
         quantity: item.quantity,
         unit: item.unit,
         expiryDate: item.expiryDate,
+        expiryType: item.expiryType,
       })
     ),
   ]);

@@ -100,10 +100,21 @@
   - [x] Auxiliary image removal: `removeAuxiliaryImageAction()` safely updates database references and deletes unreferenced storage objects.
   - [x] Deliberate zero-quantity decision: images deliberately preserved when quantity reaches zero for consumption history, activity audit trails, and restocking.
   - [x] Automated test suite: 29/29 assertions passed across local filesystem and live Vercel Blob object storage.
-- [ ] **P1-B — Intelligent Missing Expiry Hierarchy (Spec 03)** (🟡 **Queued / Next Task**)
-  - 5-tier freshness cascade (Manufacturer -> Best Before -> Mfg+ShelfLife -> AI Category Estimate -> Unknown).
-  - Explicit visual `Estimated ✦` badge with full manual override capability.
-  - Anti-confusion date filter preventing billing/delivery timestamps from becoming product expiration dates.
+- [x] **P1-B — Intelligent Missing Expiry Hierarchy (Spec 03)** (🟢 **100% Completed & Verified**)
+  - [x] 5-tier freshness cascade implemented in `src/lib/expiry.ts`: `MANUFACTURER_EXPIRY` -> `BEST_BEFORE` -> `MFG_PLUS_SHELF_LIFE` -> `AI_ESTIMATED` -> `UNKNOWN`.
+  - [x] Comprehensive commodity & category heuristic rules table aligned with USDA FoodKeeper guidelines and cold chain preservation standards.
+  - [x] Invoice date baseline fallback: relative shelf-life estimation anchors against document-level `invoiceDate` (receipt purchase date) rather than processing time.
+  - [x] Anti-confusion safeguards: invoice billing, delivery, receipt issue, and tax timestamps are strictly prevented from misidentifying as product expiry dates.
+  - [x] Database schema & contract: added `expiryType` nullable text column to `InventoryItem`, generated contract types, and applied additive migration `20260914T1409_add_expiry_type` to Neon PostgreSQL.
+  - [x] Deterministic merge resolution: `resolveMergedExpiry` preserves existing dates, adopts incoming dates, and applies FIFO food-safety earlier date selection.
+  - [x] Unblocked invoice import: eliminated mandatory manual expiry roadblock; items with missing expiry default to USDA category estimate (`AI_ESTIMATED`) or `UNKNOWN`.
+  - [x] Amber `Estimated ✦` visual badge with informative tooltip ("Estimated from item category & purchase date. Click to edit or verify on packaging.").
+  - [x] Date Not Available rendering: non-perishables and unknown dates display clean `Date Not Available` state without triggering false "Expired" alerts.
+  - [x] Full manual override capability: editing date inline or in form automatically promotes provenance to `MANUFACTURER_EXPIRY`.
+  - [x] Commercial sensory prep advisory: Business invoice review includes clear sensory check guidance ("Verify sensory freshness prior to commercial food preparation").
+  - [x] Recipe safety alignment: pantry staples without expiry (`expiryDate === null`) are safely included in recipe generation; estimated items expiring in >48h safely suggested.
+  - [x] Consumer & Business workspace parity maintained across manual entry, editing, invoice upload, inventory catalogs, and drawers.
+  - [x] Automated test suites verified: 5-tier hierarchy verification (`scratch/test-expiry-hierarchy.ts`), merge planning verification (`scratch/test-merge-expiry.ts`), 100% clean typecheck (`npx tsc --noEmit`), and 35-route production build (`npm run build`).
 - [ ] **P2-A — Mobile Inventory Default List View** (🟡 **Queued / Spec Ready**)
   - Viewport-aware layout defaulting to high-density 68px touch rows on mobile screens (<768px).
   - Persistent Grid ↔ List switcher with `localStorage` preference memory.

@@ -2,10 +2,9 @@
 
 import { auth } from "@/auth";
 import { db } from "@/prisma/db";
-import { groq } from "@/lib/groq";
+import { groq, GROQ_MODEL } from "@/lib/groq";
 import { getInventory } from "@/lib/inventory";
 import { getBusinessInventory } from "@/lib/business-inventory";
-import { getInventoryStatus } from "@/lib/inventory-status";
 import { getDaysUntilExpiry } from "@/lib/format-expiry";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -91,11 +90,25 @@ export async function generateRecipesAction(mode: RecipeMode = "use_soon"): Prom
       return { success: false, error: "Your inventory is empty. Add items to generate recipes!" };
     }
 
-    // CRITICAL: Filter out expired products
+    // CRITICAL: Filter out expired products per 5-tier safety hierarchy
     const now = new Date();
-    const safeInventory = inventory.filter(item => {
-      if (!item.expiryDate) return false;
-      const expiryDate = new Date(typeof item.expiryDate === "string" ? item.expiryDate : item.expiryDate);
+    const ESTIMATED_GRACE_PERIOD_MS = 48 * 60 * 60 * 1000; // 48 hours for AI-estimated items
+
+    const safeInventory = inventory.filter((item) => {
+      // Tier 5: Items without expiry date (pantry/dry goods/untracked) are eligible
+      if (!item.expiryDate) return true;
+
+      const expiryDate = new Date(
+        typeof item.expiryDate === "string" ? item.expiryDate : item.expiryDate
+      );
+      if (Number.isNaN(expiryDate.getTime())) return true;
+
+      // Tier 4: If AI-estimated, guard against items expired by >48 hours
+      if (item.expiryType === "AI_ESTIMATED") {
+        return expiryDate.getTime() + ESTIMATED_GRACE_PERIOD_MS >= now.getTime();
+      }
+
+      // Tiers 1-3: Strict printed manufacturer date must not be passed
       return expiryDate >= now;
     });
 
@@ -105,22 +118,46 @@ export async function generateRecipesAction(mode: RecipeMode = "use_soon"): Prom
       return {
         success: false,
         error: "Not enough safe ingredients are available to generate a useful recipe right now.",
-        excludedCount: excludedCount
+        excludedCount: excludedCount,
       };
     }
 
-    // Sort inventory by expiry (closest first)
+    // Sort inventory by expiry (closest first, untracked/infinite last)
     const sortedInventory = [...safeInventory].sort((a, b) => {
-      const daysA = getDaysUntilExpiry(a.expiryDate ? (typeof a.expiryDate === "string" ? a.expiryDate : new Date(a.expiryDate).toISOString()) : null);
-      const daysB = getDaysUntilExpiry(b.expiryDate ? (typeof b.expiryDate === "string" ? b.expiryDate : new Date(b.expiryDate).toISOString()) : null);
+      const daysA = getDaysUntilExpiry(
+        a.expiryDate
+          ? typeof a.expiryDate === "string"
+            ? a.expiryDate
+            : new Date(a.expiryDate).toISOString()
+          : null
+      );
+      const daysB = getDaysUntilExpiry(
+        b.expiryDate
+          ? typeof b.expiryDate === "string"
+            ? b.expiryDate
+            : new Date(b.expiryDate).toISOString()
+          : null
+      );
       return daysA - daysB;
     });
 
-    const inventoryPromptList = sortedInventory.map(item => {
-      const daysLeft = getDaysUntilExpiry(item.expiryDate ? (typeof item.expiryDate === "string" ? item.expiryDate : new Date(item.expiryDate).toISOString()) : null);
-      const expiryText = daysLeft === 0 ? "Expires today" : `${daysLeft} days left`;
-      return `- ID ${item.id}: "${item.name}" (Qty: ${item.quantity} ${item.unit}, Category: ${item.category}, Expiry: ${expiryText})`;
-    }).join("\n");
+    const inventoryPromptList = sortedInventory
+      .map((item) => {
+        const daysLeft = getDaysUntilExpiry(
+          item.expiryDate
+            ? typeof item.expiryDate === "string"
+              ? item.expiryDate
+              : new Date(item.expiryDate).toISOString()
+            : null
+        );
+        let expiryText = "Fresh pantry staple (no expiry tracked)";
+        if (Number.isFinite(daysLeft)) {
+          const estTag = item.expiryType === "AI_ESTIMATED" ? " (Estimated)" : "";
+          expiryText = daysLeft === 0 ? `Expires today${estTag}` : `${daysLeft} days left${estTag}`;
+        }
+        return `- ID ${item.id}: "${item.name}" (Qty: ${item.quantity} ${item.unit}, Category: ${item.category}, Freshness: ${expiryText})`;
+      })
+      .join("\n");
 
     // Build mode-specific instructions
     let modeInstructions = "";
@@ -181,8 +218,8 @@ Return ONLY a JSON object matching this schema:
 }
 `.trim();
 
-    const response = await groq.chat.completions.create({
-      model: "qwen/qwen3.6-27b",
+    const response = (await groq.chat.completions.create({
+      model: GROQ_MODEL,
       messages: [
         {
           role: "system",
@@ -196,7 +233,7 @@ Return ONLY a JSON object matching this schema:
       response_format: { type: "json_object" },
       temperature: 0.1,
       reasoning_effort: "none"
-    } as any);
+    } as unknown as Parameters<typeof groq.chat.completions.create>[0])) as import("groq-sdk/resources/chat/completions").ChatCompletion;
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
@@ -400,8 +437,8 @@ Format: Return a simple text paragraph.
 `.trim();
     }
 
-    const response = await groq.chat.completions.create({
-      model: "qwen/qwen3.6-27b",
+    const response = (await groq.chat.completions.create({
+      model: GROQ_MODEL,
       messages: [
         {
           role: "system",
@@ -415,7 +452,7 @@ Format: Return a simple text paragraph.
       temperature: 0.2,
       max_tokens: 150,
       reasoning_effort: "none"
-    } as any);
+    } as unknown as Parameters<typeof groq.chat.completions.create>[0])) as import("groq-sdk/resources/chat/completions").ChatCompletion;
 
     let insight = response.choices[0]?.message?.content?.trim();
     if (!insight) {

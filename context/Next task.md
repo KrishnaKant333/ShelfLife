@@ -1,22 +1,21 @@
 # ShelfLife: Next Implementation Task
 
 **Current Phase**: Real-World Usage Improvements (Post-v1.0 Cycle)  
-**Active Milestone Status**: **P0 (Fractional Quantities & DB Parity)** and **P1-A (Multi-View Product Understanding)** are 100% Completed & Verified.  
-**Next Ready Task**: **P1-B — Intelligent Missing Expiry Hierarchy (Spec 03)**
+**Active Milestone Status**: **P0 (Fractional Quantities & DB Parity)**, **P1-A (Multi-View Product Understanding)**, and **P1-B (Intelligent Missing Expiry Hierarchy)** are 100% Completed & Verified.  
+**Next Ready Task**: **P2-A — Mobile Inventory Default List View (Spec 04)**
 
 ---
 
-## 🎯 Recommended Next Immediate Step: P1-B (Intelligent Missing Expiry)
+## 🎯 Recommended Next Immediate Step: P2-A (Mobile Inventory Default List View)
 
-### Why Prioritize P1-B Next:
-The missing expiry bottleneck directly impacts everyday receipt, invoice, and grocery delivery cart imports. Enabling Tier 4 category-based estimates and Tier 5 unknown dates immediately unblocks bulk cataloging without waiting for camera hardware changes.
+### Why Prioritize P2-A Next:
+On mobile devices (<768px), modern pantry management requires rapid one-handed scrolling and visual scanning. The current 2-column card grid forces excessive scrolling and hides status indicators. Implementing a dedicated 68px compact touch-row list view with a persistent Grid ↔ List toggle optimizes ergonomics for on-the-go household and commercial inventory checks.
 
-### Objectives for P1-B:
-1. Update `InvoiceImport.tsx` and `BusinessInvoiceUpload.tsx` to remove the hard blocking error requiring an expiry date for every product.
-2. Introduce the 5-tier freshness hierarchy in `src/lib/inventory.ts` / `normalization.ts`.
-3. Auto-populate category-based default shelf life for items lacking printed dates (e.g. Bread: +4 days, Bananas: +5 days, Milk: +7 days).
-4. Display the visual `Estimated ✦` badge with full manual override capability in review tables and product dossiers.
-5. Filter out invoice billing, order, and delivery timestamps from being mistaken for expiration dates.
+### Objectives for P2-A:
+1. Viewport-aware layout defaulting to high-density 68px touch rows on mobile screens (<768px).
+2. Persistent Grid ↔ List switcher with `localStorage` preference memory.
+3. Displays thumbnail, title, remaining quantity, and countdown status chip above the fold for 7–8 items.
+4. Maintain Consumer and Business inventory catalog parity.
 
 ---
 

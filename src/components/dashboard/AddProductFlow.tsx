@@ -67,6 +67,9 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
   const [quantity, setQuantity] = useState("1");
   const [unit, setUnit] = useState("pieces");
   const [expiryDate, setExpiryDate] = useState("");
+  const [expiryType, setExpiryType] = useState<string>("UNKNOWN");
+  const [isEstimated, setIsEstimated] = useState<boolean>(false);
+  const [daysEstimated, setDaysEstimated] = useState<number | undefined>(undefined);
   const [imageUrl, setImageUrl] = useState("");
   const [additionalImageUrls, setAdditionalImageUrls] = useState<string[]>([]);
 
@@ -183,6 +186,9 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
       if (result.quantity != null) setQuantity(String(result.quantity));
       if (result.unit) setUnit(result.unit);
       if (result.expiryDate) setExpiryDate(result.expiryDate);
+      if (result.expiryType) setExpiryType(result.expiryType);
+      setIsEstimated(result.isEstimated ?? false);
+      setDaysEstimated(result.daysEstimated);
       if (result.imageUrl) setImageUrl(result.imageUrl);
       if (result.additionalImageUrls) setAdditionalImageUrls(result.additionalImageUrls);
 
@@ -742,13 +748,14 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                 </div>
               )}
 
-              {/* Hidden Inputs for Stored Images */}
+              {/* Hidden Inputs for Stored Images & Expiry Provenance */}
               <input type="hidden" name="imageUrl" value={imageUrl} />
               <input
                 type="hidden"
                 name="additionalImageUrls"
                 value={additionalImageUrls.length > 0 ? JSON.stringify(additionalImageUrls) : ""}
               />
+              <input type="hidden" name="expiryType" value={expiryType} />
 
               <div className="grid gap-4 md:grid-cols-2 md:gap-6">
                 <div>
@@ -822,17 +829,41 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="expiryDate" className="mb-2 block text-sm font-semibold text-[var(--shelf-dark)]">
-                    Expiry Date
-                  </label>
+                  <div className="mb-2 flex items-center justify-between">
+                    <label htmlFor="expiryDate" className="block text-sm font-semibold text-[var(--shelf-dark)]">
+                      Expiry Date
+                    </label>
+                    {isEstimated && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20 cursor-help"
+                        title={`Estimated based on standard grocery shelf life for ${category || "this product"}. Tap date to adjust.`}
+                      >
+                        <Sparkles size={12} className="shrink-0" />
+                        Estimated ✦
+                      </span>
+                    )}
+                  </div>
                   <input
                     id="expiryDate"
                     name="expiryDate"
                     type="date"
                     value={expiryDate}
-                    onChange={(e) => setExpiryDate(e.target.value)}
-                    className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-transparent px-4 py-3 text-sm outline-none transition font-mono"
+                    onChange={(e) => {
+                      setExpiryDate(e.target.value);
+                      setIsEstimated(false);
+                      setExpiryType(e.target.value ? "MANUFACTURER_EXPIRY" : "UNKNOWN");
+                    }}
+                    className={`sl-focus-ring w-full rounded-xl border bg-transparent px-4 py-3 text-sm outline-none transition font-mono ${
+                      isEstimated
+                        ? "border-amber-400/80 bg-amber-500/5 focus:border-amber-500"
+                        : "border-[var(--shelf-border)]"
+                    }`}
                   />
+                  {isEstimated && (
+                    <p className="mt-1.5 text-xs text-amber-700/80 dark:text-amber-300/80">
+                      Standard {category || "product"} shelf life (+{daysEstimated ?? 7} days). Changing this date confirms it as manufacturer expiry.
+                    </p>
+                  )}
                 </div>
               </div>
 

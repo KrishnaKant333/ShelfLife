@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.inventoryItem.expiryType",
+    "label": "Add column \"expiryType\" to \"inventoryItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "expiryType",
+        "table": "inventoryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"expiryType\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "expiryType"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"expiryType\"",
+        "sql": "ALTER TABLE \"public\".\"inventoryItem\" ADD COLUMN \"expiryType\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"expiryType\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "inventoryItem",
+          "expiryType"
+        ]
+      }
+    ]
+  }
+]

@@ -44,8 +44,8 @@ To ensure orderly, regression-free implementation, the roadmap is organized into
 | Priority | Feature / Module | Focus Area | Status | Spec Document |
 | :--- | :--- | :--- | :---: | :--- |
 | **P0** | **Fractional Quantities & DB Parity** | Database integrity, decimal subtraction, unit categorisation | 🟢 Completed | [`01-Fractional-Quantities-And-Database-Parity.md`](./01-Fractional-Quantities-And-Database-Parity.md) |
-| **P1** | **Multi-View Product Understanding** | Multi-image aggregation, progressive camera capture, angle roles | 🟡 Queued | [`02-Multi-View-Product-Understanding.md`](./02-Multi-View-Product-Understanding.md) |
-| **P1** | **Intelligent Missing Expiry Hierarchy** | 5-tier freshness hierarchy, AI-estimated shelf life with explicit labels | 🟡 Queued | [`03-Intelligent-Missing-Expiry-Hierarchy.md`](./03-Intelligent-Missing-Expiry-Hierarchy.md) |
+| **P1** | **Multi-View Product Understanding** | Multi-image aggregation, progressive camera capture, angle roles | 🟢 Completed | [`02-Multi-View-Product-Understanding.md`](./02-Multi-View-Product-Understanding.md) |
+| **P1** | **Intelligent Missing Expiry Hierarchy** | 5-tier freshness hierarchy, AI-estimated shelf life with explicit labels | 🟢 Completed | [`03-Intelligent-Missing-Expiry-Hierarchy.md`](./03-Intelligent-Missing-Expiry-Hierarchy.md) |
 | **P2** | **Mobile Inventory Default List View** | One-handed ergonomics, compact vertical scanning, grid toggle | 🟡 Queued | [`04-Mobile-Inventory-Default-List-View.md`](./04-Mobile-Inventory-Default-List-View.md) |
 | **P2** | **Contextual Product Dossier Actions** | Contextual sheets for Add Stock, Move Category, Expiry Reminder | 🟡 Queued | [`05-Contextual-Product-Dossier-Actions.md`](./05-Contextual-Product-Dossier-Actions.md) |
 | **P3** | **Real Product Thumbnails & Fallbacks** | 6-tier image priority, multi-angle thumbnails, OFF attribution | 🟡 Queued | [`06-Product-Thumbnails-And-Image-Hierarchy.md`](./06-Product-Thumbnails-And-Image-Hierarchy.md) |

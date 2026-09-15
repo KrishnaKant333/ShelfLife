@@ -492,6 +492,13 @@
                   "kind": "scalar"
                 }
               },
+              "expiryType": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -590,6 +597,9 @@
                 },
                 "expiryDate": {
                   "column": "expiryDate"
+                },
+                "expiryType": {
+                  "column": "expiryType"
                 },
                 "id": {
                   "column": "id"
@@ -1145,6 +1155,11 @@
                   "nativeType": "timestamptz",
                   "nullable": true
                 },
+                "expiryType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -1413,7 +1428,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "99fdac8734649b7a8fa8126f722dbaf5bee5fb096f16e704e3dfe6329e1affaf"
+    "storageHash": "45ea66c3b071af7c93a58b736bc53cf1b8a5c50957d5af6df8b3b647ac56c692"
   },
   "execution": {
     "executionHash": "7d80476c0bb076336617ca6c01539bf0d0e03bbce6eb7ad70ff49d188d7443cd",
