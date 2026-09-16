@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Grid2X2, List, X, ArrowUpDown, Filter } from "lucide-react";
+import { Search, Grid2X2, List, X, ArrowUpDown, Filter, CheckSquare } from "lucide-react";
 
 export type FilterType = "All" | "Fresh" | "Expiring" | "Low Stock" | "Expired";
 export type SortType =
@@ -23,6 +23,9 @@ interface InventoryToolbarProps {
   viewMode: "list" | "grid";
   onViewModeChange: (mode: "list" | "grid") => void;
   filterCounts: Record<FilterType, number>;
+  isSelectMode?: boolean;
+  onToggleSelectMode?: () => void;
+  selectedCount?: number;
 }
 
 export default function InventoryToolbar({
@@ -35,6 +38,9 @@ export default function InventoryToolbar({
   viewMode,
   onViewModeChange,
   filterCounts,
+  isSelectMode = false,
+  onToggleSelectMode,
+  selectedCount = 0,
 }: InventoryToolbarProps) {
   const [showSearchBox, setShowSearchBox] = useState(Boolean(searchQuery));
   const filterOptions: FilterType[] = ["All", "Fresh", "Expiring", "Low Stock", "Expired"];
@@ -111,6 +117,29 @@ export default function InventoryToolbar({
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] text-[var(--app-text-muted)] hover:text-[var(--app-text-display)] hover:border-[var(--app-border-strong)] transition"
             >
               <Search size={15} />
+            </button>
+          )}
+
+          {/* Multi-Select Toggle Button (Spec 04 Section 7 Batch Selection) */}
+          {onToggleSelectMode && (
+            <button
+              type="button"
+              onClick={onToggleSelectMode}
+              aria-label={isSelectMode ? "Exit multi-select mode" : "Enter multi-select mode"}
+              title={isSelectMode ? "Exit select mode" : "Select multiple items"}
+              className={`flex h-10 px-3 items-center gap-1.5 rounded-xl border text-xs font-semibold transition shrink-0 cursor-pointer ${
+                isSelectMode
+                  ? "border-[var(--app-accent-emerald)] bg-[var(--app-accent-emerald)] text-white shadow-2xs"
+                  : "border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] text-[var(--app-text-muted)] hover:text-[var(--app-text-display)] hover:border-[var(--app-border-strong)]"
+              }`}
+            >
+              <CheckSquare size={14} />
+              <span className="hidden sm:inline">{isSelectMode ? "Selecting" : "Select"}</span>
+              {selectedCount > 0 && (
+                <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${isSelectMode ? "bg-white/20 text-white" : "bg-[var(--app-accent-emerald)] text-white"}`}>
+                  {selectedCount}
+                </span>
+              )}
             </button>
           )}
 

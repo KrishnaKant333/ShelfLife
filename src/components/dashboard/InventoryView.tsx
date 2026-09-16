@@ -29,6 +29,7 @@ import InventoryToolbar, {
 } from "@/components/inventory/InventoryToolbar";
 import ProductCatalogCard from "@/components/inventory/ProductCatalogCard";
 import ProductCatalogRow from "@/components/inventory/ProductCatalogRow";
+import MobileInventoryRow from "@/components/inventory/MobileInventoryRow";
 import dynamic from "next/dynamic";
 const ProductDetailDrawer = dynamic(() => import("@/components/inventory/ProductDetailDrawer"), {
   ssr: false,
@@ -58,8 +59,34 @@ function InventoryViewInner({
   const [activeFilter, setActiveFilter] = useState<FilterType>("All");
   const [sortBy, setSortBy] = useState<SortType>("expiry-asc");
 
-  // Default to GRID view mode as requested
+  // Adaptive default and localStorage persistence (Spec 04)
   const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [isSelectMode, setIsSelectMode] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("shelflife_pref_inventory_view");
+      if (saved === "list" || saved === "grid") {
+        setViewMode(saved);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    // Adaptive default: mobile (< 768px) defaults to list, desktop defaults to grid
+    const isMobile = window.innerWidth < 768;
+    setViewMode(isMobile ? "list" : "grid");
+  }, []);
+
+  const handleViewModeChange = (mode: "list" | "grid") => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem("shelflife_pref_inventory_view", mode);
+    } catch {
+      // ignore
+    }
+  };
 
   // Active Product Detail Drawer state
   const [activeDrawerId, setActiveDrawerId] = useState<number | null>(null);
@@ -430,8 +457,16 @@ function InventoryViewInner({
         sortBy={sortBy}
         onSortChange={setSortBy}
         viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        onViewModeChange={handleViewModeChange}
         filterCounts={filterCounts}
+        isSelectMode={isSelectMode || selectedIds.length > 0}
+        onToggleSelectMode={() => {
+          setIsSelectMode((prev) => !prev);
+          if (isSelectMode && selectedIds.length > 0) {
+            setSelectedIds([]);
+          }
+        }}
+        selectedCount={selectedIds.length}
       />
 
       {/* Bulk Action Controls Banner */}
@@ -518,66 +553,116 @@ function InventoryViewInner({
             ))}
           </div>
         ) : (
-          /* LIST VIEW: High-density table */
-          <div className="sl-editorial-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left border-collapse">
-                <thead className="border-b border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]">
-                  <tr>
-                    <th className="w-12 px-4 py-3.5 sm:px-5">
-                      <button
-                        type="button"
-                        onClick={handleToggleSelectAll}
-                        aria-label="Select all visible products"
-                        aria-pressed={isAllSelected}
-                        className="sl-focus-ring flex items-center text-[var(--app-text-muted)] hover:text-[var(--app-text-body)] transition"
-                      >
-                        {isAllSelected ? (
-                          <CheckSquare size={16} className="text-[var(--app-accent-emerald)]" />
-                        ) : (
-                          <Square size={16} />
-                        )}
-                      </button>
-                    </th>
-                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
-                      Product
-                    </th>
-                    <th className="hidden sm:table-cell px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
-                      Category
-                    </th>
-                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
-                      Quantity
-                    </th>
-                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
-                      Shelf Life
-                    </th>
-                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
-                      Status
-                    </th>
-                    <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)] text-right">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--app-border-subtle)]">
-                  {processedInventory.map((item, idx) => (
-                    <ProductCatalogRow
-                      key={item.id}
-                      item={item}
-                      isSelected={selectedIds.includes(item.id)}
-                      isActiveInDrawer={activeDrawerProduct?.id === item.id}
-                      onSelectProduct={(clickedItem) =>
-                        setActiveDrawerId(clickedItem.id)
-                      }
-                      onToggleSelect={handleToggleSelect}
-                      onQuickUse={handleOpenConsume}
-                      onDelete={handleDeleteSingle}
-                      isBusiness={isBusiness}
-                      index={idx}
-                    />
-                  ))}
-                </tbody>
-              </table>
+          /* LIST VIEW: Responsive presentation (Mobile Touch Rows vs Desktop Table) */
+          <div>
+            {/* MOBILE LIST VIEW (< 768px): Dedicated high-density touch rows */}
+            <div className="md:hidden divide-y divide-[var(--app-border-subtle)] rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] overflow-hidden shadow-xs">
+              {/* Optional Mobile Selection Header Sub-bar */}
+              {(isSelectMode || selectedIds.length > 0) && (
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] text-xs text-[var(--app-text-muted)]">
+                  <button
+                    type="button"
+                    onClick={handleToggleSelectAll}
+                    className="sl-focus-ring flex items-center gap-2 font-semibold text-[var(--app-text-body)] cursor-pointer"
+                  >
+                    {isAllSelected ? (
+                      <CheckSquare size={16} className="text-[var(--app-accent-emerald)]" />
+                    ) : (
+                      <Square size={16} />
+                    )}
+                    <span>Select All ({processedInventory.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSelectMode(false);
+                      setSelectedIds([]);
+                    }}
+                    className="sl-focus-ring text-xs font-semibold text-[var(--app-accent-emerald)] hover:underline cursor-pointer"
+                  >
+                    Done
+                  </button>
+                </div>
+              )}
+
+              {processedInventory.map((item, idx) => (
+                <MobileInventoryRow
+                  key={item.id}
+                  item={item}
+                  isSelected={selectedIds.includes(item.id)}
+                  isActiveInDrawer={activeDrawerProduct?.id === item.id}
+                  isSelectMode={isSelectMode || selectedIds.length > 0}
+                  onSelectProduct={(clickedItem) => setActiveDrawerId(clickedItem.id)}
+                  onToggleSelect={handleToggleSelect}
+                  onQuickUse={handleOpenConsume}
+                  onDelete={handleDeleteSingle}
+                  isBusiness={isBusiness}
+                  index={idx}
+                />
+              ))}
+            </div>
+
+            {/* DESKTOP LIST VIEW (≥ 768px): Wide 6-column data table */}
+            <div className="hidden md:block sl-editorial-card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-left border-collapse">
+                  <thead className="border-b border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]">
+                    <tr>
+                      <th className="w-12 px-4 py-3.5 sm:px-5">
+                        <button
+                          type="button"
+                          onClick={handleToggleSelectAll}
+                          aria-label="Select all visible products"
+                          aria-pressed={isAllSelected}
+                          className="sl-focus-ring flex items-center text-[var(--app-text-muted)] hover:text-[var(--app-text-body)] transition"
+                        >
+                          {isAllSelected ? (
+                            <CheckSquare size={16} className="text-[var(--app-accent-emerald)]" />
+                          ) : (
+                            <Square size={16} />
+                          )}
+                        </button>
+                      </th>
+                      <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                        Product
+                      </th>
+                      <th className="hidden sm:table-cell px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                        Category
+                      </th>
+                      <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                        Quantity
+                      </th>
+                      <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                        Shelf Life
+                      </th>
+                      <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">
+                        Status
+                      </th>
+                      <th className="px-4 py-3.5 sm:px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)] text-right">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--app-border-subtle)]">
+                    {processedInventory.map((item, idx) => (
+                      <ProductCatalogRow
+                        key={item.id}
+                        item={item}
+                        isSelected={selectedIds.includes(item.id)}
+                        isActiveInDrawer={activeDrawerProduct?.id === item.id}
+                        onSelectProduct={(clickedItem) =>
+                          setActiveDrawerId(clickedItem.id)
+                        }
+                        onToggleSelect={handleToggleSelect}
+                        onQuickUse={handleOpenConsume}
+                        onDelete={handleDeleteSingle}
+                        isBusiness={isBusiness}
+                        index={idx}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
