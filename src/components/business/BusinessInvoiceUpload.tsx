@@ -191,50 +191,68 @@ export default function BusinessInvoiceUpload() {
 
   return (
     <div className="space-y-6">
-      {/* Upload */}
-      <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-8 shadow-sm">
-        <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-10 text-center">
-          <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
-            Upload an invoice
+      {/* Upload Dropzone Card */}
+      <div className="sl-editorial-card rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] p-6 md:p-10 shadow-xl relative overflow-hidden">
+        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/5 blur-3xl" />
+
+        <div className="rounded-2xl border-2 border-dashed border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/40 p-8 text-center transition duration-200 hover:border-[var(--app-accent-emerald)] md:p-12 relative z-10">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-[var(--app-accent-emerald)] mb-4">
+            <Sparkles size={28} />
+          </div>
+
+          <h2 className="sl-display-serif text-2xl font-semibold text-[var(--app-text-display)]">
+            Upload Commercial Invoice
           </h2>
 
-          <p className="mx-auto mt-2 max-w-lg text-sm text-[var(--shelf-muted)]">
-            Upload a JPG or PNG invoice and ShelfLife
-            will extract the products automatically.
+          <p className="mx-auto mt-2 max-w-lg text-xs md:text-sm text-[var(--app-text-muted)] leading-relaxed">
+            Upload a JPG or PNG image of your supplier invoice or commercial receipt. ShelfLife vision AI will extract item lines, volumes, and stamped dates automatically.
           </p>
 
-          <input
-            type="file"
-            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-            onChange={(event) => {
-              setFile(
-                event.target.files?.[0] ?? null,
-              );
-
-              setItems([]);
-              setExistingNames([]);
-              setError("");
-              setSuccess("");
-            }}
-            className="mt-6 block text-sm"
-          />
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--app-accent-emerald)] px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:brightness-110 active:scale-[0.98] transition-all">
+              <span>Select Invoice Image</span>
+              <input
+                type="file"
+                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                onChange={(event) => {
+                  setFile(event.target.files?.[0] ?? null);
+                  setItems([]);
+                  setExistingNames([]);
+                  setError("");
+                  setSuccess("");
+                }}
+                className="sr-only"
+              />
+            </label>
+          </div>
 
           {file && (
-            <div className="mt-6">
-              <p className="text-sm font-medium">
+            <div className="mt-6 space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-4 py-2 text-xs font-semibold text-[var(--app-text-display)]">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
                 {file.name}
-              </p>
+              </div>
 
-              <button
-                type="button"
-                onClick={handleExtract}
-                disabled={loading}
-                className="mt-5 rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading
-                  ? "Extracting..."
-                  : "Extract Products"}
-              </button>
+              <div>
+                <button
+                  type="button"
+                  onClick={handleExtract}
+                  disabled={loading}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loading ? (
+                    <>
+                      <Sparkles size={14} className="animate-spin" />
+                      Extracting Commercial Inventory...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} />
+                      Extract Products
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -242,209 +260,146 @@ export default function BusinessInvoiceUpload() {
 
       {/* Messages */}
       {error && (
-        <div className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
+        <div role="alert" aria-live="polite" className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-500 font-medium">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
+        <div role="status" aria-live="polite" className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 text-sm text-emerald-500 font-medium">
           {success}
         </div>
       )}
 
-      {/* Preview */}
+      {/* Extracted Review Section */}
       {items.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] shadow-sm">
-          <div className="border-b border-[var(--shelf-border)] p-6 space-y-4">
+        <div className="sl-editorial-card rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] overflow-hidden shadow-xl">
+          <div className="border-b border-[var(--app-border-subtle)] p-5 md:p-6 bg-[var(--app-surface-base)]/50 space-y-4">
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
-                <h2 className="text-xl font-semibold">
+                <h2 className="sl-display-serif text-xl font-semibold text-[var(--app-text-display)]">
                   Review Extracted Products
                 </h2>
-
-                <p className="mt-1 text-sm text-[var(--shelf-muted)]">
-                  Check the information before adding
-                  anything to your inventory.
+                <p className="mt-1 text-xs text-[var(--app-text-muted)]">
+                  Verify commercial inventory details and units before committing to stock.
                 </p>
               </div>
-
-              <span className="w-fit rounded-full bg-[var(--shelf-forest)]/10 px-3 py-1 text-sm text-[var(--shelf-forest)]">
+              <span className="w-fit rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--app-accent-emerald)]">
                 {items.length} products
               </span>
             </div>
 
             {stats && (
-              <div className="rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 text-xs space-y-2">
-                <h4 className="font-bold text-[var(--shelf-dark)] uppercase tracking-wider">
-                  Invoice Intelligence Analysis
+              <div className="rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] p-4 text-xs space-y-2">
+                <h4 className="font-bold text-[var(--app-text-muted)] uppercase tracking-wider text-[10px]">
+                  Commercial Invoice Analysis
                 </h4>
                 <div className="grid gap-3 grid-cols-2 md:grid-cols-4 pt-1 text-center">
-                  <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
-                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">Detected</span>
-                    <span className="block text-sm font-extrabold text-[var(--shelf-dark)] mt-0.5">{stats.detectedCount} products</span>
+                  <div className="bg-[var(--app-surface-base)]/60 p-2.5 rounded-lg border border-[var(--app-border-subtle)]">
+                    <span className="block text-[9px] font-bold text-[var(--app-text-muted)] uppercase tracking-wider">Detected</span>
+                    <span className="block text-sm font-extrabold text-[var(--app-text-display)] mt-0.5">{stats.detectedCount} products</span>
                   </div>
-                  <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
-                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">New Items</span>
-                    <span className="block text-sm font-extrabold text-[var(--shelf-forest)] mt-0.5">{stats.newCount} products</span>
+                  <div className="bg-[var(--app-surface-base)]/60 p-2.5 rounded-lg border border-[var(--app-border-subtle)]">
+                    <span className="block text-[9px] font-bold text-[var(--app-text-muted)] uppercase tracking-wider">New Items</span>
+                    <span className="block text-sm font-extrabold text-[var(--app-accent-emerald)] mt-0.5">{stats.newCount} products</span>
                   </div>
-                  <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
-                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">Existing</span>
-                    <span className="block text-sm font-extrabold text-[var(--shelf-blue)] mt-0.5">{stats.presentCount} products</span>
+                  <div className="bg-[var(--app-surface-base)]/60 p-2.5 rounded-lg border border-[var(--app-border-subtle)]">
+                    <span className="block text-[9px] font-bold text-[var(--app-text-muted)] uppercase tracking-wider">Existing</span>
+                    <span className="block text-sm font-extrabold text-blue-500 mt-0.5">{stats.presentCount} products</span>
                   </div>
-                  <div className="bg-[var(--shelf-cream)]/45 p-2.5 rounded-lg border border-[var(--shelf-border)]/50">
-                    <span className="block text-[10px] font-bold text-[var(--shelf-muted)] uppercase">Near Expiry / Expired</span>
-                    <span className="block text-sm font-extrabold text-[var(--shelf-terracotta)] mt-0.5">{stats.expiringCount} products</span>
+                  <div className="bg-[var(--app-surface-base)]/60 p-2.5 rounded-lg border border-[var(--app-border-subtle)]">
+                    <span className="block text-[9px] font-bold text-[var(--app-text-muted)] uppercase tracking-wider">Near Expiry</span>
+                    <span className="block text-sm font-extrabold text-amber-500 mt-0.5">{stats.expiringCount} products</span>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left">
-              <thead className="border-b border-[var(--shelf-border)]">
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[900px] text-left text-xs">
+              <thead className="border-b border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/30">
                 <tr>
-                  <th className="px-5 py-4 text-xs font-medium uppercase tracking-wide text-[var(--shelf-muted)]">
-                    Product
-                  </th>
-
-                  <th className="px-5 py-4 text-xs font-medium uppercase tracking-wide text-[var(--shelf-muted)]">
-                    Category
-                  </th>
-
-                  <th className="px-5 py-4 text-xs font-medium uppercase tracking-wide text-[var(--shelf-muted)]">
-                    Quantity
-                  </th>
-
-                  <th className="px-5 py-4 text-xs font-medium uppercase tracking-wide text-[var(--shelf-muted)]">
-                    Unit
-                  </th>
-
-                  <th className="px-5 py-4 text-xs font-medium uppercase tracking-wide text-[var(--shelf-muted)]">
-                    Expiry
-                  </th>
-
-                  <th className="px-5 py-4 text-xs font-medium uppercase tracking-wide text-[var(--shelf-muted)]">
-                    Action
-                  </th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Product</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Category</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Quantity</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Unit</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Expiry</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Action</th>
                 </tr>
               </thead>
-
-              <tbody>
+              <tbody className="divide-y divide-[var(--app-border-subtle)]">
                 {items.map((item, index) => (
-                  <tr
-                    key={`${item.name}-${index}`}
-                    className="border-b border-[var(--shelf-border)] last:border-0"
-                  >
-                    <td className="px-5 py-4">
+                  <tr key={`${item.name}-${index}`} className="hover:bg-[var(--app-surface-base)]/50 transition">
+                    <td className="px-5 py-3.5">
                       <input
                         value={item.name}
-                        onChange={(event) =>
-                          updateItem(
-                            index,
-                            "name",
-                            event.target.value,
-                          )
-                        }
-                        className="w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--shelf-forest)]"
+                        onChange={(event) => updateItem(index, "name", event.target.value)}
+                        className="w-full rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-3 py-1.5 text-xs text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
                       />
                     </td>
-
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3.5">
                       <input
                         value={item.category}
-                        onChange={(event) =>
-                          updateItem(
-                            index,
-                            "category",
-                            event.target.value,
-                          )
-                        }
-                        className="w-full rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--shelf-forest)]"
+                        onChange={(event) => updateItem(index, "category", event.target.value)}
+                        className="w-full rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-3 py-1.5 text-xs text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
                       />
                     </td>
-
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3.5">
                       <input
                         type="number"
                         min={isIntegerUnit(item.unit) ? "1" : "0.0001"}
                         step={isIntegerUnit(item.unit) ? "1" : "any"}
                         inputMode={isIntegerUnit(item.unit) ? "numeric" : "decimal"}
                         value={item.quantity}
-                        onChange={(event) =>
-                          updateItem(
-                            index,
-                            "quantity",
-                            event.target.value,
-                          )
-                        }
-                        className="w-24 rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--shelf-forest)]"
+                        onChange={(event) => updateItem(index, "quantity", event.target.value)}
+                        className="w-24 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-3 py-1.5 text-xs text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
                       />
                     </td>
-
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3.5">
                       <input
                         value={item.unit}
-                        onChange={(event) =>
-                          updateItem(
-                            index,
-                            "unit",
-                            event.target.value,
-                          )
-                        }
-                        className="w-28 rounded-lg border border-[var(--shelf-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--shelf-forest)]"
+                        onChange={(event) => updateItem(index, "unit", event.target.value)}
+                        className="w-28 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] px-3 py-1.5 text-xs text-[var(--app-text-display)] outline-none focus:border-[var(--app-accent-emerald)]"
                       />
                     </td>
-
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3.5">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <input
                             type="date"
                             value={item.expiryDate ?? ""}
-                            onChange={(event) =>
-                              updateItem(
-                                index,
-                                "expiryDate",
-                                event.target.value,
-                              )
-                            }
-                            className={`rounded-lg border bg-transparent px-3 py-2 text-sm outline-none transition ${
+                            onChange={(event) => updateItem(index, "expiryDate", event.target.value)}
+                            className={`rounded-lg border bg-[var(--app-surface-base)] px-3 py-1.5 text-xs font-mono text-[var(--app-text-display)] outline-none transition ${
                               item.isEstimated
                                 ? "border-amber-400/80 bg-amber-500/5 focus:border-amber-500"
-                                : "border-[var(--shelf-border)] focus:border-[var(--shelf-forest)]"
+                                : "border-[var(--app-border-subtle)] focus:border-[var(--app-accent-emerald)]"
                             }`}
                           />
-
                           {item.isEstimated && (
                             <span
-                              className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap cursor-help"
+                              className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-500 border border-amber-500/20 whitespace-nowrap cursor-help"
                               title={`Commercial advisory: Estimated based on standard shelf life for ${item.category || "this product"}. Sensory check before prep.`}
                             >
-                              <Sparkles size={11} className="shrink-0" />
-                              Estimated
+                              <Sparkles size={10} className="shrink-0" />
+                              Estimated ✦
                             </span>
                           )}
                         </div>
-
                         {!item.expiryDate ? (
-                          <p className="text-[11px] font-medium text-[var(--shelf-muted)]">
-                            Date Not Available
-                          </p>
+                          <p className="text-[10px] font-medium text-[var(--app-text-muted)]">Date Not Available</p>
                         ) : item.isEstimated ? (
-                          <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80">
+                          <p className="text-[10px] text-amber-500/90">
                             Commercial estimate (+{item.daysEstimated ?? 7}d). Sensory check before prep.
                           </p>
                         ) : null}
                       </div>
                     </td>
-
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-3.5">
                       <button
                         type="button"
                         onClick={() => removeItem(index)}
-                        className="text-sm font-medium text-[var(--shelf-terracotta)] hover:underline"
+                        className="text-xs font-semibold text-red-500 hover:text-red-400 transition"
                       >
                         Remove
                       </button>
@@ -455,9 +410,65 @@ export default function BusinessInvoiceUpload() {
             </table>
           </div>
 
+          <div className="space-y-3 p-4 md:hidden">
+            {items.map((item, index) => (
+              <div key={`${item.name}-${index}`} className="space-y-3 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/50 p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Product {index + 1}</p>
+                  <button type="button" onClick={() => removeItem(index)} className="text-xs font-semibold text-red-500">Remove</button>
+                </div>
+                <label className="block text-xs font-semibold text-[var(--app-text-display)]">
+                  Product name
+                  <input value={item.name} onChange={(event) => updateItem(index, "name", event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--app-border-subtle)] bg-transparent px-3 py-2 text-xs" />
+                </label>
+                <label className="block text-xs font-semibold text-[var(--app-text-display)]">
+                  Category
+                  <input value={item.category} onChange={(event) => updateItem(index, "category", event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--app-border-subtle)] bg-transparent px-3 py-2 text-xs" />
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block text-xs font-semibold text-[var(--app-text-display)]">
+                    Quantity
+                    <input
+                      type="number"
+                      min={isIntegerUnit(item.unit) ? "1" : "0.0001"}
+                      step={isIntegerUnit(item.unit) ? "1" : "any"}
+                      inputMode={isIntegerUnit(item.unit) ? "numeric" : "decimal"}
+                      value={item.quantity}
+                      onChange={(event) => updateItem(index, "quantity", event.target.value)}
+                      className="mt-1 w-full rounded-lg border border-[var(--app-border-subtle)] bg-transparent px-3 py-2 text-xs"
+                    />
+                  </label>
+                  <label className="block text-xs font-semibold text-[var(--app-text-display)]">
+                    Unit
+                    <input value={item.unit} onChange={(event) => updateItem(index, "unit", event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--app-border-subtle)] bg-transparent px-3 py-2 text-xs" />
+                  </label>
+                </div>
+                <label className="block text-xs font-semibold text-[var(--app-text-display)]">
+                  <div className="flex items-center justify-between">
+                    <span>Expiry date</span>
+                    {item.isEstimated && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-500">
+                        <Sparkles size={10} />
+                        Estimated ✦
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="date"
+                    value={item.expiryDate ?? ""}
+                    onChange={(event) => updateItem(index, "expiryDate", event.target.value)}
+                    className={`mt-1 w-full rounded-lg border bg-transparent px-3 py-2 text-xs ${
+                      item.isEstimated ? "border-amber-400/80 bg-amber-500/5" : "border-[var(--app-border-subtle)]"
+                    }`}
+                  />
+                </label>
+              </div>
+            ))}
+          </div>
+
           {/* Footer */}
-          <div className="flex flex-col gap-4 border-t border-[var(--shelf-border)] p-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-[var(--shelf-muted)]">
+          <div className="flex flex-col gap-4 border-t border-[var(--app-border-subtle)] p-5 md:p-6 bg-[var(--app-surface-base)]/40 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-[var(--app-text-muted)]">
               AI-generated information should be reviewed before importing. Estimated shelf lives require standard sensory checks before prep.
             </p>
 
@@ -465,7 +476,7 @@ export default function BusinessInvoiceUpload() {
               type="button"
               onClick={handleImport}
               disabled={importing}
-              className="rounded-xl bg-[var(--shelf-forest)] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-xl bg-[var(--app-accent-emerald)] px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:cursor-not-allowed disabled:opacity-50"
             >
               {importing
                 ? "Importing..."

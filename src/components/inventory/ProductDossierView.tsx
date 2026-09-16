@@ -16,13 +16,12 @@ import ExpirationVisualizer from "@/components/inventory/ExpirationVisualizer";
 import AIFoodIntelligence from "@/components/inventory/AIFoodIntelligence";
 import ProductActivityLedger from "@/components/inventory/ProductActivityLedger";
 import QuickConsumeModal from "@/components/inventory/QuickConsumeModal";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import ProductDeleteModal from "@/components/inventory/ProductDeleteModal";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 import {
   consumeIngredientsAction,
   type ConsumptionRecord,
 } from "@/lib/actions/recipes";
-import { deleteInventoryItem } from "@/lib/actions/inventory";
 import type { InventoryItem } from "@/lib/inventory";
 
 interface ProductDossierViewProps {
@@ -89,18 +88,7 @@ function ProductDossierViewInner({
     }
   };
 
-  // Handle deletion
-  const handleConfirmDelete = async () => {
-    try {
-      await deleteInventoryItem(item.id);
-      showToast(`${item.name} removed from inventory.`, "success");
-      router.push(`${prefix}/inventory`);
-    } catch {
-      showToast("Unable to delete product. Please try again.", "error");
-    } finally {
-      setConfirmDeleteOpen(false);
-    }
-  };
+
 
   return (
     <div className="space-y-6 pb-20 sm:pb-8">
@@ -209,15 +197,18 @@ function ProductDossierViewInner({
         onConfirm={handleConfirmConsume}
       />
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation Modal with Reason Tracking & 5s Undo */}
       {confirmDeleteOpen && (
-        <ConfirmDialog
-          title={`Delete ${item.name}`}
-          message={`Are you sure you want to remove ${item.name} from your digital dossier? This action cannot be undone.`}
-          confirmLabel="Delete Product"
-          isDestructive
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setConfirmDeleteOpen(false)}
+        <ProductDeleteModal
+          isOpen={confirmDeleteOpen}
+          onClose={() => setConfirmDeleteOpen(false)}
+          item={item}
+          onSuccess={() => {
+            router.push(`${prefix}/inventory`);
+          }}
+          onRestore={() => {
+            router.refresh();
+          }}
         />
       )}
     </div>

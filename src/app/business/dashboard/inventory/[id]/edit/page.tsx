@@ -66,21 +66,21 @@ export default async function BusinessEditProductPage({
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-6 md:p-8">
-      <div className="mb-6">
+    <main className="mx-auto max-w-4xl px-4 sm:px-6 md:px-0 py-6 md:py-10">
+      <div className="mb-6 md:mb-8">
         <Link
           href="/business/dashboard/inventory"
-          className="text-sm font-medium text-[var(--shelf-forest)]"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--shelf-forest)] hover:underline transition-colors"
         >
-          ← Back to inventory
+          <span aria-hidden="true">←</span> Back to inventory
         </Link>
 
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+        <h1 className="sl-display-serif mt-3 text-3xl md:text-4xl font-semibold tracking-tight text-[var(--app-text-display)]">
           Edit Product
         </h1>
 
-        <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-          Update the information for {product.name}.
+        <p className="mt-1.5 text-sm text-[var(--app-text-muted)]">
+          Update the commercial inventory stock and parameters for <span className="font-medium text-[var(--app-text-display)]">{product.name}</span>.
         </p>
       </div>
 

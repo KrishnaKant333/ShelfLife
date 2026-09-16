@@ -70,60 +70,76 @@ export default function CsvImport() {
 
   return (
     <div className="space-y-6">
-      {/* Upload Box */}
-      <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] p-4 shadow-sm md:p-8">
-        <div className="rounded-2xl border-2 border-dashed border-[var(--shelf-border)] p-6 text-center transition duration-200 hover:border-[var(--shelf-sage)] md:p-10">
-          <h2 className="text-lg font-semibold text-[var(--shelf-dark)]">
-            Upload your CSV File
+      {/* Upload Dropzone Card */}
+      <div className="sl-editorial-card rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] p-6 md:p-10 shadow-xl relative overflow-hidden">
+        <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/5 blur-3xl" />
+
+        <div className="rounded-2xl border-2 border-dashed border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/40 p-8 text-center transition duration-200 hover:border-[var(--app-accent-emerald)] md:p-12 relative z-10">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-[var(--app-accent-emerald)] mb-4">
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+
+          <h2 className="sl-display-serif text-2xl font-semibold text-[var(--app-text-display)]">
+            Upload CSV Spreadsheet
           </h2>
-          <p className="mt-2 text-sm text-[var(--shelf-muted)]">
-            Ensure your columns are: name, category, quantity, unit, expiryDate
+          <p className="mt-2 max-w-md mx-auto text-xs md:text-sm text-[var(--app-text-muted)] leading-relaxed">
+            Ensure your columns include: <span className="font-mono text-xs text-[var(--app-text-display)] bg-[var(--app-surface-elevated)] px-1.5 py-0.5 rounded border border-[var(--app-border-subtle)]">name</span>, <span className="font-mono text-xs text-[var(--app-text-display)] bg-[var(--app-surface-elevated)] px-1.5 py-0.5 rounded border border-[var(--app-border-subtle)]">category</span>, <span className="font-mono text-xs text-[var(--app-text-display)] bg-[var(--app-surface-elevated)] px-1.5 py-0.5 rounded border border-[var(--app-border-subtle)]">quantity</span>, <span className="font-mono text-xs text-[var(--app-text-display)] bg-[var(--app-surface-elevated)] px-1.5 py-0.5 rounded border border-[var(--app-border-subtle)]">unit</span>, <span className="font-mono text-xs text-[var(--app-text-display)] bg-[var(--app-surface-elevated)] px-1.5 py-0.5 rounded border border-[var(--app-border-subtle)]">expiryDate</span>
           </p>
 
-          <label className="mt-6 inline-flex cursor-pointer items-center justify-center rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90">
-            <span>Select File</span>
-            <input
-              type="file"
-              accept=".csv,text/csv"
-              onChange={handleFileChange}
-              className="sr-only"
-            />
-          </label>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--app-accent-emerald)] px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:brightness-110 active:scale-[0.98] transition-all">
+              <span>Select CSV File</span>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={handleFileChange}
+                className="sr-only"
+              />
+            </label>
+          </div>
 
           {fileName && (
-            <p className="mt-4 text-sm font-medium text-[var(--shelf-dark)] bg-[var(--shelf-cream)] inline-block px-3 py-1 rounded-lg">
+            <div className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-4 py-2 text-xs font-semibold text-[var(--app-text-display)]">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
               {fileName}
-            </p>
+            </div>
           )}
         </div>
       </div>
 
       {/* Error & Success Messages */}
       {error && (
-        <div role="alert" aria-live="polite" className="rounded-xl bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
+        <div role="alert" aria-live="polite" className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-500">
           {error}
         </div>
       )}
 
       {success && (
-        <div role="status" aria-live="polite" className="rounded-xl bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-4 py-3 text-sm text-[var(--shelf-forest)]">
+        <div role="status" aria-live="polite" className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 text-sm text-emerald-500 font-medium">
           {success}
         </div>
       )}
 
       {/* Preview Table */}
       {rows.length > 0 && (
-        <div className="rounded-2xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] overflow-hidden shadow-sm">
-          <div className="border-b border-[var(--shelf-border)] p-6 bg-[var(--shelf-cream)]/50">
-            <h2 className="text-xl font-semibold text-[var(--shelf-dark)]">
-              Import Preview
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-3 text-sm">
-              <span className="rounded-full bg-[var(--shelf-forest)]/10 border border-[var(--shelf-forest)]/20 px-3 py-1 text-[var(--shelf-forest)] font-medium">
+        <div className="sl-editorial-card rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] overflow-hidden shadow-xl">
+          <div className="border-b border-[var(--app-border-subtle)] p-5 md:p-6 bg-[var(--app-surface-base)]/50 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="sl-display-serif text-xl font-semibold text-[var(--app-text-display)]">
+                Import Preview
+              </h2>
+              <p className="text-xs text-[var(--app-text-muted)] mt-0.5">
+                Verify detected products and shelf life fields before saving
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[var(--app-accent-emerald)] font-bold">
                 ✓ {validRows.length} valid
               </span>
               {invalidRows.length > 0 && (
-                <span className="rounded-full bg-[var(--shelf-terracotta)]/10 border border-[var(--shelf-terracotta)]/20 px-3 py-1 text-[var(--shelf-terracotta)] font-medium">
+                <span className="rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1 text-red-500 font-bold">
                   ⚠ {invalidRows.length} invalid
                 </span>
               )}
@@ -131,31 +147,35 @@ export default function CsvImport() {
           </div>
 
           <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-[700px] text-left">
-              <thead className="border-b border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30">
+            <table className="w-full min-w-[700px] text-left text-xs">
+              <thead className="border-b border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/30">
                 <tr>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-[var(--shelf-muted)]">Row</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-[var(--shelf-muted)]">Product</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-[var(--shelf-muted)]">Category</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-[var(--shelf-muted)]">Quantity</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-[var(--shelf-muted)]">Expiry</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-[var(--shelf-muted)]">Status</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Row</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Product</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Category</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Quantity</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Expiry</th>
+                  <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]">Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-[var(--app-border-subtle)]">
                 {rows.map((row) => (
-                  <tr key={row.row} className="border-b border-[var(--shelf-border)] last:border-0 hover:bg-[var(--shelf-cream)]/10">
-                    <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.row}</td>
+                  <tr key={row.row} className="hover:bg-[var(--app-surface-base)]/50 transition">
+                    <td className="px-5 py-3.5 font-mono text-[var(--app-text-muted)]">{row.row}</td>
                     {row.data ? (
                       <>
-                        <td className="px-6 py-4 text-sm font-medium text-[var(--shelf-dark)]">{row.data.name}</td>
-                        <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.category}</td>
-                        <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.quantity} {row.data.unit}</td>
-                        <td className="px-6 py-4 text-sm text-[var(--shelf-muted)]">{row.data.expiryDate?.toLocaleDateString() ?? "Expiry not available"}</td>
-                        <td className="px-6 py-4 text-sm text-[var(--shelf-forest)] font-medium">Valid</td>
+                        <td className="px-5 py-3.5 font-medium text-[var(--app-text-display)]">{row.data.name}</td>
+                        <td className="px-5 py-3.5 text-[var(--app-text-muted)]">{row.data.category}</td>
+                        <td className="px-5 py-3.5 font-medium text-[var(--app-text-display)]">{row.data.quantity} {row.data.unit}</td>
+                        <td className="px-5 py-3.5 font-mono text-[var(--app-text-muted)]">{row.data.expiryDate?.toLocaleDateString() ?? "Expiry not available"}</td>
+                        <td className="px-5 py-3.5">
+                          <span className="inline-flex rounded-md bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--app-accent-emerald)] border border-emerald-500/20">
+                            Valid
+                          </span>
+                        </td>
                       </>
                     ) : (
-                      <td colSpan={5} className="px-6 py-4 text-sm text-[var(--shelf-terracotta)] font-medium">
+                      <td colSpan={5} className="px-5 py-3.5 font-medium text-red-500">
                         {row.error}
                       </td>
                     )}
@@ -167,34 +187,34 @@ export default function CsvImport() {
 
           <div className="space-y-3 p-4 md:hidden">
             {rows.map((row) => (
-              <div key={row.row} className="rounded-xl border border-[var(--shelf-border)] p-3">
+              <div key={row.row} className="rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/50 p-3.5">
                 {row.data ? (
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-xs">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate font-semibold text-[var(--shelf-dark)]">{row.data.name}</p>
-                        <p className="mt-1 text-xs text-[var(--shelf-muted)]">Row {row.row} · {row.data.category}</p>
+                        <p className="truncate font-semibold text-[var(--app-text-display)]">{row.data.name}</p>
+                        <p className="mt-0.5 text-[11px] text-[var(--app-text-muted)]">Row {row.row} · {row.data.category}</p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-[var(--shelf-forest)]/10 px-2 py-1 text-[10px] font-semibold text-[var(--shelf-forest)]">Valid</span>
+                      <span className="shrink-0 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--app-accent-emerald)] border border-emerald-500/20">Valid</span>
                     </div>
-                    <p className="text-xs text-[var(--shelf-muted)]">{row.data.quantity} {row.data.unit} · {row.data.expiryDate?.toLocaleDateString() ?? "Expiry not available"}</p>
+                    <p className="text-[11px] text-[var(--app-text-muted)]">{row.data.quantity} {row.data.unit} · {row.data.expiryDate?.toLocaleDateString() ?? "Expiry not available"}</p>
                   </div>
                 ) : (
-                  <p className="text-sm font-medium text-[var(--shelf-terracotta)]">Row {row.row}: {row.error}</p>
+                  <p className="text-xs font-medium text-red-500">Row {row.row}: {row.error}</p>
                 )}
               </div>
             ))}
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-[var(--shelf-border)] bg-[var(--shelf-cream)]/30 p-4 sm:flex-row sm:items-center sm:justify-between md:p-6">
-            <p className="text-sm text-[var(--shelf-muted)]">
-              {invalidRows.length > 0 ? "Invalid rows will be skipped during import." : "All rows are ready to import."}
+          <div className="flex flex-col gap-3 border-t border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/40 p-4 sm:flex-row sm:items-center sm:justify-between md:p-6">
+            <p className="text-xs text-[var(--app-text-muted)]">
+              {invalidRows.length > 0 ? "Invalid rows will be skipped during import." : "All rows validated and ready to import."}
             </p>
             <button
               type="button"
               onClick={handleImport}
               disabled={importing || validRows.length === 0}
-              className="rounded-xl bg-[var(--shelf-forest)] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-xl bg-[var(--app-accent-emerald)] px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:cursor-not-allowed disabled:opacity-50"
             >
               {importing ? "Importing..." : `Import ${validRows.length} Products`}
             </button>

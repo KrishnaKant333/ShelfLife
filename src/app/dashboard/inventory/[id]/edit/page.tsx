@@ -52,21 +52,21 @@ export default async function EditProductPage({
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-4 sm:px-6 md:px-0">
-      <div className="mb-3 mt-6 md:mt-8">
+    <main className="mx-auto max-w-4xl px-4 sm:px-6 md:px-0 py-6 md:py-10">
+      <div className="mb-6 md:mb-8">
         <Link
           href="/dashboard/inventory"
-          className="text-sm font-medium text-[var(--shelf-forest)]"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--shelf-forest)] hover:underline transition-colors"
         >
-          ← Back to inventory
+          <span aria-hidden="true">←</span> Back to inventory
         </Link>
 
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+        <h1 className="sl-display-serif mt-3 text-3xl md:text-4xl font-semibold tracking-tight text-[var(--app-text-display)]">
           Edit Product
         </h1>
 
-        <p className="mt-2 text-[var(--shelf-muted)]">
-          Update the information for {product.name}.
+        <p className="mt-1.5 text-sm text-[var(--app-text-muted)]">
+          Update the inventory parameters and shelf life details for <span className="font-medium text-[var(--app-text-display)]">{product.name}</span>.
         </p>
       </div>
 

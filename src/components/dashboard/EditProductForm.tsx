@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Package, Layers, Scale, Calendar, Check, AlertCircle } from "lucide-react";
 
 import {
   updateInventoryItem,
@@ -47,8 +47,11 @@ export default function EditProductForm({
   return (
     <form
       action={formAction}
-      className="rounded-2xl bg-[var(--shelf-surface)] p-4 shadow-2xl md:p-6"
+      className="sl-editorial-card rounded-2xl bg-[var(--app-surface-elevated)] border border-[var(--app-border-subtle)] p-5 md:p-8 shadow-xl relative overflow-hidden"
     >
+      {/* Decorative subtle ambient highlight */}
+      <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/5 blur-3xl" />
+
       {/* Preserve existing product imagery during text updates */}
       {product.imageUrl && (
         <input type="hidden" name="imageUrl" value={product.imageUrl} />
@@ -61,13 +64,16 @@ export default function EditProductForm({
         />
       )}
       <input type="hidden" name="expiryType" value={expiryTypeState} />
-      <div className="grid gap-4 md:grid-cols-2 md:gap-6">
-        <div>
+
+      <div className="grid gap-5 md:grid-cols-2 md:gap-6 relative z-10">
+        {/* Product Name */}
+        <div className="group rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/60 p-3.5 transition focus-within:border-[var(--app-accent-emerald)] focus-within:bg-[var(--app-surface-base)]">
           <label
             htmlFor="name"
-            className="mb-2 block text-sm font-medium"
+            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]"
           >
-            Product name
+            <Package size={13} className="text-[var(--app-accent-emerald)]" />
+            Product Name
           </label>
 
           <input
@@ -75,15 +81,18 @@ export default function EditProductForm({
             name="name"
             type="text"
             defaultValue={product.name}
-            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
+            required
+            className="mt-1.5 w-full bg-transparent text-sm md:text-base font-medium text-[var(--app-text-display)] placeholder:text-[var(--app-text-muted)]/50 outline-none transition"
           />
         </div>
 
-        <div>
+        {/* Category */}
+        <div className="group rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/60 p-3.5 transition focus-within:border-[var(--app-accent-emerald)] focus-within:bg-[var(--app-surface-base)]">
           <label
             htmlFor="category"
-            className="mb-2 block text-sm font-medium"
+            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]"
           >
+            <Layers size={13} className="text-[var(--app-accent-emerald)]" />
             Category
           </label>
 
@@ -93,15 +102,17 @@ export default function EditProductForm({
             type="text"
             defaultValue={product.category}
             required
-            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
+            className="mt-1.5 w-full bg-transparent text-sm md:text-base font-medium text-[var(--app-text-display)] placeholder:text-[var(--app-text-muted)]/50 outline-none transition"
           />
         </div>
 
-        <div>
+        {/* Quantity */}
+        <div className="group rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/60 p-3.5 transition focus-within:border-[var(--app-accent-emerald)] focus-within:bg-[var(--app-surface-base)]">
           <label
             htmlFor="quantity"
-            className="mb-2 block text-sm font-medium"
+            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]"
           >
+            <Scale size={13} className="text-[var(--app-accent-emerald)]" />
             Quantity
           </label>
 
@@ -114,16 +125,18 @@ export default function EditProductForm({
             inputMode={isInt ? "numeric" : "decimal"}
             defaultValue={product.quantity}
             required
-            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
+            className="mt-1.5 w-full bg-transparent text-sm md:text-base font-medium text-[var(--app-text-display)] placeholder:text-[var(--app-text-muted)]/50 outline-none transition"
           />
         </div>
 
-        <div>
+        {/* Unit */}
+        <div className="group rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/60 p-3.5 transition focus-within:border-[var(--app-accent-emerald)] focus-within:bg-[var(--app-surface-base)]">
           <label
             htmlFor="unit"
-            className="mb-2 block text-sm font-medium"
+            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]"
           >
-            Unit
+            <span className="text-[10px] font-bold text-[var(--app-accent-emerald)]">#</span>
+            Unit of Measure
           </label>
 
           <input
@@ -133,25 +146,28 @@ export default function EditProductForm({
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
             required
-            className="sl-focus-ring w-full rounded-xl border border-[var(--shelf-border)] bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition"
+            placeholder="e.g. packs, kg, items"
+            className="mt-1.5 w-full bg-transparent text-sm md:text-base font-medium text-[var(--app-text-display)] placeholder:text-[var(--app-text-muted)]/50 outline-none transition"
           />
         </div>
 
-        <div className="md:col-span-2">
-          <div className="mb-2 flex items-center justify-between">
+        {/* Expiry Date & Provenance */}
+        <div className="md:col-span-2 group rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/60 p-3.5 transition focus-within:border-[var(--app-accent-emerald)] focus-within:bg-[var(--app-surface-base)]">
+          <div className="flex items-center justify-between">
             <label
               htmlFor="expiryDate"
-              className="block text-sm font-medium text-[var(--shelf-dark)]"
+              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--app-text-muted)]"
             >
-              Expiry date
+              <Calendar size={13} className="text-[var(--app-accent-emerald)]" />
+              Expiry Date
             </label>
             {isEstimated && (
               <span
-                className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20 cursor-help"
+                className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-500 border border-amber-500/20 cursor-help"
                 title={`Estimated based on standard grocery shelf life for ${product.category}. Adjusting date confirms it as manufacturer date.`}
               >
-                <Sparkles size={12} className="shrink-0" />
-                Estimated ✦
+                <Sparkles size={11} className="shrink-0" />
+                AI Estimated ✦
               </span>
             )}
           </div>
@@ -165,30 +181,29 @@ export default function EditProductForm({
               setExpiryDateValue(e.target.value);
               setExpiryTypeState(e.target.value ? "MANUFACTURER_EXPIRY" : "UNKNOWN");
             }}
-            className={`sl-focus-ring w-full rounded-xl border bg-[var(--shelf-surface)] px-4 py-3 text-[var(--shelf-dark)] outline-none transition ${
-              isEstimated
-                ? "border-amber-400/80 bg-amber-500/5 focus:border-amber-500"
-                : "border-[var(--shelf-border)]"
-            }`}
+            className="mt-1.5 w-full bg-transparent text-sm md:text-base font-medium text-[var(--app-text-display)] outline-none transition font-mono"
           />
           {isEstimated && (
-            <p className="mt-1.5 text-xs text-amber-700/80 dark:text-amber-300/80">
-              AI category estimate. Adjusting this date confirms it as manufacturer expiry.
+            <p className="mt-2 text-xs text-amber-500/90 flex items-center gap-1.5">
+              <Sparkles size={12} className="shrink-0" />
+              Calculated using standard {product.category || "category"} shelf life. Adjusting this date confirms it as authoritative manufacturer expiry.
             </p>
           )}
         </div>
       </div>
 
       {state.error && (
-        <p role="alert" aria-live="polite" className="mt-5 rounded-xl bg-[var(--shelf-terracotta)]/10 px-4 py-3 text-sm text-[var(--shelf-terracotta)]">
-          {state.error}
-        </p>
+        <div role="alert" aria-live="polite" className="mt-6 flex items-start gap-2.5 rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-500">
+          <AlertCircle size={16} className="shrink-0 mt-0.5" />
+          <span>{state.error}</span>
+        </div>
       )}
 
-      <div className="sticky bottom-3 z-10 -mx-1 mt-6 flex justify-end gap-3 border-t border-[var(--shelf-border)] bg-[var(--shelf-surface)]/95 px-1 pt-4 backdrop-blur-sm md:static md:mx-0 md:mt-8 md:border-0 md:bg-transparent md:px-0 md:pt-0 md:backdrop-blur-none">
+      {/* Action Bar */}
+      <div className="sticky bottom-3 z-20 -mx-2 mt-8 flex items-center justify-end gap-3 border-t border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)]/95 px-3 pt-4 backdrop-blur-md md:static md:mx-0 md:mt-10 md:border-t md:border-[var(--app-border-subtle)]/70 md:bg-transparent md:px-0 md:pt-6 md:backdrop-blur-none">
         <Link
           href="/dashboard/inventory"
-          className="sl-focus-ring rounded-xl border border-[var(--shelf-border)] px-5 py-3 text-sm font-medium text-[var(--shelf-dark)]"
+          className="inline-flex items-center justify-center rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/50 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] hover:text-[var(--app-text-display)] transition-all"
         >
           Cancel
         </Link>
@@ -196,9 +211,16 @@ export default function EditProductForm({
         <button
           type="submit"
           disabled={pending}
-          className="sl-focus-ring rounded-xl bg-[var(--shelf-forest)] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--app-accent-emerald)] px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {pending ? "Saving..." : "Save Changes"}
+          {pending ? (
+            "Saving Changes..."
+          ) : (
+            <>
+              <Check size={14} />
+              Save Changes
+            </>
+          )}
         </button>
       </div>
     </form>

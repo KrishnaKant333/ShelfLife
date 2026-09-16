@@ -913,3 +913,175 @@ export async function restoreInventoryItemAction(
     return { success: false, error: "Failed to restore product." };
   }
 }
+
+/**
+ * Deletes multiple inventory items with reason attribution (consumed, waste, error)
+ * and returns item snapshots for undo capability.
+ */
+export async function bulkDeleteWithReasonAction(
+  ids: number[],
+  reason: "consumed" | "waste" | "error"
+): Promise<{
+  success: boolean;
+  count?: number;
+  deletedItems?: Array<{
+    id: number;
+    name: string;
+    category: string;
+    quantity: number;
+    unit: string;
+    expiryDate: string | null;
+    expiryType?: string | null;
+    imageUrl?: string | null;
+    additionalImageUrls?: string | null;
+  }>;
+  error?: string;
+}> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const candidateUrls: string[] = [];
+    const deletedIds: number[] = [];
+    const deletedItems: any[] = [];
+
+    for (const id of ids) {
+      const dbItem = await db.orm.public.InventoryItem.first({ id });
+      if (!dbItem) continue;
+
+      if (session.accountType === "business") {
+        if (dbItem.businessId !== session.businessId) continue;
+      } else {
+        if (dbItem.userId !== session.userId) continue;
+      }
+
+      deletedItems.push({
+        id: dbItem.id,
+        name: dbItem.name,
+        category: dbItem.category,
+        quantity: dbItem.quantity,
+        unit: dbItem.unit,
+        expiryDate: dbItem.expiryDate
+          ? typeof dbItem.expiryDate === "string"
+            ? dbItem.expiryDate
+            : new Date(dbItem.expiryDate).toISOString()
+          : null,
+        expiryType: dbItem.expiryType,
+        imageUrl: dbItem.imageUrl,
+        additionalImageUrls: dbItem.additionalImageUrls,
+      });
+
+      if (reason === "consumed") {
+        await db.orm.public.InventoryConsumption.create({
+          userId: session.userId,
+          businessId: session.accountType === "business" ? session.businessId : null,
+          inventoryItemId: dbItem.id,
+          productName: dbItem.name,
+          quantityUsed: dbItem.quantity,
+          unit: dbItem.unit,
+          normalizedQuantityUsed: normalizeQuantity(dbItem.quantity, dbItem.unit).normalizedValue,
+        });
+
+        await db.orm.public.InventoryActivity.create({
+          userId: session.userId,
+          businessId: session.accountType === "business" ? session.businessId : null,
+          inventoryItemId: dbItem.id,
+          productName: dbItem.name,
+          action: "consumed",
+          quantity: dbItem.quantity,
+          unit: dbItem.unit,
+        });
+      } else if (reason === "waste") {
+        await db.orm.public.InventoryActivity.create({
+          userId: session.userId,
+          businessId: session.accountType === "business" ? session.businessId : null,
+          inventoryItemId: dbItem.id,
+          productName: dbItem.name,
+          action: "discarded_expired",
+          quantity: dbItem.quantity,
+          unit: dbItem.unit,
+        });
+      }
+
+      candidateUrls.push(...parseItemImageUrls(dbItem));
+      deletedIds.push(id);
+      await db.orm.public.InventoryItem.where({ id }).delete();
+    }
+
+    if (candidateUrls.length > 0) {
+      await safeDeleteUnreferencedImages(candidateUrls, deletedIds);
+    }
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+      revalidatePath("/business/dashboard/waste");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+      revalidatePath("/dashboard/analytics");
+      revalidatePath("/dashboard/waste");
+      revalidatePath("/dashboard/recipes");
+    }
+
+    return { success: true, count: deletedIds.length, deletedItems };
+  } catch (error) {
+    console.error("Bulk delete with reason failed:", error);
+    return { success: false, error: "Failed to delete selected items." };
+  }
+}
+
+/**
+ * Restores multiple previously removed inventory items (Undo action for bulk operations).
+ */
+export async function bulkRestoreInventoryItemsAction(
+  itemsData: Array<{
+    name: string;
+    category: string;
+    quantity: number;
+    unit: string;
+    expiryDate: string | null;
+    expiryType?: string | null;
+    imageUrl?: string | null;
+    additionalImageUrls?: string | null;
+  }>
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    for (const item of itemsData) {
+      await db.orm.public.InventoryItem.create({
+        userId: session.userId,
+        businessId: session.accountType === "business" ? session.businessId : null,
+        name: item.name,
+        category: item.category,
+        quantity: item.quantity,
+        unit: item.unit,
+        expiryDate: item.expiryDate,
+        expiryType: item.expiryType || null,
+        imageUrl: item.imageUrl || null,
+        additionalImageUrls: item.additionalImageUrls || null,
+      });
+    }
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+    }
+
+    return { success: true, count: itemsData.length };
+  } catch (error) {
+    console.error("Bulk restore failed:", error);
+    return { success: false, error: "Failed to restore products." };
+  }
+}

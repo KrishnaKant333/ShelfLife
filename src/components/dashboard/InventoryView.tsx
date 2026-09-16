@@ -21,7 +21,9 @@ import {
   discardExpiredItemsAction,
   deleteInventoryItem,
 } from "@/lib/actions/inventory";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import ProductDeleteModal from "@/components/inventory/ProductDeleteModal";
+import BulkDeleteModal from "@/components/inventory/BulkDeleteModal";
+import DiscardExpiredModal from "@/components/inventory/DiscardExpiredModal";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 import InventoryToolbar, {
   type FilterType,
@@ -103,14 +105,11 @@ function InventoryViewInner({
   // Bulk selection states
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-  // Confirmation dialog state
-  const [confirmDialog, setConfirmDialog] = useState<{
-    title: string;
-    message: string;
-    onConfirm: () => void;
-    isDestructive?: boolean;
-  } | null>(null);
-  const [isBulkActionPending, setIsBulkActionPending] = useState(false);
+  // Modal states replacing legacy ConfirmDialog
+  const [deleteTargetItem, setDeleteTargetItem] = useState<InventoryItem | null>(null);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [bulkModalMode, setBulkModalMode] = useState<"delete" | "consume">("delete");
+  const [showDiscardExpiredModal, setShowDiscardExpiredModal] = useState(false);
 
   // Manual Consumption Modal states
   const [consumeItem, setConsumeItem] = useState<InventoryItem | null>(null);
@@ -268,126 +267,42 @@ function InventoryViewInner({
     }
   };
 
+  // Filtered expired and selected items for modals
+  const expiredItems = useMemo(() => {
+    return initialInventory.filter((item) => {
+      if (!item.expiryDate) return false;
+      return new Date(item.expiryDate).getTime() < Date.now();
+    });
+  }, [initialInventory]);
+
+  const selectedItems = useMemo(() => {
+    return initialInventory.filter((item) => selectedIds.includes(item.id));
+  }, [initialInventory, selectedIds]);
+
   // Delete single item handler
   const handleDeleteSingle = (id: number) => {
     const targetItem = initialInventory.find((x) => x.id === id);
-    setConfirmDialog({
-      title: "Delete Product",
-      message: `Are you sure you want to delete ${
-        targetItem ? `"${targetItem.name}"` : "this item"
-      }? This cannot be undone.`,
-      isDestructive: true,
-      onConfirm: async () => {
-        try {
-          await deleteInventoryItem(id);
-          showToast("Product deleted successfully.", "success");
-          setSelectedIds((prev) => prev.filter((x) => x !== id));
-          if (activeDrawerId === id) {
-            setActiveDrawerId(null);
-          }
-          router.refresh();
-        } catch {
-          showToast("Unable to delete this product. Please try again.", "error");
-        } finally {
-          setConfirmDialog(null);
-        }
-      },
-    });
+    if (targetItem) {
+      setDeleteTargetItem(targetItem);
+    }
   };
 
   // Bulk actions handlers
   const handleBulkDelete = () => {
     if (selectedIds.length === 0) return;
-    setConfirmDialog({
-      title: "Delete Selected Products",
-      message: `Are you sure you want to permanently delete ${selectedIds.length} item(s)? This cannot be undone.`,
-      isDestructive: true,
-      onConfirm: async () => {
-        setIsBulkActionPending(true);
-        try {
-          const res = await bulkDeleteAction(selectedIds);
-          if (res.success) {
-            showToast(`${selectedIds.length} product(s) deleted.`, "success");
-            setSelectedIds([]);
-            router.refresh();
-          } else {
-            showToast(res.error || "Bulk delete failed.", "error");
-          }
-        } catch {
-          showToast("Error executing bulk delete.", "error");
-        } finally {
-          setIsBulkActionPending(false);
-          setConfirmDialog(null);
-        }
-      },
-    });
+    setBulkModalMode("delete");
+    setShowBulkDeleteModal(true);
   };
 
   const handleBulkConsume = () => {
     if (selectedIds.length === 0) return;
-    setConfirmDialog({
-      title: "Mark as Fully Consumed",
-      message: `Mark ${selectedIds.length} selected item(s) as fully consumed? Their stock will be reduced to 0.`,
-      onConfirm: async () => {
-        setIsBulkActionPending(true);
-        try {
-          const itemsToConsume = selectedIds.map((id) => {
-            const item = initialInventory.find((x) => x.id === id);
-            return {
-              itemId: id,
-              quantityUsed: item ? item.quantity : 1,
-            };
-          });
-          const res = await consumeIngredientsAction(itemsToConsume);
-          if (res.success) {
-            showToast(
-              `${selectedIds.length} product(s) marked as consumed.`,
-              "success"
-            );
-            setSelectedIds([]);
-            router.refresh();
-          } else {
-            showToast(res.error || "Bulk consume failed.", "error");
-          }
-        } catch {
-          showToast("Error executing bulk consumption.", "error");
-        } finally {
-          setIsBulkActionPending(false);
-          setConfirmDialog(null);
-        }
-      },
-    });
+    setBulkModalMode("consume");
+    setShowBulkDeleteModal(true);
   };
 
   const handleDiscardExpired = () => {
-    setConfirmDialog({
-      title: "Discard Expired Items",
-      message:
-        "Discard every expired item in this inventory? This action is permanent and records an activity audit log.",
-      isDestructive: true,
-      onConfirm: async () => {
-        setIsBulkActionPending(true);
-        try {
-          const result = await discardExpiredItemsAction();
-          if (result.success) {
-            showToast(
-              result.count
-                ? `${result.count} expired item(s) discarded.`
-                : "No expired items found.",
-              "success"
-            );
-            router.refresh();
-          } else {
-            showToast(result.error || "Failed to discard expired items.", "error");
-          }
-        } catch {
-          showToast("Error discarding expired items.", "error");
-        } finally {
-          setIsBulkActionPending(false);
-          setConfirmDialog(null);
-        }
-      },
-    });
+    if (expiredItems.length === 0) return;
+    setShowDiscardExpiredModal(true);
   };
 
   const isAllSelected =
@@ -485,8 +400,7 @@ function InventoryViewInner({
             <button
               type="button"
               onClick={handleBulkConsume}
-              disabled={isBulkActionPending}
-              className="sl-focus-ring cursor-pointer rounded-lg bg-[var(--app-accent-emerald)] px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:brightness-105 disabled:opacity-50 transition"
+              className="sl-focus-ring cursor-pointer rounded-lg bg-[var(--app-accent-emerald)] px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:brightness-105 transition"
             >
               Mark Consumed
             </button>
@@ -494,8 +408,7 @@ function InventoryViewInner({
             <button
               type="button"
               onClick={handleBulkDelete}
-              disabled={isBulkActionPending}
-              className="sl-focus-ring cursor-pointer rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-500 hover:bg-rose-500/20 disabled:opacity-50 transition"
+              className="sl-focus-ring cursor-pointer rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-500 hover:bg-rose-500/20 transition"
             >
               Delete Selected
             </button>
@@ -768,17 +681,52 @@ function InventoryViewInner({
         );
       })()}
 
-      {/* Unified Confirm Dialog */}
-      {confirmDialog && (
-        <ConfirmDialog
-          title={confirmDialog.title}
-          message={confirmDialog.message}
-          isDestructive={confirmDialog.isDestructive}
-          confirmLabel={confirmDialog.isDestructive ? "Delete" : "Confirm"}
-          onConfirm={confirmDialog.onConfirm}
-          onCancel={() => setConfirmDialog(null)}
+      {/* Single Product Deletion Modal */}
+      {deleteTargetItem && (
+        <ProductDeleteModal
+          isOpen={!!deleteTargetItem}
+          onClose={() => setDeleteTargetItem(null)}
+          item={deleteTargetItem}
+          onSuccess={(deletedId) => {
+            setSelectedIds((prev) => prev.filter((x) => x !== deletedId));
+            if (activeDrawerId === deletedId) {
+              setActiveDrawerId(null);
+            }
+            setDeleteTargetItem(null);
+            router.refresh();
+          }}
+          onRestore={() => {
+            router.refresh();
+          }}
         />
       )}
+
+      {/* Multi-Select Bulk Removal & Consumption Modal */}
+      <BulkDeleteModal
+        isOpen={showBulkDeleteModal}
+        onClose={() => setShowBulkDeleteModal(false)}
+        items={selectedItems}
+        isConsumeOnly={bulkModalMode === "consume"}
+        onSuccess={() => {
+          setSelectedIds([]);
+          setShowBulkDeleteModal(false);
+          router.refresh();
+        }}
+        onRestore={() => {
+          router.refresh();
+        }}
+      />
+
+      {/* Discard Expired Items Modal */}
+      <DiscardExpiredModal
+        isOpen={showDiscardExpiredModal}
+        onClose={() => setShowDiscardExpiredModal(false)}
+        expiredItems={expiredItems}
+        onSuccess={() => {
+          setShowDiscardExpiredModal(false);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }
