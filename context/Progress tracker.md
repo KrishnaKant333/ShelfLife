@@ -115,12 +115,19 @@
   - [x] Recipe safety alignment: pantry staples without expiry (`expiryDate === null`) are safely included in recipe generation; estimated items expiring in >48h safely suggested.
   - [x] Consumer & Business workspace parity maintained across manual entry, editing, invoice upload, inventory catalogs, and drawers.
   - [x] Automated test suites verified: 5-tier hierarchy verification (`scratch/test-expiry-hierarchy.ts`), merge planning verification (`scratch/test-merge-expiry.ts`), 100% clean typecheck (`npx tsc --noEmit`), and 35-route production build (`npm run build`).
-- [ ] **P2-A — Mobile Inventory Default List View** (🟡 **Queued / Spec Ready**)
-  - Viewport-aware layout defaulting to high-density 68px touch rows on mobile screens (<768px).
-  - Persistent Grid ↔ List switcher with `localStorage` preference memory.
-  - Displays thumbnail, title, remaining quantity, and countdown status chip above the fold for 7–8 items.
-- [ ] **P2-B — Contextual Product Dossier Quick Actions** (🟡 **Queued / Spec Ready**)
-  - Focused slide-up sheets replacing generic redirects: Add More Stock (with live balance math), Move Category (with inline creator), Item-Specific Expiry Reminder (1d/2d/3d/1w), and Reason-Aware Safe Deletion.
+- [x] **P2-A — Mobile Inventory Default List View** (🟢 **100% Completed & Verified**)
+  - [x] Viewport-aware layout defaulting to high-density 68px touch rows on mobile screens (<768px).
+  - [x] Persistent Grid ↔ List switcher with `localStorage` preference memory (`shelflife_pref_inventory_view`).
+  - [x] Displays thumbnail, title, remaining quantity, and countdown status chip above the fold for 7–8 items.
+  - [x] Dedicated `MobileInventoryRow.tsx` component with 44x44px touch ergonomics and sub-bar batch selection.
+  - [x] Consumer and Commercial parity verified. Typecheck and production build clean.
+- [x] **P2-B — Contextual Product Dossier Quick Actions** (🟢 **100% Completed & Verified**)
+  - [x] Replaced disorienting full-page redirects with focused slide-over sheets (`BottomSheet.tsx`) inside Partial Product Dossier (`ProductDetailDrawer.tsx`).
+  - [x] "Add More Stock" (`ProductRestockModal.tsx`) with real-time balance calculation ($2.5 + 1.25 = 3.75$), quick increment pills, discrete vs continuous unit handling, `InventoryActivity` audit logging, and commercial metadata fields (`invoiceNumber`, `batchLot`, `unitCost`).
+  - [x] "Move to Another Category" (`ProductCategoryModal.tsx`) with searchable category grid, active category check, and inline "+ Add New Category" instant creation without page reload.
+  - [x] "Set Expiry Reminder" (`ProductReminderModal.tsx`) with 1d/2d/3d/1w/custom presets, target date calculation, `shelflife_item_reminders` local storage sync, `notification_feed` activity tracking, and dynamic `🔔 Reminder: [date]` badge in header.
+  - [x] "Delete Product" (`ProductDeleteModal.tsx`) with reason prompts (*Consumed*, *Spoiled/Waste*, *Entry Error/Duplicate*) safeguarding pure waste analytics, combined with 5-second interactive `[Undo]` toast restoring deleted items via `restoreInventoryItemAction`.
+  - [x] Consumer and Commercial parity verified. Typecheck and Next.js 35-route production build passed with zero errors.
 - [ ] **P3 — Real Product Thumbnails & Image Priority Hierarchy** (🟡 **Queued / Spec Ready**)
   - Authoritative 6-tier image priority cascade.
   - Scan label image retention as persistent product thumbnail.

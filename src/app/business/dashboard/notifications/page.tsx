@@ -34,6 +34,7 @@ export default async function BusinessNotificationsPage() {
 
   const formattedConsumptions = consumptions.map((c) => ({
     id: c.id,
+    inventoryItemId: c.inventoryItemId,
     productName: c.productName,
     quantityUsed: c.quantityUsed,
     unit: c.unit,
@@ -44,6 +45,7 @@ export default async function BusinessNotificationsPage() {
 
   const formattedActivities = activities.map((a) => ({
     id: a.id,
+    inventoryItemId: a.inventoryItemId,
     productName: a.productName,
     action: a.action,
     quantity: a.quantity,

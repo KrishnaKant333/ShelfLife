@@ -18,6 +18,7 @@ export interface ChronologicalNotificationGroup {
 
 export interface RawActivityRecord {
   id: number;
+  inventoryItemId?: number | null;
   productName: string;
   action: string;
   quantity?: number | null;
@@ -27,6 +28,7 @@ export interface RawActivityRecord {
 
 export interface RawConsumptionRecord {
   id: number;
+  inventoryItemId?: number | null;
   productName: string;
   quantityUsed: number;
   unit: string;
@@ -57,16 +59,32 @@ export function buildNotificationFeed(
   const prefix = isBusiness ? "/business/dashboard" : "/dashboard";
   const notifications: ActivityNotification[] = [];
 
+  // Helper to resolve direct product dossier link, falling back to general inventory if item no longer exists
+  const resolveProductLink = (inventoryItemId?: number | null, productName?: string): string => {
+    if (inventoryItemId) {
+      const match = inventory.find((i) => i.id === inventoryItemId);
+      if (match) return `${prefix}/inventory/${match.id}`;
+    }
+    if (productName) {
+      const match = inventory.find(
+        (i) => i.name.toLowerCase() === productName.toLowerCase()
+      );
+      if (match) return `${prefix}/inventory/${match.id}`;
+    }
+    return `${prefix}/inventory`;
+  };
+
   // 1. Consumption Events (safely utilized ingredients)
   consumptions.forEach((c) => {
+    const itemLink = resolveProductLink(c.inventoryItemId, c.productName);
     notifications.push({
       id: `consume-${c.id}`,
       category: "consumption",
       title: `Consumed ${c.productName}`,
       detail: `Utilized ${c.quantityUsed} ${c.unit} in meal preparation. Inventory stock updated.`,
       occurredAt: c.consumedAt,
-      link: `${prefix}/inventory`,
-      linkLabel: "View Inventory",
+      link: itemLink,
+      linkLabel: itemLink.endsWith("/inventory") ? "View Inventory" : "View Item",
     });
   });
 
@@ -90,28 +108,67 @@ export function buildNotificationFeed(
       return;
     }
 
+    if (act.action === "restocked") {
+      const itemLink = resolveProductLink(act.inventoryItemId, act.productName);
+      notifications.push({
+        id: `act-restock-${act.id}`,
+        category: "ingestion",
+        title: `Restocked: ${act.productName}`,
+        detail: `Added ${act.quantity ?? ""} ${act.unit ?? "units"} to inventory stock.`,
+        occurredAt: act.occurredAt,
+        link: itemLink,
+        linkLabel: itemLink.endsWith("/inventory") ? "View Inventory" : "View Item",
+      });
+      return;
+    }
+
+    if (act.action === "reminder_set") {
+      const itemLink = resolveProductLink(act.inventoryItemId, act.productName);
+      let detailText = `Scheduled reminder configured for ${act.quantity ?? 3} days before expiry.`;
+      if (act.unit && act.unit.startsWith("custom:")) {
+        detailText = `Scheduled reminder configured for ${act.unit.replace("custom:", "")}.`;
+      } else if (act.quantity === 1) {
+        detailText = "Scheduled reminder configured for 1 day before expiry.";
+      } else if (act.quantity === 0) {
+        detailText = "Scheduled reminder configured for expiry date.";
+      }
+
+      notifications.push({
+        id: `act-reminder-${act.id}`,
+        category: "system",
+        title: `Expiry Reminder Set: ${act.productName}`,
+        detail: detailText,
+        occurredAt: act.occurredAt,
+        link: itemLink,
+        linkLabel: "View Item",
+      });
+      return;
+    }
+
     if (act.action.includes("import") || act.action.includes("invoice")) {
+      const itemLink = resolveProductLink(act.inventoryItemId, act.productName);
       notifications.push({
         id: `act-import-${act.id}`,
         category: "ingestion",
         title: `Ingestion Completed: ${act.productName}`,
         detail: `Stock intake processed and registered into inventory.`,
         occurredAt: act.occurredAt,
-        link: `${prefix}/inventory`,
+        link: itemLink,
         linkLabel: "View Item",
       });
       return;
     }
 
     // Generic system activity
+    const itemLink = resolveProductLink(act.inventoryItemId, act.productName);
     notifications.push({
       id: `act-gen-${act.id}`,
       category: "system",
       title: `Inventory Update: ${act.productName}`,
       detail: `Action "${act.action}" recorded in chronological ledger.`,
       occurredAt: act.occurredAt,
-      link: `${prefix}/inventory`,
-      linkLabel: "View Inventory",
+      link: itemLink,
+      linkLabel: itemLink.endsWith("/inventory") ? "View Inventory" : "View Item",
     });
   });
 

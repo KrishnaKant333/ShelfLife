@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { db } from "@/prisma/db";
 import { getInventoryStatus } from "@/lib/inventory-status";
-import { parseFlexibleDate } from "@/lib/normalization";
+import { parseFlexibleDate, normalizeQuantity, isIntegerUnit } from "@/lib/normalization";
 
 const optionalExpiryDate = z.preprocess(
   (value) => parseFlexibleDate(value),
@@ -544,5 +544,372 @@ export async function removeAuxiliaryImageAction(
   } catch (error) {
     console.error("Failed to remove auxiliary image:", error);
     return { success: false, error: "Failed to remove image." };
+  }
+}
+
+/**
+ * Contextually restocks an inventory item, increasing quantity and logging an activity.
+ * Supports optional commercial metadata for business accounts.
+ */
+export async function restockInventoryItemAction(
+  itemId: number,
+  amountToAdd: number,
+  businessMeta?: {
+    invoiceNumber?: string;
+    batchLot?: string;
+    unitCost?: number;
+  }
+): Promise<{ success: boolean; newQuantity?: number; error?: string }> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (!Number.isFinite(amountToAdd) || amountToAdd <= 0) {
+      return { success: false, error: "Please enter a valid amount greater than zero." };
+    }
+
+    const filter =
+      session.accountType === "business"
+        ? { id: itemId, businessId: session.businessId }
+        : { id: itemId, userId: session.userId };
+
+    const item = await db.orm.public.InventoryItem.first(filter);
+    if (!item) {
+      return { success: false, error: "Product not found." };
+    }
+
+    const cleanAmount = isIntegerUnit(item.unit)
+      ? Math.round(amountToAdd)
+      : Math.round(amountToAdd * 10000) / 10000;
+
+    const newQuantity = Math.round((item.quantity + cleanAmount) * 10000) / 10000;
+
+    await db.orm.public.InventoryItem.where(filter).update({
+      quantity: newQuantity,
+    });
+
+    await db.orm.public.InventoryActivity.create({
+      userId: session.userId,
+      businessId: session.accountType === "business" ? session.businessId : null,
+      inventoryItemId: item.id,
+      productName: item.name,
+      action: "restocked",
+      quantity: cleanAmount,
+      unit: item.unit,
+    });
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+      revalidatePath("/business/dashboard/analytics");
+      revalidatePath("/business/dashboard/notifications");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+      revalidatePath("/dashboard/analytics");
+      revalidatePath("/dashboard/notifications");
+      revalidatePath("/dashboard/recipes");
+    }
+
+    return { success: true, newQuantity };
+  } catch (error) {
+    console.error("Restock failed:", error);
+    return { success: false, error: "Failed to restock item." };
+  }
+}
+
+/**
+ * Instantly reassigns the product's category.
+ */
+export async function updateProductCategoryAction(
+  itemId: number,
+  newCategory: string
+): Promise<{ success: boolean; category?: string; error?: string }> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const trimmed = newCategory.trim();
+    if (!trimmed) {
+      return { success: false, error: "Category cannot be empty." };
+    }
+
+    const filter =
+      session.accountType === "business"
+        ? { id: itemId, businessId: session.businessId }
+        : { id: itemId, userId: session.userId };
+
+    const item = await db.orm.public.InventoryItem.first(filter);
+    if (!item) {
+      return { success: false, error: "Product not found." };
+    }
+
+    await db.orm.public.InventoryItem.where(filter).update({
+      category: trimmed,
+    });
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+      revalidatePath("/dashboard/recipes");
+    }
+
+    return { success: true, category: trimmed };
+  } catch (error) {
+    console.error("Failed to update category:", error);
+    return { success: false, error: "Failed to update category." };
+  }
+}
+
+/**
+ * Schedules an item-specific expiry reminder and logs it to the user's activity ledger.
+ */
+export async function setExpiryReminderAction(
+  itemId: number,
+  daysBefore: number,
+  customDate?: string
+): Promise<{ success: boolean; reminderDate?: string; error?: string }> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const filter =
+      session.accountType === "business"
+        ? { id: itemId, businessId: session.businessId }
+        : { id: itemId, userId: session.userId };
+
+    const item = await db.orm.public.InventoryItem.first(filter);
+    if (!item) {
+      return { success: false, error: "Product not found." };
+    }
+
+    let reminderDate: Date;
+    if (customDate) {
+      reminderDate = new Date(customDate + (customDate.includes("T") ? "" : "T00:00:00"));
+    } else if (item.expiryDate) {
+      const exp = new Date(item.expiryDate);
+      reminderDate = new Date(exp.getTime() - daysBefore * 24 * 60 * 60 * 1000);
+    } else {
+      reminderDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    }
+
+    if (Number.isNaN(reminderDate.getTime())) {
+      reminderDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    }
+
+    // Reject reminder dates scheduled in the past
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    if (reminderDate < todayStart) {
+      return {
+        success: false,
+        error: "Expiry reminder cannot be set for a date in the past. Please select a future date.",
+      };
+    }
+
+    const formattedReminderDate = reminderDate.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    await db.orm.public.InventoryActivity.create({
+      userId: session.userId,
+      businessId: session.accountType === "business" ? session.businessId : null,
+      inventoryItemId: item.id,
+      productName: item.name,
+      action: "reminder_set",
+      quantity: daysBefore,
+      unit: customDate ? `custom:${formattedReminderDate}` : "days_before",
+    });
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard/notifications");
+    } else {
+      revalidatePath("/dashboard/notifications");
+    }
+
+    return { success: true, reminderDate: reminderDate.toISOString() };
+  } catch (error) {
+    console.error("Failed to set reminder:", error);
+    return { success: false, error: "Failed to schedule reminder." };
+  }
+}
+
+/**
+ * Deletes an inventory item with reason attribution (consumed, waste, error)
+ * and returns item snapshot for undo capability.
+ */
+export async function deleteInventoryItemWithReasonAction(
+  itemId: number,
+  reason: "consumed" | "waste" | "error"
+): Promise<{
+  success: boolean;
+  deletedItem?: {
+    id: number;
+    name: string;
+    category: string;
+    quantity: number;
+    unit: string;
+    expiryDate: string | null;
+    expiryType?: string | null;
+    imageUrl?: string | null;
+    additionalImageUrls?: string | null;
+  };
+  error?: string;
+}> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const filter =
+      session.accountType === "business"
+        ? { id: itemId, businessId: session.businessId }
+        : { id: itemId, userId: session.userId };
+
+    const item = await db.orm.public.InventoryItem.first(filter);
+    if (!item) {
+      return { success: false, error: "Product not found." };
+    }
+
+    const deletedItem = {
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      quantity: item.quantity,
+      unit: item.unit,
+      expiryDate: item.expiryDate
+        ? typeof item.expiryDate === "string"
+          ? item.expiryDate
+          : new Date(item.expiryDate).toISOString()
+        : null,
+      expiryType: item.expiryType,
+      imageUrl: item.imageUrl,
+      additionalImageUrls: item.additionalImageUrls,
+    };
+
+    if (reason === "consumed") {
+      await db.orm.public.InventoryConsumption.create({
+        userId: session.userId,
+        businessId: session.accountType === "business" ? session.businessId : null,
+        inventoryItemId: item.id,
+        productName: item.name,
+        quantityUsed: item.quantity,
+        unit: item.unit,
+        normalizedQuantityUsed: normalizeQuantity(item.quantity, item.unit).normalizedValue,
+      });
+
+      await db.orm.public.InventoryActivity.create({
+        userId: session.userId,
+        businessId: session.accountType === "business" ? session.businessId : null,
+        inventoryItemId: item.id,
+        productName: item.name,
+        action: "consumed",
+        quantity: item.quantity,
+        unit: item.unit,
+      });
+    } else if (reason === "waste") {
+      await db.orm.public.InventoryActivity.create({
+        userId: session.userId,
+        businessId: session.accountType === "business" ? session.businessId : null,
+        inventoryItemId: item.id,
+        productName: item.name,
+        action: "discarded_expired",
+        quantity: item.quantity,
+        unit: item.unit,
+      });
+    }
+
+    // Delete DB record
+    await db.orm.public.InventoryItem.where(filter).delete();
+
+    // Storage cleanup of unreferenced owned images only on non-undoable permanent error deletion
+    if (reason === "error") {
+      const candidateUrls = parseItemImageUrls(item);
+      if (candidateUrls.length > 0) {
+        await safeDeleteUnreferencedImages(candidateUrls, [itemId]);
+      }
+    }
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+      revalidatePath("/business/dashboard/waste");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+      revalidatePath("/dashboard/analytics");
+      revalidatePath("/dashboard/waste");
+      revalidatePath("/dashboard/recipes");
+    }
+
+    return { success: true, deletedItem };
+  } catch (error) {
+    console.error("Delete with reason failed:", error);
+    return { success: false, error: "Failed to remove product." };
+  }
+}
+
+/**
+ * Restores a previously removed inventory item (Undo action).
+ */
+export async function restoreInventoryItemAction(
+  itemData: {
+    name: string;
+    category: string;
+    quantity: number;
+    unit: string;
+    expiryDate: string | null;
+    expiryType?: string | null;
+    imageUrl?: string | null;
+    additionalImageUrls?: string | null;
+  }
+): Promise<{ success: boolean; item?: any; error?: string }> {
+  try {
+    const session = await getCurrentUserSession();
+    if (!session) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const created = await db.orm.public.InventoryItem.create({
+      userId: session.userId,
+      businessId: session.accountType === "business" ? session.businessId : null,
+      name: itemData.name,
+      category: itemData.category,
+      quantity: itemData.quantity,
+      unit: itemData.unit,
+      expiryDate: itemData.expiryDate,
+      expiryType: itemData.expiryType || null,
+      imageUrl: itemData.imageUrl || null,
+      additionalImageUrls: itemData.additionalImageUrls || null,
+    });
+
+    if (session.accountType === "business") {
+      revalidatePath("/business/dashboard");
+      revalidatePath("/business/dashboard/inventory");
+    } else {
+      revalidatePath("/dashboard");
+      revalidatePath("/dashboard/inventory");
+      revalidatePath("/dashboard/alerts");
+    }
+
+    return { success: true, item: created };
+  } catch (error) {
+    console.error("Restore failed:", error);
+    return { success: false, error: "Failed to restore product." };
   }
 }

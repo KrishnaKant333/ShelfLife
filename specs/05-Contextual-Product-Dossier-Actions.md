@@ -1,7 +1,7 @@
 # ShelfLife Specification: Contextual Product Dossier Quick Actions
 
 **Cycle**: P2 / UX and Workflow Improvements  
-**Status**: 🟡 Queued for Implementation (Specification Ready)  
+**Status**: 🟢 Completed & Verified  
 **Applies To**: Consumer Kitchen (`ProductDetailDrawer.tsx`) and Commercial Operations (`ProductDetailDrawer.tsx`)
 
 ---
@@ -130,9 +130,9 @@ Clicking **"Set Expiry Reminder"** does **NOT** redirect to `/dashboard/alerts`.
 
 ## 7. Acceptance Criteria
 
-- [ ] Zero quick actions in the Partial Product Dossier navigate the browser to a full edit page.
-- [ ] "Add More Stock" displays current stock, input amount, and resulting total before confirmation.
-- [ ] Restock operations record an `InventoryActivity` ledger entry.
-- [ ] Category moves can be executed and confirmed in under 3 seconds.
-- [ ] "Set Expiry Reminder" configures an item-specific schedule without navigating to `/alerts`.
-- [ ] Deletion prompts for reason to ensure waste analytics remain pure.
+- [x] Zero quick actions in the Partial Product Dossier navigate the browser to a full edit page.
+- [x] "Add More Stock" displays current stock, input amount, and resulting total before confirmation.
+- [x] Restock operations record an `InventoryActivity` ledger entry.
+- [x] Category moves can be executed and confirmed in under 3 seconds.
+- [x] "Set Expiry Reminder" configures an item-specific schedule without navigating to `/alerts`.
+- [x] Deletion prompts for reason to ensure waste analytics remain pure.

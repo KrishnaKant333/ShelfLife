@@ -1,7 +1,7 @@
 # ShelfLife Specification: Mobile Inventory Default List View
 
 **Cycle**: P2 / UX and Workflow Improvements  
-**Status**: 🟡 Queued for Implementation (Specification Ready)  
+**Status**: 🟢 Completed & Verified  
 **Applies To**: Consumer Kitchen (`/dashboard/inventory`) and Commercial Operations (`/business/dashboard/inventory`)
 
 ---
@@ -111,9 +111,9 @@ The mobile list is **not** a resized desktop card. It is a purpose-built row com
 
 ## 9. Acceptance Criteria
 
-- [ ] On viewports <768px, inventory defaults to the high-density List view on initial load.
-- [ ] On viewports ≥768px, inventory defaults to Grid view.
-- [ ] Users can toggle between Grid and List on mobile, and the preference persists across sessions.
-- [ ] At least 7 full products are visible on a standard mobile viewport (height ≥ 800px) above the fold.
-- [ ] Tapping any row opens the contextual bottom sheet within 100ms.
-- [ ] All interactive elements meet the minimum 44x44px touch target guideline.
+- [x] On viewports <768px, inventory defaults to the high-density List view on initial load.
+- [x] On viewports ≥768px, inventory defaults to Grid view.
+- [x] Users can toggle between Grid and List on mobile, and the preference persists across sessions.
+- [x] At least 7 full products are visible on a standard mobile viewport (height ≥ 800px) above the fold.
+- [x] Tapping any row opens the contextual bottom sheet within 100ms.
+- [x] All interactive elements meet the minimum 44x44px touch target guideline.

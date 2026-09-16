@@ -32,13 +32,17 @@ import {
 } from "@/lib/actions/recipes";
 import { isIntegerUnit } from "@/lib/normalization";
 import type { InventoryItem } from "@/lib/inventory";
+import ProductRestockModal from "@/components/inventory/ProductRestockModal";
+import ProductCategoryModal from "@/components/inventory/ProductCategoryModal";
+import ProductReminderModal from "@/components/inventory/ProductReminderModal";
+import ProductDeleteModal from "@/components/inventory/ProductDeleteModal";
 
 interface ProductDetailDrawerProps {
   item: (InventoryItem & { status: string; createdAt?: string }) | null;
   onClose: () => void;
   onRefresh: () => void;
   onEdit: (item: InventoryItem) => void;
-  onDelete: (id: number) => void;
+  onDelete?: (id: number) => void;
   isBusiness?: boolean;
 }
 
@@ -59,6 +63,13 @@ export default function ProductDetailDrawer({
   const [history, setHistory] = useState<ConsumptionRecord[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Spec 05: Contextual Action Modals
+  const [showRestockModal, setShowRestockModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [activeReminder, setActiveReminder] = useState<string | null>(null);
 
   const auxiliaryImages: string[] = (() => {
     if (!item?.additionalImageUrls) return [];
@@ -113,6 +124,33 @@ export default function ProductDetailDrawer({
       setConsumeQty(isInt ? Math.max(1, Math.min(1, Math.floor(item.quantity))) : Math.min(1, item.quantity));
       // Load real history for this product
       void loadProductHistory(item.name);
+
+      // Check for active reminder in local storage
+      try {
+        const stored = localStorage.getItem("shelflife_item_reminders");
+        if (stored) {
+          const map = JSON.parse(stored);
+          const entry = map[item.id];
+          if (entry && entry.reminderDate) {
+            const remDate = new Date(entry.reminderDate);
+            if (remDate.getTime() > Date.now()) {
+              setActiveReminder(
+                remDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+              );
+            } else {
+              setActiveReminder(null);
+            }
+          } else {
+            setActiveReminder(null);
+          }
+        } else {
+          setActiveReminder(null);
+        }
+      } catch {
+        setActiveReminder(null);
+      }
+    } else {
+      setActiveReminder(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.id]);
@@ -297,6 +335,18 @@ export default function ProductDetailDrawer({
                 <CheckCircle2 size={12} />
                 <span>Fresh</span>
               </span>
+            )}
+
+            {activeReminder && (
+              <button
+                type="button"
+                onClick={() => setShowReminderModal(true)}
+                className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold tracking-wide bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition cursor-pointer"
+                title="Click to view or adjust expiry reminder"
+              >
+                <Bell size={12} />
+                <span>Reminder: {activeReminder}</span>
+              </button>
             )}
           </div>
 
@@ -535,43 +585,50 @@ export default function ProductDetailDrawer({
                   <ChevronRight size={14} className="text-[var(--app-accent-emerald)]" />
                 </Link>
 
-                <Link
-                  href={`${prefix}/inventory/${item.id}/edit`}
-                  className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-[var(--app-text-body)] hover:bg-[var(--app-surface-elevated)] transition"
+                {/* Add More Stock - Contextual Restock Modal */}
+                <button
+                  type="button"
+                  onClick={() => setShowRestockModal(true)}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-[var(--app-text-body)] hover:bg-[var(--app-surface-elevated)] transition cursor-pointer text-left"
                 >
                   <span className="flex items-center gap-2">
-                    <Plus size={14} className="text-[var(--app-text-muted)]" />
+                    <Plus size={14} className="text-[var(--app-accent-emerald)]" />
                     <span>Add More Stock</span>
                   </span>
                   <ChevronRight size={14} className="text-[var(--app-text-muted)]" />
-                </Link>
+                </button>
 
-                <Link
-                  href={`${prefix}/alerts`}
-                  className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-[var(--app-text-body)] hover:bg-[var(--app-surface-elevated)] transition"
+                {/* Set Expiry Reminder - Contextual Item-Specific Reminder Modal */}
+                <button
+                  type="button"
+                  onClick={() => setShowReminderModal(true)}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-[var(--app-text-body)] hover:bg-[var(--app-surface-elevated)] transition cursor-pointer text-left"
                 >
                   <span className="flex items-center gap-2">
-                    <Bell size={14} className="text-[var(--app-text-muted)]" />
+                    <Bell size={14} className="text-blue-500" />
                     <span>Set Expiry Reminder</span>
                   </span>
                   <ChevronRight size={14} className="text-[var(--app-text-muted)]" />
-                </Link>
+                </button>
 
-                <Link
-                  href={`${prefix}/inventory/${item.id}/edit`}
-                  className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-[var(--app-text-body)] hover:bg-[var(--app-surface-elevated)] transition"
+                {/* Move to Another Category - Inline Category Reassigner */}
+                <button
+                  type="button"
+                  onClick={() => setShowCategoryModal(true)}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-[var(--app-text-body)] hover:bg-[var(--app-surface-elevated)] transition cursor-pointer text-left"
                 >
                   <span className="flex items-center gap-2">
-                    <Folder size={14} className="text-[var(--app-text-muted)]" />
+                    <Folder size={14} className="text-amber-500" />
                     <span>Move to Another Category</span>
                   </span>
                   <ChevronRight size={14} className="text-[var(--app-text-muted)]" />
-                </Link>
+                </button>
 
+                {/* Delete Product - Safe Deletion Dialog with Reason Tracking & Undo */}
                 <button
                   type="button"
-                  onClick={() => onDelete(item.id)}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer text-left"
                 >
                   <span className="flex items-center gap-2">
                     <Trash2 size={14} />
@@ -689,6 +746,53 @@ export default function ProductDetailDrawer({
           )}
         </div>
       </aside>
+
+      {/* Contextual Action Modals (Spec 05) */}
+      <ProductRestockModal
+        isOpen={showRestockModal}
+        onClose={() => setShowRestockModal(false)}
+        item={item}
+        isBusiness={isBusiness}
+        onSuccess={(newQty) => {
+          item.quantity = newQty;
+          onRefresh();
+        }}
+      />
+
+      <ProductCategoryModal
+        isOpen={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        item={item}
+        onSuccess={(newCat) => {
+          item.category = newCat;
+          onRefresh();
+        }}
+      />
+
+      <ProductReminderModal
+        isOpen={showReminderModal}
+        onClose={() => setShowReminderModal(false)}
+        item={item}
+        onSuccess={(formattedDate) => {
+          setActiveReminder(formattedDate);
+          onRefresh();
+        }}
+      />
+
+      <ProductDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        item={item}
+        onSuccess={(deletedId) => {
+          setShowDeleteModal(false);
+          onClose();
+          onRefresh();
+          onDelete?.(deletedId);
+        }}
+        onRestore={() => {
+          onRefresh();
+        }}
+      />
     </>
   );
 }

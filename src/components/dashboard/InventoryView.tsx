@@ -674,7 +674,13 @@ function InventoryViewInner({
         onClose={() => setActiveDrawerId(null)}
         onRefresh={() => router.refresh()}
         onEdit={(item) => router.push(`${prefix}/inventory/${item.id}/edit`)}
-        onDelete={handleDeleteSingle}
+        onDelete={(id) => {
+          setSelectedIds((prev) => prev.filter((x) => x !== id));
+          if (activeDrawerId === id) {
+            setActiveDrawerId(null);
+          }
+          router.refresh();
+        }}
         isBusiness={isBusiness}
       />
 
