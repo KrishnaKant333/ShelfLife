@@ -49,15 +49,14 @@ export default async function BusinessDashboardPage() {
     totalItems === 0
       ? "Welcome to ShelfLife Business Console. Initialize inventory to monitor commercial stock health."
       : urgentTotal > 0
-      ? `Commercial stock health is at ${healthScore}%. ${urgentTotal} batch item${urgentTotal === 1 ? "" : "s"} require FIFO priority dispatch.`
-      : `Commercial stock health is at ${healthScore}%. All inventory batches are stable.`;
+        ? `Commercial stock health is at ${healthScore}%. ${urgentTotal} batch item${urgentTotal === 1 ? "" : "s"} require FIFO priority dispatch.`
+        : `Commercial stock health is at ${healthScore}%. All inventory batches are stable.`;
 
   return (
     <div className="space-y-6 md:space-y-8">
       {/* Editorial Greeting Header & Quick Actions */}
       <GreetingHeader
         userName={session.user.name}
-        badge="Business Operations Command Center"
         subtitle={contextualSubtitle}
         isBusiness={true}
       />

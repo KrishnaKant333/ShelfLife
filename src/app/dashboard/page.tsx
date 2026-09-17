@@ -45,15 +45,14 @@ export default async function DashboardPage() {
     totalItems === 0
       ? "Welcome to ShelfLife. Start adding items to monitor pantry freshness."
       : urgentTotal > 0
-      ? `Your pantry is ${healthScore}% fresh. ${urgentTotal} item${urgentTotal === 1 ? "" : "s"} require attention today.`
-      : `Your pantry is ${healthScore}% fresh. All items are in optimal condition.`;
+        ? `Your pantry is ${healthScore}% fresh. ${urgentTotal} item${urgentTotal === 1 ? "" : "s"} require attention today.`
+        : `Your pantry is ${healthScore}% fresh. All items are in optimal condition.`;
 
   return (
     <div className="space-y-6 md:space-y-8">
       {/* Editorial Greeting Header & Quick Actions */}
       <GreetingHeader
         userName={session.user.name}
-        badge="Personal Pantry Command Center"
         subtitle={contextualSubtitle}
         isBusiness={false}
       />

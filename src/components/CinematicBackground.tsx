@@ -130,8 +130,9 @@ export default function CinematicBackground() {
         <img
           src="/videos/hero_poster.jpg"
           alt=""
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${isDesktopMotion && videoLoaded ? "opacity-0" : "opacity-100"
-            }`}
+          className={`absolute inset-0 h-full w-full object-cover brightness-[0.78] contrast-[0.95] transition-opacity duration-700 ${
+            isDesktopMotion && videoLoaded ? "opacity-0" : "opacity-100"
+          }`}
           loading="eager"
         />
       </picture>
@@ -144,13 +145,19 @@ export default function CinematicBackground() {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover brightness-[0.80] contrast-[0.95]"
         />
       )}
 
-      {/* Transparent atmospheric overlay tuned for high video visibility in both light & dark modes */}
-      <div className="absolute inset-0 bg-black/20 dark:bg-black/35 transition-colors duration-300" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[var(--sl-color-canvas)]/30 via-transparent to-[var(--sl-color-canvas)]/40 dark:from-black/35 dark:via-transparent dark:to-black/45" />
+      {/* Subtle dark forest / charcoal overlay hierarchy prioritizing typography & UI while keeping the cinematic pantry video distinct */}
+      {/* 1. Base dark forest tone: calibrates overall luminosity (slightly deeper on mobile for stacked content) */}
+      <div className="absolute inset-0 bg-[#0c120e]/60 md:bg-[#0c120e]/48 transition-colors duration-300" />
+
+      {/* 2. Directional atmospheric vertical gradient for navbar grounding and section rhythm */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0c120e]/85 via-[#0c120e]/30 to-[#0c120e]/75" />
+
+      {/* 3. Text focus vignette: soft calibrated gradient behind primary reading areas (hero headline & copy) */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_22%_25%,rgba(12,18,14,0.65)_0%,rgba(12,18,14,0.2)_65%,transparent_100%)] pointer-events-none" />
     </div>
   );
 }

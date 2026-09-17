@@ -6,7 +6,6 @@ import { Plus, Upload, Download, Sparkles } from "lucide-react";
 
 interface GreetingHeaderProps {
   userName?: string | null;
-  badge: string;
   subtitle: string;
   isBusiness?: boolean;
 }
@@ -27,7 +26,6 @@ function getLocalGreeting(): string {
 
 export default function GreetingHeader({
   userName,
-  badge,
   subtitle,
   isBusiness = false,
 }: GreetingHeaderProps) {
@@ -41,12 +39,6 @@ export default function GreetingHeader({
   return (
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-[var(--app-border-subtle)]/70">
       <div>
-        <div className="flex items-center gap-2">
-          <span className="flex h-2 w-2 rounded-full bg-[var(--app-accent-emerald)] shadow-[0_0_6px_var(--app-accent-emerald)]" />
-          <p className="text-xs font-bold uppercase tracking-wider text-[var(--app-accent-emerald)]">
-            {badge}
-          </p>
-        </div>
         <h1 className="sl-display-serif mt-1 text-3xl font-bold tracking-tight text-[var(--app-text-display)] sm:text-4xl">
           {greeting}{userName ? `, ${userName}` : ""}.
         </h1>
