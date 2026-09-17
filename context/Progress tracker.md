@@ -1,150 +1,72 @@
 # ShelfLife Progress Tracker
 
-**Current Version**: Post-1.0 Roadmap Planning Phase
+**Current Version**: v2.0.0 Master Production Release
 **Status**:
-- v1.0 Production Release: **100% Completed & Verified**
+- Core Production Platform (Stages A–L): **100% Completed & Verified**
 - Cinematic Marketing Landing Page: **100% Completed & Verified**
-- Post-1.0 Authenticated UI/UX Redesign Roadmap: **Queued (Stage A Ready for Implementation)**
+- Real-World Usage Cycles (P0–P3): **100% Completed & Verified**
+- Cross-Cutting QA & Regression Layer (Spec 07): **100% Completed & Verified**
+- Master System Specification Consolidation: **100% Completed & Verified**
 
 ---
 
-## 🚀 Completed Milestones
+## 🚀 Completed Foundations & Stages (Stages A–L)
 
-### 1. Cinematic Marketing Landing Page Milestone
-- [x] Combined dual-clip cinematic sequence video (`public/videos/shelflife-cinematic-sequence.mp4`) with tight 0.5s keyframe GOP and audio strip.
-- [x] Smooth scroll-controlled scrubbing (`CinematicBackground.tsx`) via lerp loop (`requestAnimationFrame`) with static poster fallbacks (`hero_poster.webp` / `hero_poster.jpg`) for reduced motion and mobile.
-- [x] Floating suspended capsule navbar (`top-3 sm:top-4`) with scroll-aware glassmorphism.
-- [x] Landing page art direction permanently locked to dark mode; landing theme toggle intentionally removed.
-- [x] High-contrast pure white/emerald typography, transparent marketing cards, and decoupled solid dark footer (`#0c120e`).
-
-### 2. ShelfLife v1.0 Production Release
-- [x] **Production Build Checkpoint**: 100% clean Next.js build compilation & TypeScript validation (`npm run build`).
-- [x] **Consumer & Business Workspace Isolation**: Auth.js credential sessions with strict server-side ownership checks.
-- [x] **Dedicated Export Hub**: `/dashboard/inventory/export` & `/business/dashboard/inventory/export` with interactive status/category filters, live data preview table, instant CSV spreadsheet downloads, and printable PDF report formatting.
-- [x] **Dynamic Invoice Intelligence Analysis**: Dynamic client-side calculation for *Detected*, *New Items*, *Existing*, and *Near Expiry / Expired* products that re-evaluates in real-time as users edit extracted invoice items.
-- [x] **Invoice AI Token Scaling & Truncation Guard**: Increased Groq invoice extraction `max_tokens` from 1,000 to 4,096 (verified extracting all 22 products from high-res demo invoice), and introduced defensive `finish_reason === "length"` truncation detection to eliminate silent truncation.
-- [x] **Scan Label AI & Camera Flow**: Camera stream attachment and label image upload powered by Groq AI with JSON validation safeguards (`reasoning_effort: "none"` tuning).
-- [x] **Alerts vs Notifications Purpose Separation**:
-  - *Alerts* (`/dashboard/alerts`): Actionable urgent inventory risks (Expiring, Expired, Low Stock with Discard & Use actions).
-  - *Notifications* (`/dashboard/notifications`): Informational activity stream for imports, usage logs, and system events.
-- [x] **Streamlined Action Toolbar**: Concise header toolbar featuring `Export`, `Import`, `+ Add Product`, and a tooltip-enabled icon-only `Delete Expired` bin button.
-- [x] **Time-Accurate Dynamic Greetings**: Local browser time evaluation for *Good morning*, *Good afternoon*, *Good evening*, and *Good night*.
-- [x] **Theme System & Atmospheric Visuals**: Dynamic mesh ambient background gradients, persistent Light/Dark/System themes for the app.
-- [x] **Recipe AI Safety**: Deterministic filtering excluding expired inventory prior to AI recipe generation.
-- [x] **Email Verification & Onboarding**: Strict email verification via SMTP token link with pending standby screen.
+- [x] **Stage A — App Visual Foundation & Shared Shell**: Semantic tokens, Newsreader/Georgia display typography, accessible skip anchors.
+- [x] **Stage B — Dashboard Command Center**: Time-aware greetings, high-level KPIs, urgency section, consumption velocity meters.
+- [x] **Stage C — Inventory Product Catalog**: High-density grid/list switcher, fuzzy search, category filters, batch operations.
+- [x] **Stage D — Product Details Digital Dossier**: Overview, immutable audit history, AI storage insights, consumer recipes.
+- [x] **Stage E — Analytics Intelligence Report**: Spoilage risk distribution, category allocations, turnover velocity curves.
+- [x] **Stage F — Recipes Food Editorial & Business Strategy Overhaul**: Consumer cooking mode with fractional deductions; Commercial FIFO strategy center.
+- [x] **Stage G — Waste Impact & Environmental Report**: Financial savings, diverted food mass (kg), CO₂e emission reductions.
+- [x] **Stage H — Alerts vs Notifications Separation**: Actionable alerts vs chronological system notification log stream.
+- [x] **Stage I — Settings Polished Workspace**: Profile customizations, commercial enterprise branding, AI parameter toggles.
+- [x] **Stage J — App Motion & Micro-Interactions**: GPU micro-transitions, reduced-motion media query respect, count-up meters.
+- [x] **Stage K — Mobile-First Ergonomics & Accessibility**: 320px–414px audit, non-blocking bottom sheets, WCAG 2.2 focus rings.
+- [x] **Stage L — Performance & Final Visual QA**: Turbopack optimization, sub-100ms interactions, zero hydration mismatches.
+- [x] **Business Recipe Isolation Doctrine**: Strict omission of all recipe UI, tabs, routes, and links in commercial workspaces.
+- [x] **Consumer & Business Get Started / Auth Modernization**: Responsive `AuthLayout`, dark editorial styling, 44px mobile touch ergonomics.
 
 ---
 
-## 🧭 Queued Post-1.0 Authenticated UI/UX Redesign ("Editorial Productivity / Intelligent Workspace")
+## 🚀 Completed Real-World Usage Cycles (P0–P3 & QA)
 
-- [x] **Stage A — App Visual Foundation & Shared Shell** (🟢 **100% Completed & Verified**)
-- [x] **Stage B — Dashboard Command Center** (🟢 **100% Completed & Verified**)
-- [x] **Stage C — Inventory Product Catalog** (🟢 **100% Completed & Verified**)
-- [x] **Stage D — Product Details Digital Dossier** (🟢 **100% Completed & Verified**)
-- [x] **Stage E — Analytics Intelligence Report** (🟢 **100% Completed & Verified**)
-- [x] **Stage F — Recipes Food Editorial & Business Strategy Overhaul** (🟢 **100% Completed & Verified**)
-- [x] **Stage G — Waste Impact & Environmental Report** (🟢 **100% Completed & Verified**)
-- [x] **Stage H — Alerts vs Notifications Separation** (🟢 **100% Completed & Verified**)
-- [x] **Stage I — Settings Polished Workspace** (🟢 **100% Completed & Verified**)
-- [x] **Stage J — App Motion & Micro-Interactions** (🟢 **100% Completed & Verified**)
-- [x] **Stage K — Mobile-First Ergonomics & Accessibility** (🟢 **100% Completed & Verified**)
-- [x] **Stage L — Performance & Final Visual QA** (🟢 **100% Completed & Verified**)
-- [x] **Bug Fix — Business Recipe Isolation** (🟢 **100% Completed & Verified**):
-  - Completely purged all recipe UI elements, tabs, buttons, links, and text from the Business workspace.
-  - Omitted "Cook Recipes" action in `ProductDossierHero` when `isBusiness` is true.
-  - Omitted "Recipes" tab and panel in `ProductDetailDrawer` for Business accounts (`availableTabs = ["Overview", "History", "AI Insights"]`).
-  - Account-aware `AIFoodIntelligence`: replaces consumer recipe jump with commercial ingredient pairings without recipe links.
-  - Account-aware `AIPreventionAdvisory`: redirects Business to `/business/dashboard/strategy` instead of dead recipes route.
-  - Account-aware `Notifications`: routes Business system sync to `/business/dashboard/strategy` instead of `/recipes`.
-  - Account-aware `Settings`: hides Recipe AI Engine section in `AIPreferencesTab` and tailors nav rail text for Business.
-  - Retained full, rich recipe functionality for Consumers.
-- [x] **Milestone — Consumer & Business Get Started + Login/Signup Visual & Mobile Modernization** (🟢 **100% Completed & Verified**):
-  - Unified Get Started, Consumer Auth, Business Auth, and Email Verification into the signature dark editorial ShelfLife aesthetic (`#0c120e` canvas, `#151a16` surfaces, `border-white/10`, `.sl-display-serif` editorial typography).
-  - Created shared responsive `AuthLayout` supporting desktop dual-column showcase panel and strict mobile form-first ergonomics (form above the fold, no unnecessary scrolling, 44px touch targets).
-  - Preserved 100% of credentials auth, Auth.js JWT sessions, server action validations, email verification tokens, and account-type redirects (`/dashboard` vs `/business/dashboard`).
-  - Purged obsolete CSS classes (`.auth-contrast-panel`) from `globals.css`.
-  - Maintained clear separation between Consumer (kitchen, recipes, pantry) and Business (FIFO, cost analytics, supplier ingestion, zero recipes).
-  - Upgraded `/get-started` with distinct editorial cards and responsive vertical grid instead of awkward mobile carousels.
-  - Upgraded `/verify-email` and `/verify-email/pending` with reassuring dark editorial status cards and guidance.
+- [x] **P0 — Fractional Quantities & Database Parity (Spec 01)** (🟢 **100% Completed & Verified**)
+  - Categorized units (`isIntegerUnit`) enforcing continuous decimals (`L`, `kg`, `ml`, `g`) vs discrete integers (`pcs`, `pack`).
+  - Tuned `step` attributes and 4-decimal precision rounding (`Math.round(val * 10000) / 10000`) across all forms and modals.
+  - Checked-in migration `20260913T1748_alter_quantity_used_to_float8` synchronized production DB without data drift.
 
----
+- [x] **P1-A — Multi-View Product Understanding (Spec 02)** (🟢 **100% Completed & Verified**)
+  - Multi-image intake (1–4 images) with progressive camera viewfinder and continuous thumbnail tray.
+  - Groq AI vision synthesis reconciling front, back, and expiry stamps into one single unified record.
+  - Vercel Blob persistent object storage with local fallback, elimination of corrupt base64, and auxiliary carousel.
 
-## 🧭 Active Roadmap: Real-World Usage Improvements (P0–P3)
-
-- [x] **P0 — Fractional Quantities & Database Parity** (🟢 **100% Completed & Verified**)
-  - [x] Unit categorization (`isIntegerUnit`) enforcing continuous decimals vs discrete integers.
-  - [x] Replaced `parseInt` and hardcoded `min="1"` across Quick Consume modal, Product Drawer, inline consume dialog, and manual/invoice add forms.
-  - [x] Rounding sanitize to 4 decimal places (`Math.round(val * 10000) / 10000`) preventing floating-point artifacts.
-  - [x] Checked-in versioned Prisma Next migration `20260913T1748_alter_quantity_used_to_float8`.
-  - [x] Successfully applied migration to production database; verified zero schema drift and 0 row loss.
-- [x] **P1-A — Multi-View Product Understanding** (🟢 **100% Completed & Verified**)
-  - [x] Multi-image intake: file dropzone (1–4 images) and progressive camera viewfinder with continuous snapping and bottom thumbnail tray.
-  - [x] Groq AI vision synthesis (`qwen/qwen3.6-27b`) merging front (brand/category), back (quantity/nutrition), and rim/cap (stamped expiry date) into **one single inventory item**.
-  - [x] Conflict resolution & confidence weighting: stamped expiry and net content declarations outrank ambiguous marketing claims.
-  - [x] Image persistence: migrated to Vercel Blob (`@vercel/blob`) persistent object storage in production returning permanent global CDN HTTPS URLs, with transparent local filesystem fallback (`public/uploads/products/`) for offline development.
-  - [x] Removed corrupt base64 fallbacks upon storage failure; verified image preservation during product text edits.
-  - [x] Database schema: added `additionalImageUrls text NULL` to `InventoryItem` with checked-in versioned migration `20260914T0719_add_additional_image_urls` applied to dev database.
-  - [x] Confirmation UX: interactive Review & Edit screen with Product Imagery summary banner (shows primary thumbnail, auxiliary angles, swap/remove controls).
-  - [x] Product Detail Digital Dossier: interactive multi-view thumbnail carousel enabling inspection of packaging panels, nutrition, and expiry stamps.
-  - [x] Consumer & Business parity: both `/dashboard/inventory/new` and `/business/dashboard/inventory/new` support multi-view photo intake and persistence.
-  - [x] Automated test suite: 23/23 assertions passed (`scratch/test-multi-view.ts`). Typecheck, lint, and production build 100% clean.
 - [x] **P1-A.1 — Product Image Storage Lifecycle & Orphan Cleanup** (🟢 **100% Completed & Verified**)
-  - [x] Storage deletion abstraction in `src/lib/storage.ts`: `deleteProductImage`, `deleteProductImages`, and `isShelfLifeOwnedImage`.
-  - [x] Dual-backend deletion dispatch: `@vercel/blob` `del()` when token configured; path-traversal-guarded `fs.unlink()` for local development.
-  - [x] External image protection: Open Food Facts and external CDN assets strictly shielded from storage deletion operations.
-  - [x] Reference-aware shared asset protection (`src/lib/storage-lifecycle.ts`): queries existing products to prevent deleting images shared across multiple records.
-  - [x] Product deletion cleanup: `deleteInventoryItem`, `deleteBusinessInventoryItem`, `bulkDeleteAction`, and `discardExpiredItemsAction` authoritatively delete DB records first, then clean up unreferenced owned images.
-  - [x] Pre-confirmation & Review cleanup: `discardUploadedImagesAction()` cleans up unconfirmed assets on "Remove imagery", single auxiliary removal, "Cancel", or re-scanning.
-  - [x] AI inference & storage failure cleanup: `extractMultiViewLabelAction()` cleans up saved assets in try/catch upon Groq/JSON parsing failure.
-  - [x] Product creation failure cleanup: `createInventoryItem` and `createBusinessInventoryItem` prune unreferenced uploaded images if validation or DB transaction fails.
-  - [x] Auxiliary image removal: `removeAuxiliaryImageAction()` safely updates database references and deletes unreferenced storage objects.
-  - [x] Deliberate zero-quantity decision: images deliberately preserved when quantity reaches zero for consumption history, activity audit trails, and restocking.
-  - [x] Automated test suite: 29/29 assertions passed across local filesystem and live Vercel Blob object storage.
+  - Complete deletion abstraction (`deleteProductImage`/`deleteProductImages`), dual Blob/local dispatch.
+  - External image protection (Open Food Facts shielded), reference-aware shared asset protection.
+  - Deletion, cancellation, AI-failure, and creation-failure cleanup with deliberate zero-quantity image preservation.
+
 - [x] **P1-B — Intelligent Missing Expiry Hierarchy (Spec 03)** (🟢 **100% Completed & Verified**)
-  - [x] 5-tier freshness cascade implemented in `src/lib/expiry.ts`: `MANUFACTURER_EXPIRY` -> `BEST_BEFORE` -> `MFG_PLUS_SHELF_LIFE` -> `AI_ESTIMATED` -> `UNKNOWN`.
-  - [x] Comprehensive commodity & category heuristic rules table aligned with USDA FoodKeeper guidelines and cold chain preservation standards.
-  - [x] Invoice date baseline fallback: relative shelf-life estimation anchors against document-level `invoiceDate` (receipt purchase date) rather than processing time.
-  - [x] Anti-confusion safeguards: invoice billing, delivery, receipt issue, and tax timestamps are strictly prevented from misidentifying as product expiry dates.
-  - [x] Database schema & contract: added `expiryType` nullable text column to `InventoryItem`, generated contract types, and applied additive migration `20260914T1409_add_expiry_type` to Neon PostgreSQL.
-  - [x] Deterministic merge resolution: `resolveMergedExpiry` preserves existing dates, adopts incoming dates, and applies FIFO food-safety earlier date selection.
-  - [x] Unblocked invoice import: eliminated mandatory manual expiry roadblock; items with missing expiry default to USDA category estimate (`AI_ESTIMATED`) or `UNKNOWN`.
-  - [x] Amber `Estimated ✦` visual badge with informative tooltip ("Estimated from item category & purchase date. Click to edit or verify on packaging.").
-  - [x] Date Not Available rendering: non-perishables and unknown dates display clean `Date Not Available` state without triggering false "Expired" alerts.
-  - [x] Full manual override capability: editing date inline or in form automatically promotes provenance to `MANUFACTURER_EXPIRY`.
-  - [x] Commercial sensory prep advisory: Business invoice review includes clear sensory check guidance ("Verify sensory freshness prior to commercial food preparation").
-  - [x] Recipe safety alignment: pantry staples without expiry (`expiryDate === null`) are safely included in recipe generation; estimated items expiring in >48h safely suggested.
-  - [x] Consumer & Business workspace parity maintained across manual entry, editing, invoice upload, inventory catalogs, and drawers.
-  - [x] Automated test suites verified: 5-tier hierarchy verification (`scratch/test-expiry-hierarchy.ts`), merge planning verification (`scratch/test-merge-expiry.ts`), 100% clean typecheck (`npx tsc --noEmit`), and 35-route production build (`npm run build`).
-- [x] **P2-A — Mobile Inventory Default List View** (🟢 **100% Completed & Verified**)
-  - [x] Viewport-aware layout defaulting to high-density 68px touch rows on mobile screens (<768px).
-  - [x] Persistent Grid ↔ List switcher with `localStorage` preference memory (`shelflife_pref_inventory_view`).
-  - [x] Displays thumbnail, title, remaining quantity, and countdown status chip above the fold for 7–8 items.
-  - [x] Dedicated `MobileInventoryRow.tsx` component with 44x44px touch ergonomics and sub-bar batch selection.
-  - [x] Consumer and Commercial parity verified. Typecheck and production build clean.
-- [x] **P2-B — Contextual Product Dossier Quick Actions** (🟢 **100% Completed & Verified**)
-  - [x] Replaced disorienting full-page redirects with focused slide-over sheets (`BottomSheet.tsx`) inside Partial Product Dossier (`ProductDetailDrawer.tsx`).
-  - [x] "Add More Stock" (`ProductRestockModal.tsx`) with real-time balance calculation ($2.5 + 1.25 = 3.75$), quick increment pills, discrete vs continuous unit handling, `InventoryActivity` audit logging, and commercial metadata fields (`invoiceNumber`, `batchLot`, `unitCost`).
-  - [x] "Move to Another Category" (`ProductCategoryModal.tsx`) with searchable category grid, active category check, and inline "+ Add New Category" instant creation without page reload.
-  - [x] "Set Expiry Reminder" (`ProductReminderModal.tsx`) with 1d/2d/3d/1w/custom presets, target date calculation, `shelflife_item_reminders` local storage sync, `notification_feed` activity tracking, and dynamic `🔔 Reminder: [date]` badge in header.
-  - [x] "Delete Product" (`ProductDeleteModal.tsx`) with reason prompts (*Consumed*, *Spoiled/Waste*, *Entry Error/Duplicate*) safeguarding pure waste analytics, combined with 5-second interactive `[Undo]` toast restoring deleted items via `restoreInventoryItemAction`.
-  - [x] Consumer and Commercial parity verified. Typecheck and Next.js 35-route production build passed with zero errors.
-- [ ] **P3 — Real Product Thumbnails & Image Priority Hierarchy** (🟡 **Queued / Spec Ready**)
-  - Authoritative 6-tier image priority cascade.
-  - Scan label image retention as persistent product thumbnail.
-  - Open Food Facts ODbL integration and resilient category SVG glyph fallback component.
-- [ ] **Cross-Cutting QA & Regression Suite** (🟡 **Queued / Spec Ready**)
-  - 8-part real-world usage validation matrix covering decimal math, volumetric cooking deductions, and Consumer/Business boundaries.
+  - 5-tier freshness cascade: `MANUFACTURER_EXPIRY` -> `BEST_BEFORE` -> `MFG_PLUS_SHELF_LIFE` -> `AI_ESTIMATED` -> `UNKNOWN`.
+  - USDA FoodKeeper commodity heuristics, invoice purchase date baseline, and billing date anti-confusion guards.
+  - Database schema column `expiryType`, amber `Estimated ✦` badge with popover, and commercial sensory prep warnings.
 
----
+- [x] **P2-A — Mobile Inventory Default List View (Spec 04)** (🟢 **100% Completed & Verified**)
+  - Viewport-aware layout defaulting to high-density 68px touch rows on mobile screens (<768px).
+  - Persistent Grid ↔ List switcher with `localStorage` preference memory (`shelflife_pref_inventory_view`).
+  - Dedicated `MobileInventoryRow.tsx` component with 44x44px touch ergonomics and sub-bar batch selection.
 
-## 🛡️ Core Architectural Principles
+- [x] **P2-B — Contextual Product Dossier Quick Actions (Spec 05)** (🟢 **100% Completed & Verified**)
+  - In-place slide-up sheets: Add More Stock (`ProductRestockModal`), Move Category (`ProductCategoryModal`), Set Expiry Reminder (`ProductReminderModal`), and Safe Deletion (`ProductDeleteModal`).
+  - Live arithmetic ($Current + Added = Total$), instant category creation, and 5-second interactive `[Undo]` toast.
+  - Completely decommissioned legacy delete dialog across the entire application.
 
-- Server-side session ownership is authoritative.
-- Business workspaces strictly omit recipe functionality; recipes are exclusive to consumer households.
-- Deterministic expiry, quantity normalization, and stock status override AI recommendations.
-- Missing expiry remains explicitly unknown (`Expiry not available`) or visually badged as `Estimated`.
-- Barcode scanning is deferred and hidden from active entry flows.
-- Marketing cinematic video background remains strictly isolated to marketing (`(marketing)/layout.tsx`).
-- Landing page theme toggle remains removed.
-- Authenticated app preserves dynamic Light and Dark mode options.
+- [x] **P3 — Real Product Thumbnails & Image Priority (Spec 06)** (🟢 **100% Completed & Verified**)
+  - Authoritative 6-tier fallback cascade: Camera -> Multi-View -> Upload -> Open Food Facts -> SVG Glyph -> Generic.
+  - Open Food Facts live lookup via `/cgi/search.pl` with strict 2.5s `AbortSignal.timeout(2500)` and in-memory cache.
+  - ODbL license attribution link in Product Dossier Hero, shimmer loading pulses, and PDF export layout inclusion.
 
+- [x] **QA & Regression Verification Suite (Spec 07)** (🟢 **100% Completed & Verified**)
+  - Automated test runner verifying all 8 real-world usage scenarios: decimal consumption, volumetric conversion, multi-view schema, missing expiry cascade, mobile list view default, contextual dossier quick actions, 6-tier thumbnail hierarchy, and business recipe isolation.
+  - 8/8 scenarios passed cleanly (100%).
+  - Consolidated master specification into `specs/ShelfLife-Final-Master-Specification.md` and deleted individual specs 00–07.

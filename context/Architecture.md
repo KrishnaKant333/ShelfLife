@@ -107,26 +107,37 @@ ShelfLife implements an explicit, deterministic storage lifecycle architecture a
    - Deterministic lifecycle cleanup handles known user operations and failures synchronously.
    - Scheduled orphan garbage collector crons / background scanners are intentionally deferred.
 
+7. **Real Product Thumbnails & 6-Tier Fallback Hierarchy (`ProductThumbnail.tsx`, `src/lib/openfoodfacts.ts`)**:
+   - Tier 1: User camera photo taken live.
+   - Tier 2: Multi-view synthesized primary pack photo.
+   - Tier 3: User uploaded product photo.
+   - Tier 4: Open Food Facts real product thumbnail fetched via `/cgi/search.pl` with strict 2.5s `AbortSignal.timeout(2500)`, sanitization (`cleanSearchQuery`), in-memory cache, and ODbL attribution.
+   - Tier 5: Categorized SVG glyph graphic with themed colors matching the item's category.
+   - Tier 6: Safe generic geometric placeholder.
+   - Shimmer pulse loading state during network transit and automatic `onError` cascade.
+
 ---
 
-## 🧭 Active Roadmap: Real-World Usage Improvements (P0–P3)
+## 🧭 Active Roadmap: Real-World Usage Improvements (P0–P3 & QA)
 
 - **P0: Fractional Quantities & Database Parity** (🟢 **100% Completed & Verified**)
   - PostgreSQL schema synchronized across dev and prod (`float8` for `inventoryConsumption.quantityUsed` and `inventoryItem.quantity`).
-  - Unit-aware continuous vs. discrete input handling.
+  - Unit-aware continuous (`L`, `kg`, `ml`, `g`) vs. discrete (`pcs`, `pack`) input handling and 4-decimal precision arithmetic.
 - **P1: Multi-View Product Understanding** (🟢 **100% Completed & Verified**)
   - Upload (up to 4 images) and progressive viewfinder capture with field accumulation.
   - Persistent product image storage migrated to Vercel Blob with local filesystem fallback.
-  - Image preservation on edit verified; corrupt base64 fallbacks completely removed.
+  - Image preservation on edit verified; corrupt base64 fallbacks completely removed; complete orphan storage cleanup lifecycle.
 - **P1: Intelligent Missing Expiry Hierarchy** (🟢 **100% Completed & Verified**)
   - 5-tier freshness hierarchy resolving missing receipt/cart dates without blocking submission.
   - Category heuristics table (USDA FoodKeeper aligned), amber `Estimated ✦` badges, `expiryType` DB persistence, and pantry staple recipe inclusion.
-- **P2: Mobile Inventory Default List View** (🟡 **Queued**)
-  - Dedicated 68px touch-row default layout for viewports <768px with persistent Grid toggle.
-- **P2: Contextual Product Dossier Quick Actions** (🟡 **Queued**)
-  - Immediate sub-sheets for Add Stock, Move Category, Expiry Reminder, and Safe Deletion.
-- **P3: Real Product Thumbnails & Image Priority** (🟡 **Queued**)
-  - 6-tier image priority cascade from camera capture to Open Food Facts and category glyphs.
-- **Cross-Cutting QA & Regression Layer** (🟡 **Queued**)
-  - 8-part real-world validation matrix.
-
+- **P2: Mobile Inventory Default List View** (🟢 **100% Completed & Verified**)
+  - Dedicated 68px touch-row default layout for viewports <768px (`MobileInventoryRow.tsx`) with persistent `localStorage` Grid/List toggle.
+- **P2: Contextual Product Dossier Quick Actions** (🟢 **100% Completed & Verified**)
+  - Immediate slide-up sub-sheets for Add Stock (`ProductRestockModal`), Move Category (`ProductCategoryModal`), Expiry Reminder (`ProductReminderModal`), and Safe Deletion (`ProductDeleteModal` with 5s undo toast).
+  - Decommissioned and removed legacy delete component across entire project.
+- **P3: Real Product Thumbnails & Image Priority** (🟢 **100% Completed & Verified**)
+  - 6-tier image priority cascade from camera capture to Open Food Facts (2.5s strict timeout) and themed SVG category glyphs.
+  - ODbL attribution link, shimmer loading pulse, and PDF export thumbnail inclusion.
+- **Cross-Cutting QA & Regression Layer (Spec 07)** (🟢 **100% Completed & Verified**)
+  - 8-scenario real-world validation matrix passed 100% (8/8).
+  - All specifications consolidated into `specs/ShelfLife-Final-Master-Specification.md`.

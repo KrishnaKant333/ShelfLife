@@ -1,4 +1,4 @@
-# ShelfLife Project Overview (Post-1.0 Roadmap)
+# ShelfLife Project Overview (Master Release)
 
 ## 📌 Product Summary
 
@@ -8,57 +8,60 @@ ShelfLife is a Next.js 16 application for consumers and commercial food business
 
 ## 👥 Account Types & Isolation
 
-- **Consumer**: Account data scoped to authenticated `userId` via `/dashboard` routes.
-- **Business**: Account data scoped to `userId` and `businessId` via `/business/dashboard` routes.
-- Server-side session checks guarantee strict data isolation between consumer and business accounts.
+- **Consumer**: Account data scoped to authenticated `userId` via `/dashboard` routes. Includes culinary meal planning, expiry-prioritized recipe generation, and interactive cooking mode.
+- **Business**: Account data scoped to `userId` and `businessId` via `/business/dashboard` routes. Strictly enforces recipe isolation, FIFO stock rotation, supplier invoice parsing, and shrinkage financial reporting.
+- Server-side session checks guarantee strict data and route isolation between consumer and business accounts.
 
 ---
 
-## 🎨 Design Philosophy & Evolution
+## 🎨 Design Philosophy & Architecture
 
 - **Public Landing Page**: *"Cinematic / Editorial / Immersive"*
   A scroll-scrubbed hero pantry background sequence (`shelflife-cinematic-sequence.mp4`), floating capsule navigation, and dark-default artistic direction.
 - **Authenticated Application**: *"Editorial Productivity / Intelligent Workspace"*
   An intelligence-driven workspace that feels mature, calm, and tactile:
   - **Dashboard**: *"Inventory Intelligence Command Center"*
-  - **Inventory**: *"Premium Product Catalog"*
-  - **Product Details**: *"Digital Product Dossier"*
+  - **Inventory**: *"Premium Product Catalog"* (with viewport-aware high-density mobile list view)
+  - **Product Details**: *"Digital Product Dossier"* (with contextual in-place quick action sheets)
   - **Analytics**: *"Inventory Intelligence Report"*
-  - **Recipes**: *"Food Editorial Experience"*
+  - **Recipes**: *"Food Editorial Experience"* (Consumer only)
+  - **Business Strategy**: *"FIFO & Operations Intelligence"* (Commercial only)
   - **Waste**: *"Impact & Environmental Report"*
   - **Alerts vs Notifications**: Urgent actionable safeguards vs quiet informational activity feed.
   - **Settings**: Mature, calm, production-grade workspace controls.
 
 ---
 
-## 🛠️ Current Implemented Capabilities
+## 🛠️ Complete Feature Suite
 
 1. **Cinematic Landing Page**: Scroll-controlled sequence video, floating capsule navbar, transparent cards, decoupled solid dark footer.
 2. **Inventory Management**: CRUD operations, search, status filtering (*Fresh*, *Expiring*, *Expired*, *Low Stock*), and multi-field sorting.
-3. **Dedicated Export Hub**: `/dashboard/inventory/export` & `/business/dashboard/inventory/export` with live preview, CSV, and printable PDF.
-4. **Dynamic Invoice Intelligence Analysis**: AI-assisted invoice parsing with real-time stat recalculation.
-5. **Scan Label AI & Camera Capture**: Live camera capture or image upload with Groq AI extraction (`llama-3.3-70b-versatile`).
-6. **Alerts vs Notifications**: Urgent risks on `/dashboard/alerts` vs informational activity stream on `/dashboard/notifications`.
-7. **Dynamic Greetings**: Local browser time-based greetings (*Good morning*, *Good afternoon*, *Good evening*, *Good night*).
-8. **Recipe AI Generator**: Strict pre-prompt exclusion of expired ingredients.
+3. **Continuous Fractional Units**: Full support for decimal quantities (`0.25 L`, `1.5 kg`) on continuous units with 4-decimal precision and PostgreSQL `float8` parity.
+4. **Multi-View Product Understanding**: 1–4 packaging angle intake (Front, Back, Expiry) synthesized into 1 unified record via Groq vision, backed by Vercel Blob persistent object storage and complete orphan cleanup.
+5. **Intelligent 5-Tier Freshness Cascade**: Automatically infers USDA category shelf-life estimates for items lacking printed dates, badged with transparent `Estimated ✦` badges.
+6. **Mobile High-Density List View**: Defaults to 68px touch rows on viewports <768px with persistent `localStorage` Grid/List toggle.
+7. **Contextual Product Dossier Quick Actions**: In-place slide sheets for Restock ($Current + Added = Total$), Category migration, Expiry Reminders, and Safe Deletion with 5-second undo toast.
+8. **Real Product Thumbnails (6-Tier Hierarchy)**: Real product imagery with Open Food Facts global database lookup (2.5s strict timeout), ODbL attribution, shimmer loading states, and SVG category glyph fallbacks.
+9. **Dedicated Export Hub**: `/dashboard/inventory/export` & `/business/dashboard/inventory/export` with live preview, CSV, and printable PDF including product thumbnails.
+10. **Dynamic Invoice Intelligence Analysis**: AI-assisted invoice parsing with real-time stat recalculation and sensory check warnings for commercial kitchens.
+11. **Scan Label AI & Camera Capture**: Live camera capture or multi-image upload with Groq AI extraction (`llama-3.3-70b-versatile` & `qwen/qwen3.6-27b`).
+12. **Alerts vs Notifications**: Urgent risks on `/dashboard/alerts` vs informational activity stream on `/dashboard/notifications`.
+13. **Recipe Safety Engine**: Strictly filters out expired items before passing ingredients to Groq AI for recipe generation (Consumer only).
 
 ---
 
-## 🧭 Roadmap History & Active Real-World Usage Cycle
+## 🧭 Milestone & Roadmap History
 
-### Completed Milestones
 - **Cinematic Marketing Landing Page**: 100% Completed & Verified.
-- **Stages A–L Workspace Redesign**: 100% Completed, Verified & Built.
-- **Business Recipe Isolation**: 100% Purged from commercial workspace; recipes exclusive to Consumer.
+- **Stages A–L Authenticated Workspace Redesign**: 100% Completed, Verified & Built.
+- **Business Recipe Isolation**: 100% Completed; commercial workspaces strictly omit recipes.
 - **Get Started & Auth Modernization**: 100% Completed across `/get-started`, login, signup, verify email.
-- **P0: Fractional Quantities & Database Parity**: 100% Completed. Production and development databases synchronized on `float8` (`double precision`).
-
-### Active Cycle: Real-World Usage Improvements (P0–P3)
-1. **P0 Foundation (Completed)**: Continuous decimal vs. discrete integer arithmetic; strict production schema parity.
-2. **P1 Product Understanding (Queued)**: Multi-view packaging synthesis (front, back, bottom) and 5-tier intelligent missing expiry hierarchy.
-3. **P2 UX & Workflow Improvements (Queued)**: Mobile default list view (<768px) and contextual product dossier quick action sheets.
-4. **P3 Imagery & Polish (Queued)**: 6-tier authentic image hierarchy with Open Food Facts integration and deterministic SVG glyph fallbacks.
-5. **Cross-Cutting QA (Queued)**: 8-scenario real-world regression matrix.
+- **Cycle P0 (Fractional Quantities & DB Parity)**: 100% Completed. `float8` parity verified.
+- **Cycle P1 (Multi-View Synthesis & 5-Tier Freshness)**: 100% Completed & Verified.
+- **Cycle P2 (Mobile List View & Contextual Quick Actions)**: 100% Completed & Verified.
+- **Cycle P3 (Real Product Thumbnails & Open Food Facts)**: 100% Completed & Verified.
+- **Spec 07 Cross-Cutting QA & Regression Matrix**: 100% Completed & Verified (8/8 scenarios passed).
+- **Master Specification Consolidation**: Superseded Specs 00–07 into authoritative master document.
 
 ---
 
@@ -71,4 +74,3 @@ ShelfLife is a Next.js 16 application for consumers and commercial food business
 - Barcode scanning remains deferred and hidden from active workflows.
 - No production database changes via `db push` or `reset`; migrations must be versioned.
 - The cinematic landing video background remains strictly isolated from authenticated workspaces.
-

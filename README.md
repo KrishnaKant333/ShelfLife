@@ -35,25 +35,25 @@ ShelfLife features a deliberate dual visual identity:
 
 ShelfLife is engineered using a structured **Context & Specification** architecture (`Context/` and `Specs/`):
 
-- **Master System Specification**: [`Specs/ShelfLife-Final-Master-Specification.md`](specs/ShelfLife-Final-Master-Specification.md)
-- **Active Improvement Roadmap**: [`Specs/00-Real-World-Usage-Master-Roadmap.md`](specs/00-Real-World-Usage-Master-Roadmap.md)
+- **Master System Specification**: [`specs/ShelfLife-Final-Master-Specification.md`](specs/ShelfLife-Final-Master-Specification.md)
 
-### Improvement Cycle Status (P0–P3):
+### Improvement Cycle Status (P0–P3 & QA):
 1. **P0: Fractional Quantities & Database Parity (🟢 Completed)**:
    - Synchronized `inventoryConsumption.quantityUsed` to `float8` (`double precision`) across development and production databases.
-   - Enforced continuous decimal units (`L`, `kg`, `ml`, `g`) vs. discrete integer units (`pcs`, `pack`).
-2. **P1: Multi-View Product Understanding (🟡 Queued / Spec Ready)**:
-   - Captures and merges Front, Back, and Expiry packaging panels into a single consolidated record.
-3. **P1: Intelligent Missing Expiry Hierarchy (🟡 Queued / Spec Ready)**:
-   - 5-tier freshness cascade providing transparent, editable category-based shelf-life estimates for items lacking printed dates.
-4. **P2: Mobile Inventory Default List View (🟡 Queued / Spec Ready)**:
-   - Purpose-built high-density touch-row layout defaulting on mobile (<768px) with persistent Grid toggle.
-5. **P2: Contextual Product Dossier Quick Actions (🟡 Queued / Spec Ready)**:
-   - Immediate contextual sub-sheets for Add Stock, Move Category, Expiry Reminders, and Safe Deletion.
-6. **P3: Real Product Thumbnails & Image Priority (🟡 Queued / Spec Ready)**:
-   - 6-tier image priority cascade with Open Food Facts open-data imagery and clean SVG fallbacks.
-7. **Cross-Cutting QA & Regression Matrix (🟡 Queued / Spec Ready)**:
-   - Immutable 8-scenario QA matrix verifying real-world pantry and commercial kitchen flows.
+   - Enforced continuous decimal units (`L`, `kg`, `ml`, `g`) vs. discrete integer units (`pcs`, `pack`) with 4-decimal precision arithmetic.
+2. **P1: Multi-View Product Understanding (🟢 Completed)**:
+   - Captures and merges Front, Back, and Expiry packaging panels into a single consolidated record via Groq vision.
+   - Backed by Vercel Blob persistent object storage with automated orphan asset cleanup.
+3. **P1: Intelligent Missing Expiry Hierarchy (🟢 Completed)**:
+   - 5-tier freshness cascade providing transparent, editable category-based shelf-life estimates (`Estimated ✦`) for items lacking printed dates.
+4. **P2: Mobile Inventory Default List View (🟢 Completed)**:
+   - Purpose-built high-density 68px touch-row layout defaulting on mobile (<768px) with persistent Grid toggle memory in `localStorage`.
+5. **P2: Contextual Product Dossier Quick Actions (🟢 Completed)**:
+   - Immediate contextual slide sheets for Add Stock ($Current + Added = Total$), Move Category, Expiry Reminders, and Safe Deletion with 5-second undo toast. Decommissioned legacy delete component.
+6. **P3: Real Product Thumbnails & Image Priority (🟢 Completed)**:
+   - Authoritative 6-tier image priority cascade with Open Food Facts 2.5s lookup, ODbL attribution, shimmer loading, and themed SVG glyph fallbacks.
+7. **Cross-Cutting QA & Regression Matrix (🟢 Completed)**:
+   - Immutable 8-scenario QA matrix verifying real-world pantry and commercial kitchen flows (100% pass: 8/8). Consolidated master specification.
 
 
 ---

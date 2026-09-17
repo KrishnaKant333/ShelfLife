@@ -116,7 +116,7 @@ const COMMODITY_RULES: CommodityRule[] = [
   },
 ];
 
-const CATEGORY_DEFAULT_DAYS: Record<string, number> = {
+export const CATEGORY_DEFAULT_DAYS: Record<string, number> = {
   meat: 3,
   "meat & poultry": 3,
   seafood: 2,
@@ -130,6 +130,8 @@ const CATEGORY_DEFAULT_DAYS: Record<string, number> = {
   grains: 180,
   "canned goods": 365,
 };
+
+export const ESTIMATED_SHELF_LIFE_DAYS = CATEGORY_DEFAULT_DAYS;
 
 /**
  * Determines estimated shelf-life days based on product name and category.
