@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { getInventoryStatus } from "@/lib/inventory-status";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
+import ProductThumbnail from "@/components/inventory/ProductThumbnail";
 
 type InventoryItem = {
   id: number;
@@ -21,6 +22,7 @@ type InventoryItem = {
   quantity: number;
   unit: string;
   expiryDate: string | null;
+  imageUrl?: string | null;
   createdAt: string;
 };
 
@@ -131,13 +133,18 @@ function ExportInventoryViewInner({
 
       const rowsHtml = filteredInventory.map((item) => {
         const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
+        const imageCell = item.imageUrl
+          ? `<img src="${item.imageUrl}" alt="${item.name.replace(/"/g, '&quot;')}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; display: block;" onerror="this.style.display='none'" />`
+          : `<div style="width: 36px; height: 36px; border-radius: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">${item.category.slice(0, 2)}</div>`;
+
         return `
           <tr>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: 600;">${item.name}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.category}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity} ${item.unit}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : "Expiry not available"}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">
+            <td style="padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: middle;">${imageCell}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: 600; vertical-align: middle;">${item.name}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle;">${item.category}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle;">${item.quantity} ${item.unit}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle;">${item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : "Expiry not available"}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle;">
               <span style="padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; ${
                 status === "Expired"
                   ? "background: #fee2e2; color: #991b1b;"
@@ -203,6 +210,7 @@ function ExportInventoryViewInner({
             <table>
               <thead>
                 <tr>
+                  <th style="width: 48px;">Photo</th>
                   <th>Product Name</th>
                   <th>Category</th>
                   <th>Quantity</th>
@@ -391,6 +399,7 @@ function ExportInventoryViewInner({
             <table className="w-full text-left text-xs">
               <thead className="border-b border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/30 uppercase tracking-wider text-[var(--app-text-muted)] font-semibold text-[10px]">
                 <tr>
+                  <th className="px-4 py-3.5 w-12 text-center">Photo</th>
                   <th className="px-5 py-3.5">Product Name</th>
                   <th className="px-5 py-3.5">Category</th>
                   <th className="px-5 py-3.5">Quantity</th>
@@ -403,6 +412,17 @@ function ExportInventoryViewInner({
                   const status = getInventoryStatus(item.quantity, item.expiryDate, item.unit);
                   return (
                     <tr key={item.id} className="hover:bg-[var(--app-surface-base)]/40 transition">
+                      <td className="px-4 py-2.5">
+                        <div className="h-8 w-8">
+                          <ProductThumbnail
+                            src={item.imageUrl}
+                            alt={item.name}
+                            category={item.category}
+                            size="xs"
+                            rounded="sm"
+                          />
+                        </div>
+                      </td>
                       <td className="px-5 py-3.5 font-medium text-[var(--app-text-display)]">{item.name}</td>
                       <td className="px-5 py-3.5 text-[var(--app-text-muted)]">{item.category}</td>
                       <td className="px-5 py-3.5 font-medium text-[var(--app-text-display)]">{item.quantity} {item.unit}</td>

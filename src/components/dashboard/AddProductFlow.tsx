@@ -6,10 +6,20 @@ import Image from "next/image";
 import {
   extractMultiViewLabelAction,
   discardUploadedImagesAction,
+  uploadSingleProductImageAction,
 } from "@/lib/actions/label-scan";
-import { createInventoryItem, type CreateInventoryState } from "@/lib/actions/inventory";
-import { createBusinessInventoryItem } from "@/lib/actions/business-inventory";
+import {
+  createInventoryItem,
+  lookupProductImageAction,
+  type CreateInventoryState,
+} from "@/lib/actions/inventory";
+import {
+  createBusinessInventoryItem,
+  lookupBusinessProductImageAction,
+} from "@/lib/actions/business-inventory";
 import { isIntegerUnit } from "@/lib/normalization";
+import { isOpenFoodFactsImage } from "@/lib/openfoodfacts";
+import ProductThumbnail from "@/components/inventory/ProductThumbnail";
 import {
   Camera,
   FileText,
@@ -26,6 +36,10 @@ import {
   Package,
   Scale,
   Calendar,
+  Search,
+  Loader2,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -75,6 +89,13 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
   const [daysEstimated, setDaysEstimated] = useState<number | undefined>(undefined);
   const [imageUrl, setImageUrl] = useState("");
   const [additionalImageUrls, setAdditionalImageUrls] = useState<string[]>([]);
+
+  // Manual photo upload & lookup states (Spec 06)
+  const [cameraMode, setCameraMode] = useState<"multiview" | "manual">("multiview");
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupMessage, setLookupMessage] = useState("");
+  const manualFileInputRef = useRef<HTMLInputElement>(null);
 
   // Multi-View Image Collection States
   const [views, setViews] = useState<ProductViewItem[]>([]);
@@ -312,8 +333,72 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
       type: "image/jpeg",
     });
 
+    if (cameraMode === "manual") {
+      setCameraError("");
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await uploadSingleProductImageAction(formData);
+        if (res.url) {
+          setImageUrl(res.url);
+        }
+        stopCamera();
+      } catch (err: any) {
+        setCameraError(err.message || "Failed to save photo.");
+      }
+      return;
+    }
+
     addFilesToViews([file]);
     setCameraError("");
+  }
+
+  async function handleManualPhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPhotoUploading(true);
+    setLookupMessage("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await uploadSingleProductImageAction(formData);
+      if (res.url) {
+        setImageUrl(res.url);
+      }
+    } catch (err: any) {
+      setLookupMessage(err.message || "Failed to upload photo.");
+    } finally {
+      setPhotoUploading(false);
+      if (manualFileInputRef.current) manualFileInputRef.current.value = "";
+    }
+  }
+
+  async function handleLookupImage() {
+    if (!name.trim()) {
+      setLookupMessage("Please enter a product name first.");
+      return;
+    }
+    setLookupLoading(true);
+    setLookupMessage("");
+    try {
+      const lookupFn = isBusiness ? lookupBusinessProductImageAction : lookupProductImageAction;
+      const res = await lookupFn(name, category);
+      if (res.imageUrl) {
+        setImageUrl(res.imageUrl);
+        setLookupMessage(
+          res.tier === "pantry_history"
+            ? "Matched from your prior pantry item (Tier 5)!"
+            : "Authentic packaging matched via Open Food Facts (Tier 4)!"
+        );
+      } else {
+        setLookupMessage("No authentic match found. An honest category icon will be used (Tier 6).");
+      }
+    } catch {
+      setLookupMessage("Lookup timed out. Category fallback icon will be used (Tier 6).");
+    } finally {
+      setLookupLoading(false);
+    }
   }
 
   function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -389,6 +474,82 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
 
         {/* Tab Content Box */}
         <div className="p-5 md:p-8">
+          {/* PROGRESSIVE CAMERA VIEWFINDER (Shared across Multi-View and Direct Capture) */}
+          {cameraOpen && (
+            <div className="mb-6 space-y-3 rounded-2xl border border-[var(--app-accent-emerald)] bg-[var(--app-surface-base)] p-3.5 text-left shadow-lg">
+              <div className="relative overflow-hidden rounded-xl bg-black border border-white/10">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  aria-label="Live camera preview"
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="absolute top-3 left-3 rounded-full bg-black/70 border border-white/10 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  {cameraMode === "manual" ? "Direct Product Capture (Tier 1)" : `Angle ${views.length + 1} of 4`}
+                </div>
+              </div>
+
+              {/* Camera Controls & Hint */}
+              <div className="p-1 space-y-3">
+                <p className="text-xs text-[var(--app-text-muted)] font-medium">
+                  {cameraMode === "manual"
+                    ? "Align the camera with the front packaging of your product and tap Snap Front Photo."
+                    : views.length === 0
+                    ? "Point at front brand panel and tap Snap Angle."
+                    : views.length === 1
+                    ? "Front captured! Now snap the back for ingredients & quantity, or rim for expiry."
+                    : views.length === 2
+                    ? "2 angles captured! Snap rim/cap for stamped expiry date, or finish now."
+                    : "All key angles covered. Tap 'Extract Single Product' to synthesize with AI."}
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void captureCameraFrame()}
+                    disabled={cameraMode === "multiview" && views.length >= 4}
+                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--app-accent-emerald)] px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+                  >
+                    <Camera size={15} />
+                    {cameraMode === "manual" ? "Snap Front Photo" : `Snap Angle (${views.length}/4)`}
+                  </button>
+
+                  {cameraMode === "multiview" && views.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        stopCamera();
+                        void triggerMultiViewExtraction();
+                      }}
+                      disabled={labelLoading}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all shadow-sm"
+                    >
+                      <Sparkles size={15} />
+                      Extract ({views.length})
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={stopCamera}
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] transition-all"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {cameraError && (
+            <p role="alert" aria-live="polite" className="mb-4 text-sm font-medium text-red-600">
+              {cameraError}
+            </p>
+          )}
+
           {/* MULTI-VIEW LABEL SCAN TAB */}
           {activeTab === "label" && (
             <div className="space-y-6 max-w-xl mx-auto py-2">
@@ -407,7 +568,10 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
               <div className="grid gap-3 sm:grid-cols-2">
                 <button
                   type="button"
-                  onClick={() => void openCamera()}
+                  onClick={() => {
+                    setCameraMode("multiview");
+                    void openCamera();
+                  }}
                   disabled={labelLoading || cameraOpen}
                   className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--app-accent-emerald)] px-5 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -428,77 +592,6 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                   />
                 </label>
               </div>
-
-              {/* PROGRESSIVE CAMERA VIEWFINDER */}
-              {cameraOpen && (
-                <div className="space-y-3 rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] p-3.5 text-left">
-                  <div className="relative overflow-hidden rounded-xl bg-black border border-white/10">
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      muted
-                      playsInline
-                      aria-label="Live camera preview"
-                      className="aspect-[4/3] w-full object-cover"
-                    />
-                    <div className="absolute top-3 left-3 rounded-full bg-black/70 border border-white/10 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      Angle {views.length + 1} of 4
-                    </div>
-                  </div>
-
-                  {/* Camera Controls & Hint */}
-                  <div className="p-1 space-y-3">
-                    <p className="text-xs text-[var(--app-text-muted)] font-medium">
-                      {views.length === 0 && "Point at front brand panel and tap Snap Angle."}
-                      {views.length === 1 && "Front captured! Now snap the back for ingredients & quantity, or rim for expiry."}
-                      {views.length === 2 && "2 angles captured! Snap rim/cap for stamped expiry date, or finish now."}
-                      {views.length >= 3 && "All key angles covered. Tap 'Extract Single Product' to synthesize with AI."}
-                    </p>
-
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void captureCameraFrame()}
-                        disabled={views.length >= 4}
-                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[var(--app-accent-emerald)] px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
-                      >
-                        <Camera size={15} />
-                        Snap Angle ({views.length}/4)
-                      </button>
-
-                      {views.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            stopCamera();
-                            void triggerMultiViewExtraction();
-                          }}
-                          disabled={labelLoading}
-                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all shadow-sm"
-                        >
-                          <Sparkles size={15} />
-                          Extract ({views.length})
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={stopCamera}
-                        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[var(--app-text-body)] hover:bg-[var(--app-surface-base)] transition-all"
-                      >
-                        Close
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {cameraError && (
-                <p role="alert" aria-live="polite" className="text-sm font-medium text-red-600">
-                  {cameraError}
-                </p>
-              )}
 
               {/* SELECTED VIEWS TRAY / STRIP */}
               {views.length > 0 && (
@@ -670,27 +763,47 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
           {/* MANUAL FORM & PRE-FILLED CONFIRMATION */}
           {activeTab === "manual" && (
             <form action={formAction} className="space-y-6">
-              {/* Product Imagery Banner if images were extracted */}
-              {imageUrl && (
+              {/* Product Imagery: 6-Tier Hierarchy Controls */}
+              {imageUrl ? (
                 <div className="rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/50 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-[var(--app-accent-emerald)] flex items-center gap-1.5">
                       <CheckCircle2 size={14} /> Associated Product Imagery
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const urlsToDiscard = [imageUrl, ...additionalImageUrls].filter(Boolean);
-                        setImageUrl("");
-                        setAdditionalImageUrls([]);
-                        if (urlsToDiscard.length > 0) {
-                          void discardUploadedImagesAction(urlsToDiscard);
-                        }
-                      }}
-                      className="text-xs text-red-500 hover:text-red-400 font-medium transition"
-                    >
-                      Remove imagery
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => manualFileInputRef.current?.click()}
+                        disabled={photoUploading}
+                        className="text-xs text-[var(--app-text-muted)] hover:text-[var(--app-text-display)] font-medium transition flex items-center gap-1"
+                      >
+                        <Upload size={12} /> Change photo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCameraMode("manual");
+                          void openCamera();
+                        }}
+                        className="text-xs text-[var(--app-text-muted)] hover:text-[var(--app-text-display)] font-medium transition flex items-center gap-1"
+                      >
+                        <Camera size={12} /> Resnap
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const urlsToDiscard = [imageUrl, ...additionalImageUrls].filter(Boolean);
+                          setImageUrl("");
+                          setAdditionalImageUrls([]);
+                          if (urlsToDiscard.length > 0) {
+                            void discardUploadedImagesAction(urlsToDiscard);
+                          }
+                        }}
+                        className="text-xs text-red-500 hover:text-red-400 font-medium transition"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
@@ -706,10 +819,21 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                         />
                       </div>
                       <div>
-                        <span className="inline-block rounded-md bg-[var(--app-accent-emerald)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-                          Primary Thumbnail
-                        </span>
-                        <p className="text-xs text-[var(--app-text-muted)] mt-0.5">Front product identity</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block rounded-md bg-[var(--app-accent-emerald)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                            Primary Thumbnail
+                          </span>
+                          {isOpenFoodFactsImage(imageUrl) && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                              <Globe size={10} /> Open Food Facts
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[var(--app-text-muted)] mt-0.5">
+                          {isOpenFoodFactsImage(imageUrl)
+                            ? "Verified open community packaging photo (ODbL)"
+                            : "Front product identity"}
+                        </p>
                       </div>
                     </div>
 
@@ -760,7 +884,72 @@ export default function AddProductFlow({ isBusiness = false }: AddProductFlowPro
                     ))}
                   </div>
                 </div>
+              ) : (
+                /* When no image is yet attached: Direct Photo Capture or Open Food Facts Lookup */
+                <div className="rounded-2xl border border-dashed border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/40 p-4 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-[var(--app-text-display)] flex items-center gap-1.5">
+                        <Sparkles size={14} className="text-[var(--app-accent-emerald)]" />
+                        Product Imagery (6-Tier Priority)
+                      </span>
+                      <p className="text-[11px] text-[var(--app-text-muted)] mt-0.5">
+                        Add a direct photo (Tier 1), or let ShelfLife auto-resolve authentic packaging from Open Food Facts upon saving.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => manualFileInputRef.current?.click()}
+                        disabled={photoUploading}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-3 py-1.5 text-xs font-semibold text-[var(--app-text-display)] hover:bg-[var(--app-surface-base)] transition disabled:opacity-50"
+                      >
+                        {photoUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                        Upload Photo
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCameraMode("manual");
+                          void openCamera();
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-3 py-1.5 text-xs font-semibold text-[var(--app-text-display)] hover:bg-[var(--app-surface-base)] transition"
+                      >
+                        <Camera size={12} />
+                        Snap Photo
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => void handleLookupImage()}
+                        disabled={lookupLoading || !name.trim()}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {lookupLoading ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+                        Find Match
+                      </button>
+                    </div>
+                  </div>
+
+                  {lookupMessage && (
+                    <p className="text-xs font-medium text-[var(--app-accent-emerald)] bg-emerald-500/5 border border-emerald-500/10 p-2 rounded-lg">
+                      {lookupMessage}
+                    </p>
+                  )}
+                </div>
               )}
+
+              {/* Hidden file input for manual photo uploads */}
+              <input
+                ref={manualFileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleManualPhotoUpload}
+                disabled={photoUploading}
+                className="sr-only"
+              />
 
               {/* Hidden Inputs for Stored Images & Expiry Provenance */}
               <input type="hidden" name="imageUrl" value={imageUrl} />

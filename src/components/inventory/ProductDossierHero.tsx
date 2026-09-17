@@ -13,8 +13,10 @@ import {
   Calendar,
   BadgePercent,
   Clock,
+  ExternalLink,
 } from "lucide-react";
 import ProductImage from "@/components/inventory/ProductImage";
+import { isOpenFoodFactsImage } from "@/lib/openfoodfacts";
 import { formatExpiry, getDaysUntilExpiry } from "@/lib/format-expiry";
 import type { InventoryItem } from "@/lib/inventory";
 
@@ -80,7 +82,7 @@ export default function ProductDossierHero({
       <div className="sl-editorial-card p-5 sm:p-7 md:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
           {/* Left Column: Flagship Visual Stage */}
-          <div className="lg:col-span-4 flex items-center justify-center">
+          <div className="lg:col-span-4 flex flex-col items-center justify-center gap-2">
             <div className="relative h-56 sm:h-64 lg:h-72 w-full rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)] p-4 shadow-sm flex items-center justify-center overflow-hidden">
               <ProductImage
                 src={item.imageUrl}
@@ -96,6 +98,22 @@ export default function ProductDossierHero({
                 DIGITAL TWIN
               </div>
             </div>
+
+            {isOpenFoodFactsImage(item.imageUrl) && (
+              <p className="text-[11px] text-[var(--app-text-muted)] text-center leading-tight">
+                Product image via{" "}
+                <a
+                  href="https://world.openfoodfacts.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-[var(--app-text-display)] transition inline-flex items-center gap-0.5 font-medium"
+                >
+                  Open Food Facts
+                  <ExternalLink size={10} className="inline ml-0.5" />
+                </a>
+                , contributed by the open community (ODbL).
+              </p>
+            )}
           </div>
 
           {/* Right Column: Title, Metadata, Status, and Action Controls */}

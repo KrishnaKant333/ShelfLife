@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { formatExpiry, getDaysUntilExpiry } from "@/lib/format-expiry";
 import ProductImage from "@/components/inventory/ProductImage";
+import { isOpenFoodFactsImage } from "@/lib/openfoodfacts";
 import {
   consumeIngredientsAction,
   getRecentConsumptionAction,
@@ -264,6 +265,22 @@ export default function ProductDetailDrawer({
                 priority
               />
             </div>
+
+            {isOpenFoodFactsImage(activeDisplayImage) && (
+              <p className="text-[11px] text-[var(--app-text-muted)] text-center leading-tight">
+                Product image via{" "}
+                <a
+                  href="https://world.openfoodfacts.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-[var(--app-text-display)] transition inline-flex items-center gap-0.5 font-medium"
+                >
+                  Open Food Facts
+                  <ExternalLink size={10} className="inline ml-0.5" />
+                </a>
+                {" "}(ODbL).
+              </p>
+            )}
 
             {/* Auxiliary View Thumbnails Carousel */}
             {allImages.length > 1 && (

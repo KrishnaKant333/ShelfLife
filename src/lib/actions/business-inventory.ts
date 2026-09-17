@@ -13,6 +13,7 @@ import {
   parseItemImageUrls,
   safeDeleteUnreferencedImages,
 } from "@/lib/storage-lifecycle";
+import { fetchOpenFoodFactsImage } from "@/lib/openfoodfacts";
 
 const optionalExpiryDate = z.preprocess(
   (value) => parseFlexibleDate(value),
@@ -76,6 +77,49 @@ async function getBusinessUser() {
   };
 }
 
+/**
+ * Tier 5: Queries business's prior inventory items for an authentic photo of the same product.
+ */
+export async function findBusinessHistoricalProductImage(
+  businessId: number,
+  productName: string
+): Promise<string | null> {
+  try {
+    const target = productName.trim().toLowerCase();
+    const items = await db.orm.public.InventoryItem.where({ businessId }).all();
+    const match = items.find(
+      (item) => Boolean(item.imageUrl) && item.name.trim().toLowerCase() === target
+    );
+    return match?.imageUrl ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Client-callable action to look up an authentic product image for commercial inventory.
+ */
+export async function lookupBusinessProductImageAction(
+  productName: string,
+  category?: string
+): Promise<{ imageUrl: string | null; tier: "pantry_history" | "openfoodfacts" | "none" }> {
+  const business = await getBusinessUser();
+  const trimmed = productName.trim();
+  if (!trimmed) return { imageUrl: null, tier: "none" };
+
+  if (business?.businessId) {
+    const hist = await findBusinessHistoricalProductImage(business.businessId, trimmed);
+    if (hist) return { imageUrl: hist, tier: "pantry_history" };
+  }
+
+  const off = await fetchOpenFoodFactsImage(trimmed, category);
+  if (off?.imageUrl) {
+    return { imageUrl: off.imageUrl, tier: "openfoodfacts" };
+  }
+
+  return { imageUrl: null, tier: "none" };
+}
+
 export type BusinessInventoryState = {
   error?: string;
 };
@@ -133,6 +177,21 @@ export async function createBusinessInventoryItem(
     ? (result.data.expiryType || "MANUFACTURER_EXPIRY")
     : "UNKNOWN";
 
+  // 6-Tier Image Cascade:
+  // If no direct photo (Tier 1/2/3) was provided, check Tier 5 (Business history), then Tier 4 (Open Food Facts)
+  let resolvedImageUrl = result.data.imageUrl || null;
+  if (!resolvedImageUrl) {
+    const historicalUrl = await findBusinessHistoricalProductImage(business.businessId, result.data.name);
+    if (historicalUrl) {
+      resolvedImageUrl = historicalUrl;
+    } else {
+      const offMatch = await fetchOpenFoodFactsImage(result.data.name, result.data.category);
+      if (offMatch?.imageUrl) {
+        resolvedImageUrl = offMatch.imageUrl;
+      }
+    }
+  }
+
   try {
     await db.orm.public.InventoryItem.create({
       userId: business.userId,
@@ -143,7 +202,7 @@ export async function createBusinessInventoryItem(
       unit: result.data.unit,
       expiryDate: result.data.expiryDate?.toISOString() ?? null,
       expiryType: determinedExpiryType,
-      imageUrl: result.data.imageUrl || null,
+      imageUrl: resolvedImageUrl,
       additionalImageUrls: result.data.additionalImageUrls || null,
     });
   } catch (createError) {
@@ -315,8 +374,11 @@ export async function importBusinessInventory(
           expiryType: item.expiryType,
         })
     ),
-    ...itemsToCreate.map((item) =>
-      db.orm.public.InventoryItem.create({
+    ...itemsToCreate.map((item) => {
+      const histMatch = existingInventory.find(
+        (e) => Boolean(e.imageUrl) && e.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+      );
+      return db.orm.public.InventoryItem.create({
         userId: business.userId,
         businessId: business.businessId,
         name: item.name,
@@ -325,8 +387,9 @@ export async function importBusinessInventory(
         unit: item.unit,
         expiryDate: item.expiryDate,
         expiryType: item.expiryType,
-      })
-    ),
+        imageUrl: histMatch?.imageUrl ?? null,
+      });
+    }),
   ]);
 
   revalidatePath("/business/dashboard");

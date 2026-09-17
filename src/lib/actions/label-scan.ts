@@ -257,6 +257,30 @@ export async function discardUploadedImagesAction(
 }
 
 /**
+ * Uploads a single user-captured photo (Tier 1 of the 6-Tier Hierarchy)
+ * without running full AI extraction, saving it directly to storage.
+ */
+export async function uploadSingleProductImageAction(formData: FormData): Promise<{ url: string }> {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("Please select a valid image file.");
+  }
+
+  const fileType = file.type || getImageTypeFromName(file.name);
+  if (!ALLOWED_TYPES.includes(fileType)) {
+    throw new Error("Unsupported image format. Only JPG, PNG, and WebP are supported.");
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error("Image exceeds the 20MB size limit.");
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const url = await saveProductImage(buffer, file.name, fileType);
+  return { url };
+}
+
+/**
  * Backwards-compatible single-image or multi-file wrapper.
  */
 export async function extractLabelAction(formData: FormData): Promise<LabelExtraction> {

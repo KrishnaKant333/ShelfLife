@@ -1,14 +1,31 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useRef } from "react";
 import Link from "next/link";
-import { Sparkles, Package, Layers, Scale, Calendar, Check, AlertCircle } from "lucide-react";
+import {
+  Sparkles,
+  Package,
+  Layers,
+  Scale,
+  Calendar,
+  Check,
+  AlertCircle,
+  Upload,
+  Search,
+  Loader2,
+  Globe,
+  Trash2,
+} from "lucide-react";
 
 import {
   updateInventoryItem,
+  lookupProductImageAction,
   type CreateInventoryState,
 } from "@/lib/actions/inventory";
+import { uploadSingleProductImageAction } from "@/lib/actions/label-scan";
 import { isIntegerUnit, formatDateForInput } from "@/lib/normalization";
+import { isOpenFoodFactsImage } from "@/lib/openfoodfacts";
+import ProductThumbnail from "@/components/inventory/ProductThumbnail";
 
 interface EditProductFormProps {
   product: {
@@ -44,6 +61,51 @@ export default function EditProductForm({
   const isInt = isIntegerUnit(unit);
   const isEstimated = expiryTypeState === "AI_ESTIMATED";
 
+  const [currentImageUrl, setCurrentImageUrl] = useState(product.imageUrl || "");
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupMessage, setLookupMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPhotoUploading(true);
+    setLookupMessage("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await uploadSingleProductImageAction(formData);
+      if (res.url) {
+        setCurrentImageUrl(res.url);
+      }
+    } catch (err: any) {
+      setLookupMessage(err.message || "Failed to upload photo.");
+    } finally {
+      setPhotoUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleLookup() {
+    setLookupLoading(true);
+    setLookupMessage("");
+    try {
+      const res = await lookupProductImageAction(product.name, product.category);
+      if (res.imageUrl) {
+        setCurrentImageUrl(res.imageUrl);
+        setLookupMessage("Authentic packaging matched via Open Food Facts (ODbL)!");
+      } else {
+        setLookupMessage("No authentic match found. Category fallback icon will be used.");
+      }
+    } catch {
+      setLookupMessage("Lookup timed out. Category fallback icon will be used.");
+    } finally {
+      setLookupLoading(false);
+    }
+  }
+
   return (
     <form
       action={formAction}
@@ -52,10 +114,89 @@ export default function EditProductForm({
       {/* Decorative subtle ambient highlight */}
       <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/5 blur-3xl" />
 
+      {/* Product Imagery Banner: Spec 06 6-Tier Hierarchy Controls */}
+      <div className="relative z-10 mb-6 rounded-2xl border border-[var(--app-border-subtle)] bg-[var(--app-surface-base)]/60 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-black/20">
+              <ProductThumbnail
+                src={currentImageUrl}
+                alt={product.name}
+                category={product.category}
+                size="md"
+              />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--app-text-display)]">
+                  Product Thumbnail
+                </span>
+                {isOpenFoodFactsImage(currentImageUrl) && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <Globe size={10} /> Open Food Facts
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[var(--app-text-muted)] mt-0.5">
+                {currentImageUrl
+                  ? (isOpenFoodFactsImage(currentImageUrl) ? "Open community verified photo (ODbL)" : "Current active packaging photo")
+                  : "No photo attached. Rendering Tier 6 category fallback icon."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={photoUploading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--app-border-subtle)] bg-[var(--app-surface-elevated)] px-3 py-1.5 text-xs font-semibold text-[var(--app-text-display)] hover:bg-[var(--app-surface-base)] transition disabled:opacity-50"
+            >
+              {photoUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+              {currentImageUrl ? "Change Photo" : "Upload Photo"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => void handleLookup()}
+              disabled={lookupLoading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 transition disabled:opacity-40"
+            >
+              {lookupLoading ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+              Lookup OFF
+            </button>
+
+            {currentImageUrl && (
+              <button
+                type="button"
+                onClick={() => setCurrentImageUrl("")}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-500/20 transition"
+              >
+                <Trash2 size={12} />
+                Remove
+              </button>
+            )}
+          </div>
+        </div>
+
+        {lookupMessage && (
+          <p className="mt-3 text-xs font-medium text-[var(--app-accent-emerald)] bg-emerald-500/5 border border-emerald-500/10 p-2 rounded-lg">
+            {lookupMessage}
+          </p>
+        )}
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handlePhotoUpload}
+        disabled={photoUploading}
+        className="sr-only"
+      />
+
       {/* Preserve existing product imagery during text updates */}
-      {product.imageUrl && (
-        <input type="hidden" name="imageUrl" value={product.imageUrl} />
-      )}
+      <input type="hidden" name="imageUrl" value={currentImageUrl} />
       {product.additionalImageUrls && (
         <input
           type="hidden"
